@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.rpm/
+.env*
+!.env.example
+test-results/
+playwright-report/
+*.local.json
+.DS_Store

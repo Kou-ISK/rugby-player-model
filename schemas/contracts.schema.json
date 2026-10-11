@@ -1,0 +1,751 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rugby-player-model.local/contracts/v1",
+  "$defs": {
+    "Vec": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "z"
+      ]
+    },
+    "Body": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "position": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "z": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "z"
+          ]
+        },
+        "yaw": {
+          "type": "number"
+        },
+        "headYaw": {
+          "type": "number",
+          "minimum": -2.4,
+          "maximum": 2.4
+        },
+        "eyeHeight": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2.5
+        },
+        "hasBall": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "position",
+        "yaw",
+        "headYaw",
+        "eyeHeight",
+        "hasBall"
+      ]
+    },
+    "Percept": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "entityId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "kind": {
+          "enum": [
+            "player",
+            "ball",
+            "call"
+          ]
+        },
+        "relation": {
+          "enum": [
+            "teammate",
+            "opponent",
+            "neutral"
+          ]
+        },
+        "modality": {
+          "enum": [
+            "vision",
+            "audio"
+          ]
+        },
+        "observedAt": {
+          "type": "number",
+          "minimum": 0
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "position": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "z": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "z"
+          ]
+        },
+        "bearing": {
+          "type": "number"
+        },
+        "cue": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      },
+      "required": [
+        "id",
+        "entityId",
+        "kind",
+        "relation",
+        "modality",
+        "observedAt",
+        "confidence"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "modality": {
+                "const": "vision"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "position"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "player",
+                  "ball"
+                ]
+              }
+            },
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "bearing"
+                  ]
+                },
+                {
+                  "required": [
+                    "cue"
+                  ]
+                }
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "bearing",
+              "cue"
+            ],
+            "properties": {
+              "kind": {
+                "const": "call"
+              }
+            },
+            "not": {
+              "required": [
+                "position"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ability": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "maxSpeed": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 12
+            },
+            "passRange": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 50
+            }
+          },
+          "required": [
+            "maxSpeed",
+            "passRange"
+          ]
+        },
+        "selfEstimate": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "passReliability": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "passReliability"
+          ]
+        },
+        "preference": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "carry": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "pass": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "support": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "carry",
+            "pass",
+            "support"
+          ]
+        },
+        "tactics": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preferredAction": {
+              "enum": [
+                "scan",
+                "hold",
+                "carry",
+                "pass",
+                "support"
+              ]
+            },
+            "adherence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "preferredAction",
+            "adherence"
+          ]
+        }
+      },
+      "required": [
+        "ability",
+        "selfEstimate",
+        "preference",
+        "tactics"
+      ]
+    },
+    "RulesA": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "scanBias": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "carryBias": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "passBias": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "memoryHalfLife": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 60
+        },
+        "minimumConfidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "version",
+        "scanBias",
+        "carryBias",
+        "passBias",
+        "memoryHalfLife",
+        "minimumConfidence"
+      ]
+    },
+    "PatchA": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scanBias": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "carryBias": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "passBias": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "memoryHalfLife": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 60
+        },
+        "minimumConfidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": []
+    },
+    "Principle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "condition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "criterion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "exceptions": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "unknown": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      },
+      "required": [
+        "id",
+        "condition",
+        "criterion",
+        "priority",
+        "exceptions",
+        "unknown",
+        "evidence"
+      ]
+    },
+    "Memory": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "episodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Percept"
+          },
+          "maxItems": 128
+        },
+        "lastTime": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "episodes",
+        "lastTime"
+      ]
+    },
+    "Bundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contractVersion": {
+          "const": 1
+        },
+        "playerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "time": {
+          "type": "number",
+          "minimum": 0
+        },
+        "self": {
+          "$ref": "#/$defs/Body"
+        },
+        "vision": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "horizontalFov": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 6.284
+            },
+            "range": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "horizontalFov",
+            "range"
+          ]
+        },
+        "percepts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Percept"
+          },
+          "maxItems": 128
+        }
+      },
+      "required": [
+        "contractVersion",
+        "playerId",
+        "time",
+        "self",
+        "vision",
+        "percepts"
+      ]
+    },
+    "World": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scene": {
+          "enum": [
+            "support",
+            "occluded",
+            "audio",
+            "heldout"
+          ]
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "time": {
+          "type": "number",
+          "minimum": 0
+        },
+        "playerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "body": {
+          "$ref": "#/$defs/Body"
+        },
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "kind": {
+                "enum": [
+                  "player",
+                  "ball"
+                ]
+              },
+              "team": {
+                "enum": [
+                  "blue",
+                  "red",
+                  "none"
+                ]
+              },
+              "position": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "z": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "x",
+                  "z"
+                ]
+              },
+              "radius": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 2
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "team",
+              "position",
+              "radius"
+            ]
+          },
+          "maxItems": 128
+        },
+        "calls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "position": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "z": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "x",
+                  "z"
+                ]
+              },
+              "cue": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            },
+            "required": [
+              "id",
+              "position",
+              "cue"
+            ]
+          },
+          "maxItems": 128
+        }
+      },
+      "required": [
+        "scene",
+        "seed",
+        "time",
+        "playerId",
+        "body",
+        "entities",
+        "calls"
+      ]
+    },
+    "Snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contractVersion": {
+          "const": 1
+        },
+        "scene": {
+          "enum": [
+            "support",
+            "occluded",
+            "audio",
+            "heldout"
+          ]
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "world": {
+          "$ref": "#/$defs/World"
+        },
+        "bundle": {
+          "$ref": "#/$defs/Bundle"
+        },
+        "memoryBefore": {
+          "$ref": "#/$defs/Memory"
+        },
+        "profile": {
+          "$ref": "#/$defs/Profile"
+        },
+        "rulesA": {
+          "$ref": "#/$defs/RulesA"
+        },
+        "rulesBVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      },
+      "required": [
+        "contractVersion",
+        "scene",
+        "seed",
+        "world",
+        "bundle",
+        "memoryBefore",
+        "profile",
+        "rulesA",
+        "rulesBVersion"
+      ]
+    },
+    "Candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "createdAt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "feedback": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "context": {
+          "$ref": "#/$defs/Snapshot"
+        },
+        "principle": {
+          "$ref": "#/$defs/Principle"
+        },
+        "patchA": {
+          "$ref": "#/$defs/PatchA"
+        },
+        "decisions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "A": {
+              "enum": [
+                "pending",
+                "approved",
+                "rejected"
+              ]
+            },
+            "B": {
+              "enum": [
+                "pending",
+                "approved",
+                "rejected"
+              ]
+            }
+          },
+          "required": [
+            "A",
+            "B"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "createdAt",
+        "feedback",
+        "context",
+        "principle",
+        "patchA",
+        "decisions"
+      ]
+    }
+  }
+}

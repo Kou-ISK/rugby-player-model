@@ -1,0 +1,20 @@
+{
+  "name": "rugby-player-model",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": { "node": ">=24 <25" },
+  "scripts": {
+    "dev": "tsx server/dev.ts",
+    "bridge": "tsx server/cli.ts",
+    "spike": "tsx scripts/spike.ts",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "vite build",
+    "test:browser": "playwright test",
+    "check": "npm run typecheck && npm test && npm run build"
+  },
+  "dependencies": { "ajv": "8.17.1", "three": "0.186.1" },
+  "devDependencies": { "@playwright/test": "1.64.0", "@types/node": "24.10.1", "@types/three": "0.183.1", "tsx": "4.23.15", "typescript": "5.9.3", "vite": "8.3.4" }
+}

@@ -1,0 +1,22 @@
+import Ajv from 'ajv';
+import schema from '../schemas/contracts.schema.json';
+import type { Bundle, Snapshot, Memory } from './contracts';
+const ajv = new Ajv({ allErrors: true, strict: false });
+ajv.addSchema(schema);
+export function validate<T>(kind: keyof typeof schema.$defs, value: unknown): asserts value is T {
+  const check = ajv.getSchema(`${schema.$id}#/$defs/${kind}`)!;
+  if (!check(value)) throw new Error(`${kind}: ${ajv.errorsText(check.errors)}`);
+}
+export function validateEvidence(bundle: Bundle, memory: Memory): void {
+  validate('Bundle', bundle); validate('Memory', memory);
+  if (memory.lastTime > bundle.time) throw new Error('Memory is from the future');
+  for (const p of [...bundle.percepts, ...memory.episodes]) {
+    if (p.observedAt > bundle.time) throw new Error('Future evidence');
+  }
+  if (new Set(bundle.percepts.map(p => p.id)).size !== bundle.percepts.length) throw new Error('Duplicate percept');
+}
+export function validateSnapshot(value: unknown): asserts value is Snapshot {
+  validate<Snapshot>('Snapshot', value);
+  validateEvidence(value.bundle, value.memoryBefore);
+  if (value.world.time !== value.bundle.time || value.world.seed !== value.seed || value.world.scene !== value.scene || value.world.playerId !== value.bundle.playerId) throw new Error('Snapshot context mismatch');
+}
