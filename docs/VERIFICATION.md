@@ -1,5 +1,7 @@
 # Cloud verification record
 
+This section is historical Cloud evidence. The local Mac follow-up and verified P2P adapter are recorded separately in [MAC_HEADLESS.md](MAC_HEADLESS.md). Owner screen acceptance remains pending.
+
 Environment: Linux, Node.js 24.19.0. Initial working commit: `641e6e1`. Subsequent test/document changes are recorded in Git history.
 
 | Check | Result | Scope |

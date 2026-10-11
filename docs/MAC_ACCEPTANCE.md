@@ -1,6 +1,6 @@
 # Macでの最終共同研究DoD
 
-**未実施。Cloud合格をMac合格と呼ばない。** 本人がMacで「見る→フィードバック→候補保存→承認→比較→undo」を行って初めて共同研究loopの最終合格です。
+**本人による画面受入は未実施。Mac上の合成headless試験は実施済み（MAC_HEADLESS.md）。自動試験を本人の受入と呼ばない。** 本人がMacで「見る→フィードバック→候補保存→承認→比較→undo」を行って初めて共同研究loopの最終合格です。
 
 ## 起動
 
@@ -50,4 +50,4 @@ Owner / date:
 - 白画面：ブラウザのWebGL利用可否とConsoleを確認。CloudではLinux Chromiumのみ検証済みで、Safariの動作保証はまだありません。
 - `Session busy`：[lock回復手順](LOCAL_BRIDGE.md)を使用。
 - 画面の首振りは動くがパスしない：パス実行は未対応であり、意図としてのみ出力します。
-- library/P2P原本は未取得：代替の手続きモデルでloopを確認できますが、原本再利用要件は未達です。[来歴](PROVENANCE.md)参照。
+- このlocal branchは取得・hash照合済みのP2P原本を表示adapterで再利用します。[来歴](PROVENANCE.md)参照。実身体技能と公開権利は別の未完了ゲートです。

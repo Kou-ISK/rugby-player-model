@@ -3,8 +3,10 @@ import { createServer as createViteServer } from 'vite';
 import { Store, ConflictError } from './store';
 const port = Number(process.env.PORT || 5173);
 const store = new Store();
-const vite = await createViteServer({ server: { middlewareMode: true, host: '127.0.0.1', allowedHosts: ['localhost', '127.0.0.1'] }, appType: 'spa' });
-const server = createServer(async (req, res) => {
+const server = createServer();
+// Share loopback HTTP rather than opening Vite's global default WebSocket port.
+const vite = await createViteServer({ server: { middlewareMode: true, host: '127.0.0.1', allowedHosts: ['localhost', '127.0.0.1'], ws: { server, port, clientPort: port } }, appType: 'spa' });
+server.on('request', async (req, res) => {
   // Loopback binding plus Host/Origin validation protects the local write bridge.
   const hosts = [`127.0.0.1:${port}`, `localhost:${port}`];
   if (!hosts.includes(req.headers.host || '')) { res.writeHead(403).end('Invalid Host'); return; }

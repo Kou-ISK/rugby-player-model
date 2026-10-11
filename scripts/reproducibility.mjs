@@ -5,21 +5,23 @@ import { resolve, relative, sep } from 'node:path';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const manifestPath = resolve(root, 'research/reproducibility-manifest.json');
-// Explicit public inventory: never scan or include private sessions, env vars or downloaded inputs.
+// Explicit local-review inventory: never scan private sessions, env vars or downloaded plans/ZIPs.
+// Included P2P procedural source is pending a separate public-release decision.
 const inventory = [
   '.gitignore', '.nvmrc', '.github/workflows/ci.yml', 'AGENTS.md', 'README.md', 'index.html',
   'package.json', 'package-lock.json', 'tsconfig.json', 'playwright.config.ts', 'RUGBY_JUDGMENT.md',
   'research/b-evaluation-baseline.json',
   'src/contracts.ts', 'src/cognition.ts', 'src/simulation.ts', 'src/research.ts', 'src/validation.ts',
   'src/ui/main.ts', 'src/ui/models.ts', 'src/ui/view.ts', 'src/ui/style.css',
+  'src/ui/p2p/models.ts', 'src/ui/p2p/contact-pose.ts', 'src/ui/p2p/REUSE-NOTICE.md', 'src/ui/p2p/kit-manifest.json',
   'server/store.ts', 'server/dev.ts', 'server/cli.ts',
   'scripts/make-samples.ts', 'scripts/run-model.ts', 'scripts/spike.ts', 'scripts/reproducibility.mjs',
   'schemas/contracts.schema.json',
   'examples/support-42.snapshot.json', 'examples/occluded-77.snapshot.json', 'examples/audio-8.snapshot.json', 'examples/candidate-edit.json',
   'docs/ADR-001-runtime.md', 'docs/ARCHITECTURE.md', 'docs/B_REVIEW.md', 'docs/B_EVALUATION_SCENES.md',
-  'docs/LOCAL_BRIDGE.md', 'docs/MAC_ACCEPTANCE.md', 'docs/LIMITATIONS.md', 'docs/PROVENANCE.md', 'docs/VERIFICATION.md',
+  'docs/LOCAL_BRIDGE.md', 'docs/MAC_ACCEPTANCE.md', 'docs/MAC_HEADLESS.md', 'docs/LIMITATIONS.md', 'docs/PROVENANCE.md', 'docs/VERIFICATION.md',
   'docs/MODEL_CARD.md', 'docs/DATA_CARD.md', 'docs/PUBLICATION_SCOPE.md', 'docs/REPRODUCTION.md', 'docs/versions/RUGBY_JUDGMENT-B0.md',
-  'tests/cognition.test.ts', 'tests/research-loop.test.ts', 'tests/review-regressions.test.ts', 'tests/browser/workbench.spec.ts',
+  'tests/cognition.test.ts', 'tests/p2p-adapter.test.ts', 'tests/browser/p2p-view.spec.ts', 'tests/research-loop.test.ts', 'tests/review-regressions.test.ts', 'tests/browser/workbench.spec.ts',
 ].sort();
 const readJson = path => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 const digest = path => createHash('sha256').update(readFileSync(resolve(root, path))).digest('hex');
@@ -93,8 +95,8 @@ function buildManifest() {
       ciRun: 'https://github.com/Kou-ISK/rugby-player-model/actions/runs/38156672972', ciConclusion: 'success',
       scope: 'software checks, not scientific/human/Mac acceptance; inspect current PR checks for subsequent commits' },
     rights: { declaredLicense: pkg.license, licenseDecision: 'pending-owner-decision', publicationScope: 'docs/PUBLICATION_SCOPE.md',
-      privateDataIncluded: false, p2pSourceReuse: 'incomplete', p2pZipChecksum: 'unverified' },
-    remaining: ['owner Mac research-loop acceptance', 'P2P original acquisition/reuse/hash verification', 'human calibration/validation', 'independent B evaluation results not claimed'],
+      privateDataIncluded: false, p2pSourceReuse: 'verified-procedural-source-local-review-only', p2pZipChecksum: '0b24168eb6874b1bb2cacaea5b5926346050ac4baa5acebf32a31b6bcefa07bd', p2pPublicRelease: 'pending-owner-license-and-parent-review' },
+    remaining: ['owner Mac research-loop acceptance', 'P2P publication/license decision and parent review', 'human calibration/validation', 'independent B evaluation results not claimed'],
     files,
   };
 }
@@ -103,7 +105,7 @@ try {
   const next = buildManifest(), serialized = JSON.stringify(next, null, 2) + '\n';
   if (process.argv.includes('--write')) {
     writeFileSync(manifestPath, serialized);
-    console.log(`Wrote public reproduction manifest (${inventory.length} files); frozen B reference unchanged.`);
+    console.log(`Wrote local-review reproduction manifest (${inventory.length} files); frozen B reference unchanged.`);
   } else {
     const previous = readFileSync(manifestPath, 'utf8');
     if (previous !== serialized) {

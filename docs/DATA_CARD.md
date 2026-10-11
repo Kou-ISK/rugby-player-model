@@ -29,6 +29,6 @@ To reproduce a private experiment locally, preserve its original snapshot/contex
 
 ## Rights and update status
 
-The synthetic fixtures and packet were authored for this foundation. Their public presence does not select an OSS/data license: **UNLICENSED remains in effect as the repository's declared pending status**. No CC0 or CC BY grant has been applied. Package dependency notices remain separate. P2P kit bytes were not obtained and are absent; expected source/hash metadata is a specification, not proof of successful acquisition.
+The synthetic fixtures and packet were authored for this foundation. Their public presence does not select an OSS/data license: **UNLICENSED remains in effect as the repository's declared pending status**. No CC0 or CC BY grant has been applied. Package dependency notices remain separate. The separate P2P display kit was obtained and verified on the Mac; it adds procedural geometry, not match/player data. Source and license boundaries are recorded in PROVENANCE.md and src/ui/p2p/REUSE-NOTICE.md. This local branch is not cleared for public push.
 
 Update fixtures with the generator only when the corresponding implementation/input change is intentional; regenerate and check the manifest, preserve old reference commits and document changed assumptions. The frozen B evaluation reference must not be changed merely to make an integrity check pass during the current comparison. See [publication scope](PUBLICATION_SCOPE.md) for inclusion/exclusion boundaries.

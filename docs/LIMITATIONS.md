@@ -24,7 +24,7 @@ The evaluation suite now explicitly stratifies eight synthetic conditions: carri
 - The root B0.1-draft is available for independent evaluation, while local B exports remain frozen B0 plus approved amendments. This draft does not silently modify the owner's active B.
 - Snapshot rules identify parameter versions, not an archived executable. The current trace reports `modelRevision: cognition-0.2`; before/after comparisons recompute both sides with the current engine. To reproduce old engine outputs, use the recorded Git commit. Upgrading code and replaying an old snapshot is not the original historical execution.
 - No standalone generative-AI B evaluation and no owner Mac acceptance have been completed in Cloud.
-- P2P original kit reuse remains blocked by the input transfer failure. Current fallback meshes are independent and should not be described as P2P assets.
+- P2P procedural source is hash-verified and reused in this local review branch. Publication rights remain pending. These display models do not establish body skills; the self-model is hidden in first person. Other players remain static. Mac headless evidence is distinct from owner interaction.
 
 ## Verification commands
 

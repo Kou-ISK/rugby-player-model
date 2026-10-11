@@ -30,7 +30,7 @@ Remembered uncertainty can penalize approach and suggest re-observation; audio m
 
 Supported: synthetic sensing, bounded memory, traceable heuristic decisions, simple locomotion/head yaw, one-decision comparisons, saved contextual feedback, revision-bound review, undo and local persistence.
 
-Unsupported: physiological/human validity; learned tactical skill; joint/muscle/posture control; realistic passing/release/catching/contact/kicking; voice production; independent eye gaze; complete rugby rules; other autonomous players; match outcomes. All other players remain static in a run. The renderer is an independent primitive fallback; **specified P2P source reuse and hash verification remain incomplete**.
+Unsupported: physiological/human validity; learned tactical skill; joint/muscle/posture control; realistic passing/release/catching/contact/kicking; voice production; independent eye gaze; complete rugby rules; other autonomous players; match outcomes. All other players remain static in a run. The renderer now reuses the verified P2P procedural kit through a presentation-only adapter on a local review branch. No gait/contact hint is used as evidence of a skill. Public release of the imported UNLICENSED source remains pending.
 
 Material risks in interpretation: confusing absence of observation with empty space; overtrusting synthetic confidence; treating a weighted score as optimal; mistaking a pass intention for an executed pass; calling parameter variants novel-match validation; or comparing old/new code as if only a rule changed. The interface and tests expose these distinctions but do not establish human validity.
 

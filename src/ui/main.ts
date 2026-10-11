@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import './style.css';
 import { defaultProfile, defaultRulesA, emptyMemory, type Candidate, type Memory, type Profile, type RulesA, type SceneId, type Snapshot, type Trace } from '../contracts';
 import { think } from '../cognition';
@@ -13,7 +14,7 @@ app.innerHTML=`
 <button id="play" class="primary">再生</button><button id="step">1 step</button><button id="snapshot">snapshot保存</button><button id="restore">最新を復元</button>
 </div><div id="viewport"><div id="view-tag">選手一人称 · 観測可能な範囲</div><div id="clock">0.0s</div><div class="crosshair">＋</div></div>
 <div class="view-controls"><button id="view">spectatorへ</button><label>首振り <input id="head" type="range" min="-137" max="137" value="0"><output id="head-value">0°</output></label><label>身体の向き <input id="body" type="range" min="-180" max="180" value="0"></label></div>
-<p class="hint">一人称は身体位置＋目の高さ＋身体/頭部の向きに接続。spectatorの世界情報は認知入力に入りません。視野90°・遮蔽は簡略モデル。</p>
+<p class="hint">一人称は身体位置＋目の高さ＋身体/頭部の向きに接続。spectatorの世界情報は認知入力に入りません。視野90°・遮蔽は簡略モデル。P2P手続き描画を再利用（表示用mock・実身体技能ではありません）。一人称では自分の模型を非表示。</p>
 <div class="metrics"><div><small>現在の意図</small><strong id="intention">—</strong></div><div><small>観測 / 記憶</small><strong id="counts">—</strong></div><div><small>独立した版</small><strong id="versions">A0 / B0</strong></div></div>
 <details open><summary>選手の観測・記憶と候補評価</summary><div id="beliefs"></div><pre id="trace"></pre></details>
 <details><summary>個人差と戦術（試行条件）</summary><p>能力・自己推定・選好・戦術遵守を別々に変更。snapshotに保存されます。</p><label>走速度上限<input id="speed" type="number" min="0" max="12" value="5"></label><label>パス能力範囲<input id="pass-range" type="number" min="0" max="50" value="15"></label><label>パス自己推定<input id="reliability" type="range" min="0" max="1" step="0.05" value="0.7"></label><label>carry選好<input id="preference" type="range" min="0" max="1" step="0.05" value="0.5"></label><label>戦術遵守（pass）<input id="adherence" type="range" min="0" max="1" step="0.05" value="0.3"></label></details>
@@ -111,7 +112,10 @@ for(const mode of ['preview','active'] as const)on(mode==='preview'?'preview':'c
   say(mode==='preview'?`保存済み候補 revision ${report.candidateRevision} の一時previewです。実行中のA/B版・承認状態は変えていません。層別ケースで効果と反例を確認してください。`:'保存時と現在の承認版Aを同じ入力で比較。層別ケースは合成回帰評価で、人間妥当性の証明ではありません。');
 });
 on('export-b',async()=>{const {markdown}=await api('export-b');const url=URL.createObjectURL(new Blob([markdown],{type:'text/markdown'}));const a=document.createElement('a');a.href=url;a.download=`RUGBY_JUDGMENT-${bVersion}.md`;a.click();URL.revokeObjectURL(url);say('現在の承認済みB文書を出力しました。');});
-setInterval(()=>{if(playing)step();},200);
-setInterval(()=>refresh().catch(e=>say(`bridge: ${e.message}`)),2500);
-function animate(){view.draw(world);requestAnimationFrame(animate);}animate();
+// Draw on interaction/steps/resize/orbit changes; a paused tab need not use a GPU frame loop.
+const stepTimer=setInterval(()=>{if(playing)step();},200);
+const refreshTimer=setInterval(()=>refresh().catch(e=>say(`bridge: ${e.message}`)),2500);
+function dispose(){clearInterval(stepTimer);clearInterval(refreshTimer);view.dispose();}
+window.addEventListener('pagehide',event=>{if(!event.persisted)dispose();});
+if(import.meta.hot)import.meta.hot.dispose(dispose);
 try{await refresh();say('ローカルbridgeに接続。まず首を振って、観測と記憶の違いを確認してください。');}catch(e){say(`起動エラー: ${e instanceof Error?e.message:String(e)}`);}
