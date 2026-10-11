@@ -1,0 +1,152 @@
+{
+  "contractVersion": 1,
+  "scene": "audio",
+  "seed": 8,
+  "world": {
+    "scene": "audio",
+    "seed": 8,
+    "time": 0,
+    "playerId": "self",
+    "body": {
+      "position": {
+        "x": 0,
+        "z": 0
+      },
+      "yaw": 0,
+      "headYaw": 0,
+      "eyeHeight": 1.68,
+      "hasBall": false
+    },
+    "entities": [
+      {
+        "id": "support-1",
+        "position": {
+          "x": -8,
+          "z": -4
+        },
+        "kind": "player",
+        "team": "blue",
+        "radius": 0.45
+      },
+      {
+        "id": "defender-1",
+        "position": {
+          "x": 2.4783367845229805,
+          "z": 9.008394059725106
+        },
+        "kind": "player",
+        "team": "red",
+        "radius": 0.45
+      },
+      {
+        "id": "ball",
+        "position": {
+          "x": 2,
+          "z": 9
+        },
+        "kind": "ball",
+        "team": "none",
+        "radius": 0.18
+      }
+    ],
+    "calls": [
+      {
+        "id": "call-left",
+        "position": {
+          "x": -8,
+          "z": -4
+        },
+        "cue": "support-call"
+      }
+    ]
+  },
+  "bundle": {
+    "contractVersion": 1,
+    "playerId": "self",
+    "time": 0,
+    "self": {
+      "position": {
+        "x": 0,
+        "z": 0
+      },
+      "yaw": 0,
+      "headYaw": 0,
+      "eyeHeight": 1.68,
+      "hasBall": false
+    },
+    "vision": {
+      "horizontalFov": 1.5707963267948966,
+      "range": 35
+    },
+    "percepts": [
+      {
+        "id": "defender-1@0.000:vision",
+        "entityId": "defender-1",
+        "kind": "player",
+        "relation": "opponent",
+        "modality": "vision",
+        "observedAt": 0,
+        "confidence": 0.9,
+        "position": {
+          "x": 2.4783367845229805,
+          "z": 9.008394059725106
+        }
+      },
+      {
+        "id": "ball@0.000:vision",
+        "entityId": "ball",
+        "kind": "ball",
+        "relation": "neutral",
+        "modality": "vision",
+        "observedAt": 0,
+        "confidence": 0.9,
+        "position": {
+          "x": 2,
+          "z": 9
+        }
+      },
+      {
+        "id": "call-left@0.000:audio",
+        "entityId": "call-left",
+        "kind": "call",
+        "relation": "neutral",
+        "modality": "audio",
+        "observedAt": 0,
+        "confidence": 0.55,
+        "bearing": -2.1,
+        "cue": "support-call"
+      }
+    ]
+  },
+  "memoryBefore": {
+    "episodes": [],
+    "lastTime": 0
+  },
+  "profile": {
+    "ability": {
+      "maxSpeed": 5,
+      "passRange": 15
+    },
+    "selfEstimate": {
+      "passReliability": 0.7
+    },
+    "preference": {
+      "carry": 0.5,
+      "pass": 0.5,
+      "support": 0.7
+    },
+    "tactics": {
+      "preferredAction": "pass",
+      "adherence": 0.3
+    }
+  },
+  "rulesA": {
+    "version": "A0",
+    "scanBias": 0,
+    "carryBias": 0,
+    "passBias": 0,
+    "memoryHalfLife": 4,
+    "minimumConfidence": 0.35
+  },
+  "rulesBVersion": "B0"
+}

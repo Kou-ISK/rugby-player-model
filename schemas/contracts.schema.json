@@ -746,6 +746,300 @@
         "patchA",
         "decisions"
       ]
+    },
+    "RulesB": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "principles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Principle"
+          }
+        }
+      },
+      "required": [
+        "version",
+        "principles"
+      ]
+    },
+    "BodyCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "channel": {
+          "enum": [
+            "locomotion",
+            "headYaw",
+            "gaze",
+            "voice",
+            "pass",
+            "jointPose",
+            "muscleEffort",
+            "posture"
+          ]
+        },
+        "status": {
+          "enum": [
+            "supported",
+            "unsupported"
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            }
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "channel",
+        "status",
+        "value"
+      ]
+    },
+    "Belief": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "entityId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "kind": {
+          "enum": [
+            "player",
+            "ball",
+            "call"
+          ]
+        },
+        "relation": {
+          "enum": [
+            "teammate",
+            "opponent",
+            "neutral"
+          ]
+        },
+        "modality": {
+          "enum": [
+            "vision",
+            "audio"
+          ]
+        },
+        "observedAt": {
+          "type": "number",
+          "minimum": 0
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "position": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "z": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "z"
+          ]
+        },
+        "bearing": {
+          "type": "number"
+        },
+        "cue": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "currentConfidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "age": {
+          "type": "number",
+          "minimum": 0
+        },
+        "uncertaintyRadius": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "id",
+        "entityId",
+        "kind",
+        "relation",
+        "modality",
+        "observedAt",
+        "confidence",
+        "currentConfidence",
+        "age",
+        "uncertaintyRadius"
+      ]
+    },
+    "Evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": [
+            "scan",
+            "hold",
+            "carry",
+            "pass",
+            "support"
+          ]
+        },
+        "score": {
+          "type": "number"
+        },
+        "allowed": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "action",
+        "score",
+        "allowed",
+        "reason"
+      ]
+    },
+    "Trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sensation": {
+          "$ref": "#/$defs/Bundle"
+        },
+        "attention": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "workingMemory": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Belief"
+          }
+        },
+        "longTermMemory": {
+          "$ref": "#/$defs/Memory"
+        },
+        "beliefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Belief"
+          }
+        },
+        "predictions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "entityId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "basisObservedAt": {
+                "type": "number",
+                "minimum": 0
+              },
+              "position": {
+                "$ref": "#/$defs/Vec"
+              },
+              "uncertaintyRadius": {
+                "type": "number",
+                "minimum": 0
+              },
+              "method": {
+                "const": "last-observation"
+              }
+            },
+            "required": [
+              "entityId",
+              "basisObservedAt",
+              "uncertaintyRadius",
+              "method"
+            ]
+          }
+        },
+        "evaluation": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evaluation"
+          }
+        },
+        "intention": {
+          "$ref": "#/$defs/Evaluation"
+        },
+        "output": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BodyCommand"
+          }
+        },
+        "rulesVersion": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "sensation",
+        "attention",
+        "workingMemory",
+        "longTermMemory",
+        "beliefs",
+        "predictions",
+        "evaluation",
+        "intention",
+        "output",
+        "rulesVersion"
+      ]
     }
   }
 }

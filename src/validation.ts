@@ -13,6 +13,7 @@ export function validateEvidence(bundle: Bundle, memory: Memory): void {
   for (const p of [...bundle.percepts, ...memory.episodes]) {
     if (p.observedAt > bundle.time) throw new Error('Future evidence');
   }
+  for (const p of memory.episodes) if (p.observedAt > memory.lastTime) throw new Error('Evidence is newer than its memory record');
   if (new Set(bundle.percepts.map(p => p.id)).size !== bundle.percepts.length) throw new Error('Duplicate percept');
 }
 export function validateSnapshot(value: unknown): asserts value is Snapshot {

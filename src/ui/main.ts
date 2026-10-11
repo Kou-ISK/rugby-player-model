@@ -85,6 +85,8 @@ on('save-edit',async()=>{await api('edit',{id:selected,patchA:JSON.parse(area('p
 for(const target of ['A','B']){
   for(const decision of ['approve','reject'])on(`${decision}-${target.toLowerCase()}`,async()=>{
     if(!input('owner').checked)throw new Error('本人確認欄をチェックしてください');
+    const c=state.state.candidates[selected];if(!c)throw new Error('候補を選んでください');
+    if(JSON.stringify(JSON.parse(area('patch').value))!==JSON.stringify(c.patchA)||JSON.stringify(JSON.parse(area('principle').value))!==JSON.stringify(c.principle))throw new Error('変更した編集内容を先に保存してください');
     await api('review',{id:selected,target,decision,actor:'owner'});await refresh(true);say(`${target} ${decision} を記録しました。`);
   });
   on(`undo-${target.toLowerCase()}`,async()=>{if(!input('owner').checked)throw new Error('本人確認欄をチェックしてください');await api('undo',{target,actor:'owner'});await refresh(true);say(`${target} を直前の承認版へ戻しました。`);});

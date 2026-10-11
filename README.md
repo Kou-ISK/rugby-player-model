@@ -17,6 +17,7 @@ npm run dev
 npm run bridge -- status
 npm run check
 npm run spike
+npm run --silent model -- --input examples/support-42.snapshot.json --steps 10
 ```
 
 - [B: RUGBY_JUDGMENT.md](RUGBY_JUDGMENT.md) — runnerなしで読める原則

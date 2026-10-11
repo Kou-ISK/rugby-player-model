@@ -9,6 +9,8 @@
     "dev": "tsx server/dev.ts",
     "bridge": "tsx server/cli.ts",
     "spike": "tsx scripts/spike.ts",
+    "model": "tsx scripts/run-model.ts",
+    "samples": "tsx scripts/make-samples.ts",
     "test": "node --import tsx --test tests/*.test.ts",
     "typecheck": "tsc --noEmit",
     "build": "vite build",
