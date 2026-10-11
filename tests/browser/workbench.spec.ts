@@ -24,7 +24,11 @@ test('first-person 3D, local approvals, comparison, undo and browser restart',as
   await page.locator('#preview').click();await expect(page.locator('#comparison')).toContainText('"mode": "preview"');
   await expect(page.locator('#comparison')).toContainText('carrier-pressure');await expect(page.locator('#versions')).toHaveText('A0 / B0');
   await expect(page.locator('#candidate-context')).toContainText('A: pending');
-  await page.locator('#patch').fill('{"scanBias":1}');await page.locator('#owner').check();await page.locator('#approve-a').click();
+  await page.locator('#patch').fill('{"scanBias":1}');
+  const previewRequests:string[]=[];page.on('request',r=>{if(r.url().endsWith('/api/compare'))previewRequests.push(r.url());});
+  await page.locator('#preview').click();await expect(page.locator('#status')).toContainText('未保存の編集');
+  await expect(page.locator('#comparison')).toHaveText('');await expect(page.locator('#versions')).toHaveText('A0 / B0');expect(previewRequests).toEqual([]);
+  await page.locator('#owner').check();await page.locator('#approve-a').click();
   await expect(page.locator('#status')).toContainText('先に保存');await expect(page.locator('#versions')).toHaveText('A0 / B0');
   await page.locator('#patch').fill('{"scanBias":2}');await page.locator('#owner').uncheck();
   await page.locator('#approve-a').click();await expect(page.locator('#status')).toContainText('本人確認');await expect(page.locator('#versions')).toHaveText('A0 / B0');

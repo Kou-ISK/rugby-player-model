@@ -24,5 +24,6 @@ npm run --silent model -- --input examples/support-42.snapshot.json --steps 10
 - [設計と情報境界](docs/ARCHITECTURE.md)、[言語選択ADR](docs/ADR-001-runtime.md)
 - [Codex local bridge](docs/LOCAL_BRIDGE.md)、[Mac実証手順](docs/MAC_ACCEPTANCE.md)
 - [制約・再現性](docs/LIMITATIONS.md)、[権利と来歴](docs/PROVENANCE.md)
+- [再現manifest](research/reproducibility-manifest.json)と[再現手順](docs/REPRODUCTION.md)、[モデルカード](docs/MODEL_CARD.md)、[データカード](docs/DATA_CARD.md)、[公開範囲](docs/PUBLICATION_SCOPE.md)
 
 Cloudの検証合格と、本人Macでの共同研究loop実証は別です。P2P描画kitは取得できていないため独立した仮の手続き描画を使用しています。ライセンスは未決（UNLICENSED）です。

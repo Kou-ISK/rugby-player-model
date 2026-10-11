@@ -1,0 +1,221 @@
+{
+  "manifestVersion": 1,
+  "status": "provisional-uncalibrated-research-foundation",
+  "sourceIdentity": {
+    "method": "git-commit-containing-this-manifest-plus-sha256-files",
+    "referenceReviewCommit": "5886a70ba4d2200fa67317f995cc36e48c05d2aa",
+    "manifestSelfHashExcluded": true,
+    "note": "Reference review/CI evidence applies to that commit. Reproduce this tree from the commit containing this manifest; check the explicit file hashes below."
+  },
+  "runtime": {
+    "nodeMajor": 24,
+    "referenceNode": "24.19.0",
+    "packageVersion": "0.1.0",
+    "npmLockVersion": 3,
+    "dependencies": {
+      "ajv": "8.17.1",
+      "three": "0.186.1"
+    },
+    "devDependencies": {
+      "@playwright/test": "1.64.0",
+      "@types/node": "24.10.1",
+      "@types/three": "0.183.1",
+      "tsx": "4.23.15",
+      "typescript": "5.9.3",
+      "vite": "8.3.4"
+    },
+    "network": "Required for initial dependency/browser installation; no external AI service required for local execution."
+  },
+  "contracts": {
+    "observationVersion": 1,
+    "schema": "schemas/contracts.schema.json",
+    "bridgeApiVersion": 2,
+    "units": {
+      "distance": "meter",
+      "angle": "radian",
+      "time": "second",
+      "attackDirection": "+z"
+    }
+  },
+  "artifacts": {
+    "A": {
+      "modelRevision": "cognition-0.2",
+      "rulesBaseline": "A0",
+      "type": "hand-written-deterministic-heuristic",
+      "trainedWeights": false,
+      "calibration": "none",
+      "humanValidity": "not-established",
+      "card": "docs/MODEL_CARD.md"
+    },
+    "B": {
+      "document": "RUGBY_JUDGMENT.md",
+      "revision": "B0.1-draft",
+      "evaluationReference": "research/b-evaluation-baseline.json",
+      "frozenAt": "5886a70ba4d2200fa67317f995cc36e48c05d2aa",
+      "localExport": "frozen B0 plus separately owner-approved amendments",
+      "evaluationOutcome": "not-claimed"
+    }
+  },
+  "data": {
+    "card": "docs/DATA_CARD.md",
+    "source": "authored synthetic data only",
+    "trainingDataset": "none",
+    "snapshots": [
+      {
+        "path": "examples/support-42.snapshot.json",
+        "scene": "support",
+        "seed": 42
+      },
+      {
+        "path": "examples/occluded-77.snapshot.json",
+        "scene": "occluded",
+        "seed": 77
+      },
+      {
+        "path": "examples/audio-8.snapshot.json",
+        "scene": "audio",
+        "seed": 8
+      }
+    ],
+    "evaluationStrata": [
+      {
+        "caseId": "carrier-open",
+        "seed": 900
+      },
+      {
+        "caseId": "carrier-pressure",
+        "seed": 901
+      },
+      {
+        "caseId": "carrier-receiver",
+        "seed": 1230
+      },
+      {
+        "caseId": "noncarrier-open",
+        "seed": 1231
+      },
+      {
+        "caseId": "carrier-missing",
+        "seed": 65536
+      },
+      {
+        "caseId": "carrier-memory",
+        "seed": 65537
+      },
+      {
+        "caseId": "noncarrier-audio-left",
+        "seed": 104728
+      },
+      {
+        "caseId": "noncarrier-audio-right",
+        "seed": 104729
+      }
+    ],
+    "coverage": "published synthetic regression probes; no statistical population/generalization claim"
+  },
+  "determinism": {
+    "generator": "uint32 LCG: state = (1664525 * state + 1013904223) mod 2^32",
+    "simulationStepSeconds": 0.2,
+    "snapshotIncludes": [
+      "world",
+      "observation bundle",
+      "prior memory",
+      "profile",
+      "RulesA",
+      "B version"
+    ],
+    "notSeedControlled": [
+      "feedback UUIDs",
+      "wall-clock timestamps",
+      "unsaved manual interaction history"
+    ],
+    "crossPlatformBitwiseEquality": "not-guaranteed"
+  },
+  "reproduction": {
+    "guide": "docs/REPRODUCTION.md",
+    "commands": [
+      "npm ci",
+      "npm run manifest:check",
+      "npm run check",
+      "npm run --silent model -- --input examples/support-42.snapshot.json --steps 10",
+      "npx playwright install chromium",
+      "npm run test:browser"
+    ],
+    "browserAlternative": "Set RPM_CHROMIUM to an existing Chromium executable."
+  },
+  "referenceEvidence": {
+    "commit": "5886a70ba4d2200fa67317f995cc36e48c05d2aa",
+    "nodeTests": 27,
+    "browserTests": 4,
+    "ciRun": "https://github.com/Kou-ISK/rugby-player-model/actions/runs/38156672972",
+    "ciConclusion": "success",
+    "scope": "software checks, not scientific/human/Mac acceptance; inspect current PR checks for subsequent commits"
+  },
+  "rights": {
+    "declaredLicense": "UNLICENSED",
+    "licenseDecision": "pending-owner-decision",
+    "publicationScope": "docs/PUBLICATION_SCOPE.md",
+    "privateDataIncluded": false,
+    "p2pSourceReuse": "incomplete",
+    "p2pZipChecksum": "unverified"
+  },
+  "remaining": [
+    "owner Mac research-loop acceptance",
+    "P2P original acquisition/reuse/hash verification",
+    "human calibration/validation",
+    "independent B evaluation results not claimed"
+  ],
+  "files": {
+    ".github/workflows/ci.yml": "bfdf56c8ce914a89d6e4eca7dbd42259e52296767bbf8aa0d623dbe9f7fd1520",
+    ".gitignore": "3917649b3992f13a3f523bfaee849037170df186e00e22254e8ba2236234024c",
+    ".nvmrc": "68ca3fba3b7e864770cb61aeb306d4bd4354b68ab4dd38450860c5d823e42a53",
+    "AGENTS.md": "8b6970acccfa9b1f90a8146fa3fbb5ad3f1d44c4d84abd16fabf4d6ac799f4a2",
+    "README.md": "9d9132ebc644a3fb74d6a81622e3eb5609c5c57796de68b13ea1be038a0eca1c",
+    "RUGBY_JUDGMENT.md": "fe6c3037f649e259d3b640dcc388796a0e27a98e6767ca4b6560a3d91e4c9080",
+    "docs/ADR-001-runtime.md": "47bcba0cd3a099710be8af64c671ecce52b22e6faefce0e1112e3803b2d398a0",
+    "docs/ARCHITECTURE.md": "3aae44d212be208cfae7443b0e602e93654e19af0fd782e40f0dd21f333e6435",
+    "docs/B_EVALUATION_SCENES.md": "f29e3055600002c320fd6f07fd16292e519041ffaa74aa360fa4e84940536f83",
+    "docs/B_REVIEW.md": "61e200d12d6b32129d3999601bf4bc61c277791f2660ddf83b258b92783db752",
+    "docs/DATA_CARD.md": "b47c1667815c99700bf851fd8987961b4c54a8e88c44f443b5d61774e6ad6bbe",
+    "docs/LIMITATIONS.md": "bcbc0b9e147c2b64b803ddb05943ac22b057b9c45ada69402b839508ebb99380",
+    "docs/LOCAL_BRIDGE.md": "9e3370ed64f73980a53173968482101ad0e28f01f918096cf0ef021e97cffbe1",
+    "docs/MAC_ACCEPTANCE.md": "be1e633f211342f190d34237a1cef82454a5b9a5ed8e7ef63382742c51236c0d",
+    "docs/MODEL_CARD.md": "a4f09c6d03f7fafb9f113fcb89d65f5fd90caf7483ffd4c880918e4693eae22e",
+    "docs/PROVENANCE.md": "8c565c435bfc11c9165a53d8370e2c88f72fc131ec0227805cdb1c69ca84c74a",
+    "docs/PUBLICATION_SCOPE.md": "6e0670b0038bc331ab727ac50fd3c71cb7ff0227cce9f9e8c337bf450c637aee",
+    "docs/REPRODUCTION.md": "4ae20a983b6bb30aa624a998d791f38c03b0e5359fbf4d8542fe38bc1f74115a",
+    "docs/VERIFICATION.md": "e924715378e5a8467eae77b77ac9576333269bf518b0246d3cf55fe5d4c3a3f4",
+    "docs/versions/RUGBY_JUDGMENT-B0.md": "9786c4db20ceebf8a295a0a57378142274bbcfef61b0f5dee6bd03202344ad80",
+    "examples/audio-8.snapshot.json": "b8f8906134fc5a7890d6f9c978a4ea497675aadd16a66a7cf754ec39625e32c6",
+    "examples/candidate-edit.json": "18cb5251cd2420deff9da1ad8abc59ed59b291b19ab3bf2aff1f713876fd2f6f",
+    "examples/occluded-77.snapshot.json": "64f8852dedd24289a68be02c532646df9553b7b607a5d3af419c715f845e52b3",
+    "examples/support-42.snapshot.json": "7e067dd78ee6e5f0a0de2d9d3a107de338f7cd115bac09b740e22834ab491129",
+    "index.html": "5ff0092304ee2c16b9cf972285bf2b0e03f7c4c6c38514ac7ddc3a65e4bc9182",
+    "package-lock.json": "1da2719ae221fe44cb32757ca76fc83ce42848053192051b331c901cfb7ff3c2",
+    "package.json": "592a5798ac6794f646ae0b888dff980d62325fd9d76c856e0d0ab4e22a9e8826",
+    "playwright.config.ts": "141187968706b1d98c131797fd8c66f98724306deae185e0588ae0533e292437",
+    "research/b-evaluation-baseline.json": "4e83c69dfbf204127c1f2086f205aab674dcad9c63cfba93d41cb81fa77172c9",
+    "schemas/contracts.schema.json": "de9357b72404179a1f34846eb6fb6b7d7488f49ebabff5a9a446f1597db9b2f8",
+    "scripts/make-samples.ts": "0f177f517cab1b547706adeb9a080602f18e7e00c083d59740f178d8c0cddc47",
+    "scripts/reproducibility.mjs": "f58159b573c647465f57ec62944d851e58531369f849d55a41d28784bda3c07d",
+    "scripts/run-model.ts": "0b4add67dee77814403ef17f3b729347b558664e74f8388d563fb5d5a3b7e36a",
+    "scripts/spike.ts": "b937c3e7396e923c688807fec8319a50928293be83bb5b85147ab3900e9a5d55",
+    "server/cli.ts": "7cbe4583d800f1cbfaf39b1f9314f4aa8ad68b0a1f0ad3c81386abe5606b63e9",
+    "server/dev.ts": "d2bc447489ccdce9a4b5c12afc04510b464f28a8e0717c347704eb24b24b4ebc",
+    "server/store.ts": "a397875fe4d43e6b2935829877444fb9c7aa605d58926ad1486606332e4a1259",
+    "src/cognition.ts": "3aa0cc1afbb237ffe03daed428c5f8dfb66d721606b854aa7a90804ba219be6c",
+    "src/contracts.ts": "4139fc152a2259f07ade225473614e90b9b32a10d4ef768722577de26e879001",
+    "src/research.ts": "0bdaeb753f1bd6d6e2a95a75d4340ef2b10927bb22fb3ad1e8f5fb609e435dee",
+    "src/simulation.ts": "a3f20c6e5061d783b032f17c6a1733c99f278b43e9fc8e825579b1f795faa3f2",
+    "src/ui/main.ts": "05eced8f1792d03ffd6062fb90457459642c179c5d334d90e0eaa7bdb076fb32",
+    "src/ui/models.ts": "c964002a7e55684a9c3647c90460a400cd02fb8b9100f175a58dcbf690c521d0",
+    "src/ui/style.css": "dea91a592abd10337d7c9d1f8a3dadb3ac192d4f33e6ffe76d7fd261e25c7666",
+    "src/ui/view.ts": "0bfedb2067f849bdcdb6e8380316a6fe1208d66f7dab474b7467a5354e247a0a",
+    "src/validation.ts": "16fe37302a6c13cd275c733da0d858af76e10e234d3760bf8f972c642c1d22ca",
+    "tests/browser/workbench.spec.ts": "3d03c1b99f94b2aaa5283d19216f1cde9180e4fe3de8d18f8a8e77531be2e5ac",
+    "tests/cognition.test.ts": "e2670d141235b1d0028a1e615816513e94690a8d040b3b1f0e35a03f40f9816c",
+    "tests/research-loop.test.ts": "040f76f6804c74d8e4dbbb7347cfacea13b288f13cba01528c1688c2bb209ddd",
+    "tests/review-regressions.test.ts": "b4ddbe66bafeb4c69eb5dd452f16ab4c9eb17ae59bc149154cf6a86982b93568",
+    "tsconfig.json": "d13466ad3fba089a62b23bab446bcb7ca2c20673e96751f564ebf9b462b86798"
+  }
+}

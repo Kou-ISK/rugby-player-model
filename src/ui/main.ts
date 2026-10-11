@@ -23,7 +23,7 @@ app.innerHTML=`
 <details open><summary>候補を編集（自動解釈なし）</summary><label>A · 実行パラメータの差分 JSON<textarea id="patch" spellcheck="false">{}</textarea></label><label>B · 原則 JSON<textarea id="principle" spellcheck="false"></textarea></label><button id="save-edit">候補の編集を保存</button><p class="hint">A: scanBias / carryBias / passBias / memoryHalfLife / minimumConfidence。B: TODO欄をCodexと記述。承認前は実行に影響しません。</p></details>
 <label class="confirm"><input type="checkbox" id="owner">本人としてこの内容を確認しました</label>
 <div class="review"><button id="approve-a">A 採用</button><button id="reject-a">A 却下</button><button id="undo-a">A undo</button><button id="approve-b">B 採用</button><button id="reject-b">B 却下</button><button id="undo-b">B undo</button></div>
-<button id="preview">未採用候補をpreview＋層別評価</button><button id="compare">現在の承認版と比較＋層別評価</button><button id="export-b">B文書をダウンロード</button><pre id="comparison"></pre>
+<button id="preview">保存済み候補をpreview＋層別評価</button><button id="compare">現在の承認版と比較＋層別評価</button><button id="export-b">B文書をダウンロード</button><pre id="comparison"></pre>
 <div id="status" role="status">ローカルbridge接続中…</div><p class="hint">私的session: .rpm/（gitignore）。外部送信・有料API不要。筋骨格技能・人間再現・ラグビー全規則の完成モデルではありません。</p></aside></main>`;
 const $ = <T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
 const input=(id:string)=>$<HTMLInputElement>(id);
@@ -100,9 +100,15 @@ for(const target of ['A','B']){
   on(`undo-${target.toLowerCase()}`,async()=>{if(!input('owner').checked)throw new Error('本人確認欄をチェックしてください');await api('undo',{target,actor:'owner',expectedVersion:target==='A'?rules.version:bVersion});await refresh(true);say(`${target} を直前の承認版へ戻しました。`);});
 }
 for(const mode of ['preview','active'] as const)on(mode==='preview'?'preview':'compare',async()=>{
-  pause();const report=await api('compare',{id:selected,mode,expectedRevision:state.state.candidates[selected]?.revision});
+  pause();const c=state.state.candidates[selected];
+  if(mode==='preview'){
+    $('comparison').textContent='';
+    if(!c)throw new Error('候補を選んでください');
+    if(JSON.stringify(JSON.parse(area('patch').value))!==JSON.stringify(c.patchA)||JSON.stringify(JSON.parse(area('principle').value))!==JSON.stringify(c.principle))throw new Error('未保存の編集があります。previewは保存済み候補を評価します。先に編集内容を保存してください。');
+  }
+  const report=await api('compare',{id:selected,mode,expectedRevision:c?.revision});
   $('comparison').textContent=JSON.stringify({mode:report.mode,candidateRevision:report.candidateRevision,activeVersion:report.activeVersion,staleBase:report.staleBase,sameConditions:report.recorded.sameConditions,scene:report.recorded.scene,seed:report.recorded.seed,time:report.recorded.time,before:report.recorded.before.intention,after:report.recorded.after.intention,evaluation:{before:report.recorded.before.evaluation,after:report.recorded.after.evaluation},versions:[report.recorded.before.rulesVersion,report.recorded.after.rulesVersion],unseen:report.unseen.map((r:any)=>({caseId:r.caseId,strata:r.strata,seed:r.seed,before:r.before.intention.action,after:r.after.intention.action})),B:report.B},null,2);
-  say(mode==='preview'?'候補の一時previewです。実行中のA/B版・承認状態は変えていません。層別ケースで効果と反例を確認してください。':'保存時と現在の承認版Aを同じ入力で比較。層別ケースは合成回帰評価で、人間妥当性の証明ではありません。');
+  say(mode==='preview'?`保存済み候補 revision ${report.candidateRevision} の一時previewです。実行中のA/B版・承認状態は変えていません。層別ケースで効果と反例を確認してください。`:'保存時と現在の承認版Aを同じ入力で比較。層別ケースは合成回帰評価で、人間妥当性の証明ではありません。');
 });
 on('export-b',async()=>{const {markdown}=await api('export-b');const url=URL.createObjectURL(new Blob([markdown],{type:'text/markdown'}));const a=document.createElement('a');a.href=url;a.download=`RUGBY_JUDGMENT-${bVersion}.md`;a.click();URL.revokeObjectURL(url);say('現在の承認済みB文書を出力しました。');});
 setInterval(()=>{if(playing)step();},200);

@@ -20,6 +20,8 @@ When the owner makes the kit available through an authorized readable route, che
 
 No images, GLBs, logos, textures, scraped data or other externally owned visual assets are bundled. Dependency licenses remain those of their respective packages; they are not changed by this repository. Legal/rule references are links and concise paraphrases, not copied rulebooks. Research plans and local user sessions are not public artifacts.
 
+The detailed inclusion/exclusion matrix is in [PUBLICATION_SCOPE.md](PUBLICATION_SCOPE.md). [MODEL_CARD.md](MODEL_CARD.md), [DATA_CARD.md](DATA_CARD.md) and the [reproduction manifest](../research/reproducibility-manifest.json) record intended use, synthetic-data provenance, version identities and the limits of current evidence. None of these documents adopts a license or declares the missing P2P/Mac work complete.
+
 ## Recommendation for the owner's later decision
 
 | Material | Proposed option, not yet applied | Reason / condition |

@@ -23,4 +23,10 @@ Five new regression tests failed against the original implementation before the 
 
 The browser race test deliberately freezes background state polling, edits the candidate through another client, then clicks approval against the old displayed revision. The server returns 409, keeps A unchanged, reloads the candidate and clears owner confirmation. A separate Node test uses an actual CLI subprocess as the competing writer.
 
-B0.1-draft adds whole-interval motion/arrival/intent/data-rendering principles. The eight-scene evaluation packet and no-principles/B0/B0.1 comparison are executable as a manual AI evaluation procedure, but **no such AI evaluation has been performed**. No outcome is inferred from document completeness.
+B0.1-draft adds whole-interval motion/arrival/intent/data-rendering principles. The eight-scene evaluation packet and no-principles/B0/B0.1 comparison are executable as a manual AI evaluation procedure. **This Cloud implementation has not performed that AI evaluation or incorporated external results.** No outcome is inferred from document completeness.
+
+## Publication and reproduction additions
+
+The B document, frozen B0, review protocol and eight-scene packet remain byte-identical to `5886a70`. A frozen baseline record and executable manifest check enforce that comparison reference. The manifest covers public source/configuration/fixtures/tests/cards; it excludes itself, private sessions and installed dependencies. It is an integrity aid, not scientific validation or a license grant.
+
+The browser loop test additionally verifies that preview with unsaved candidate JSON sends no comparison request, clears the old comparison and asks the user to save first. A successful preview explicitly names the saved revision. The model/data cards and publication scope retain uncalibrated/provisional status, UNLICENSED, incomplete P2P reuse and unperformed owner Mac acceptance. No external B preliminary-evaluation results are incorporated or claimed by these additions.
