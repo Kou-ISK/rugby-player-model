@@ -62,3 +62,11 @@ test('approval between client polls rejects an unseen competing edit and require
   await page.locator('#owner').check();await page.locator('#approve-a').click();
   await expect(page.locator('#versions')).toHaveText(`A${Object.keys(observed.state.versionsA).length} / B0`);
 });
+test('a new client refuses writes against an older still-running bridge',async({page,request})=>{
+  const legacy=await (await request.get('/api/state')).json();delete legacy.apiVersion;
+  await page.route('**/api/state',route=>route.fulfill({json:legacy}));
+  const writes:string[]=[];page.on('request',r=>{if(r.method()==='POST')writes.push(r.url());});
+  await page.goto('/');await expect(page.locator('#status')).toContainText('古いbridge');
+  await page.locator('#feedback').fill('must not submit');await page.locator('#propose').click();
+  await expect(page.locator('#status')).toContainText('再起動');expect(writes).toEqual([]);
+});

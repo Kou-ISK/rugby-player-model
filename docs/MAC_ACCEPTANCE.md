@@ -14,7 +14,7 @@ npm ci
 npm run dev
 ```
 
-既存cloneなら `git fetch origin` → 対象ブランチへ切替 → `git pull --ff-only`。表示された `http://127.0.0.1:5173` を開きます。ポート使用中なら `PORT=5175 npm run dev`。停止はターミナルでCtrl-C。公開deploy、認証設定、外部鍵は不要です。
+既存cloneならdev serverをCtrl-Cで停止してから `git fetch origin` → 対象ブランチへ切替 → `git pull --ff-only` → `npm run dev`。serverコードは画面の更新だけでは入れ替わりません。古いserverが残る場合、新しい画面はbridgeのversion不一致で書き込みを拒否し、再起動を案内します。表示された `http://127.0.0.1:5173` を開きます。ポート使用中なら `PORT=5175 npm run dev`。公開deploy、認証設定、外部鍵は不要です。
 
 ## 実証チェック（本人が記録）
 

@@ -3,7 +3,7 @@ import { defaultProfile, defaultRulesA, emptyMemory, type Candidate, type Memory
 import { think } from '../cognition';
 import { advance, makeWorld, sense } from '../simulation';
 import { View } from './view';
-type ServerState = { state: { revision: number; snapshots: Record<string, Snapshot>; candidates: Record<string,Candidate> }; active: { A: RulesA; B: { version: string } } };
+type ServerState = { apiVersion: 2; state: { revision: number; snapshots: Record<string, Snapshot>; candidates: Record<string,Candidate> }; active: { A: RulesA; B: { version: string } } };
 const app=document.querySelector<HTMLDivElement>('#app')!;
 app.innerHTML=`
 <header><div><span class="eyebrow">RUGBY PLAYER MODEL · 研究基盤</span><h1>選手の視点から、判断を研究する。</h1></div><div class="badge">LOCAL / PRIVATE</div></header>
@@ -30,7 +30,9 @@ const input=(id:string)=>$<HTMLInputElement>(id);
 const area=(id:string)=>$<HTMLTextAreaElement>(id);
 const select=(id:string)=>$<HTMLSelectElement>(id);
 const say=(message:string)=>{$('status').textContent=message;};
+let bridgeReady=false;
 async function api(path:string,data?:unknown) {
+  if(data!==undefined&&!bridgeReady)throw new Error('bridgeを確認できません。dev serverを停止して再起動してください。');
   const res=await fetch(`/api/${path}`,data===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json','X-RPM-Local':'1'},body:JSON.stringify(data)});
   const value=await res.json();if(!res.ok){
     if(res.status===409){input('owner').checked=false;await refresh(true);throw new Error(`変更競合: 最新内容を再表示しました。再確認してください。${value.error}`);}
@@ -59,7 +61,10 @@ function loadCandidate(){
   input('owner').checked=false;
 }
 async function refresh(force=false){
-  const data:ServerState=await api('state'); if(!force&&data.state.revision===renderedRevision)return;
+  const data:ServerState=await api('state');
+  bridgeReady=data.apiVersion===2;
+  if(!bridgeReady){pause();input('owner').checked=false;throw new Error('古いbridgeです。dev serverを停止して再起動してください。');}
+  if(!force&&data.state.revision===renderedRevision)return;
   const changed=rules.version!==data.active.A.version||bVersion!==data.active.B.version;
   state=data;renderedRevision=data.state.revision;rules=data.active.A;bVersion=data.active.B.version;
   const list=select('candidates');list.replaceChildren();
@@ -103,4 +108,4 @@ on('export-b',async()=>{const {markdown}=await api('export-b');const url=URL.cre
 setInterval(()=>{if(playing)step();},200);
 setInterval(()=>refresh().catch(e=>say(`bridge: ${e.message}`)),2500);
 function animate(){view.draw(world);requestAnimationFrame(animate);}animate();
-await refresh();say('ローカルbridgeに接続。まず首を振って、観測と記憶の違いを確認してください。');
+try{await refresh();say('ローカルbridgeに接続。まず首を振って、観測と記憶の違いを確認してください。');}catch(e){say(`起動エラー: ${e instanceof Error?e.message:String(e)}`);}

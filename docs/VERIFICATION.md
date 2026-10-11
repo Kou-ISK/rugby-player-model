@@ -8,7 +8,7 @@ Environment: Linux, Node.js 24.19.0. Initial working commit: `641e6e1`. Subseque
 | `npm test` | Pass, 27 tests after review fixes | Schema/trace serialization; leakage pairs; causal memory/audio tests; preferences/tactics; preview vs active compare; stratified cases; revision CAS; approval receipts; undo/restart; CLI and deterministic replay |
 | `npm run build` | Pass | Vite production build; large-bundle warning due to Three + local validation code |
 | `npm run spike` | Pass | 1,000 validated headless decisions, approximately 54ms in initial run; not a performance guarantee |
-| `RPM_CHROMIUM=/usr/bin/chromium npm run test:browser` | Pass, 3 tests after review fixes | Actual WebGL, head/body camera, player/spectator separation, playback, candidate preview, approval/compare/undo/reload, API guards and stale UI approval returning 409 with refresh/reconfirmation |
+| `RPM_CHROMIUM=/usr/bin/chromium npm run test:browser` | Pass, 4 tests after review fixes | Actual WebGL, head/body camera, player/spectator separation, playback, candidate preview, approval/compare/undo/reload, API guards, stale UI approval returning 409 with reconfirmation, and old-bridge write refusal |
 | Screenshot visual inspection | Pass for Cloud rendering | Pitch, player, first-person frame and research controls visible; synthetic test data only; screenshot kept outside Git |
 | Library input bytes / expected ZIP hash | Blocked | Normal materialization and one retry failed; original kit reuse incomplete |
 | Remote GitHub Actions | Not asserted here | Workflow provided; check PR status for actual remote result |

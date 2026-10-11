@@ -13,7 +13,7 @@ const server = createServer(async (req, res) => {
   try {
     if (req.headers.origin && !hosts.map(h => `http://${h}`).includes(req.headers.origin)) throw new Error('Invalid Origin');
     if (req.method === 'GET') {
-      if (req.url === '/api/state') { const state = store.read(); res.end(JSON.stringify({ state, active: store.active(state) })); }
+      if (req.url === '/api/state') { const state = store.read(); res.end(JSON.stringify({ apiVersion: 2, state, active: store.active(state) })); }
       else if (req.url === '/api/export-b') res.end(JSON.stringify({ markdown: store.exportB() }));
       else { res.writeHead(404).end('{}'); }
       return;
