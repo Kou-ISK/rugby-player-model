@@ -129,6 +129,9 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 4000
+        },
+        "observerYaw": {
+          "type": "number"
         }
       },
       "required": [
@@ -171,6 +174,11 @@
                 {
                   "required": [
                     "cue"
+                  ]
+                },
+                {
+                  "required": [
+                    "observerYaw"
                   ]
                 }
               ]
@@ -735,6 +743,10 @@
             "A",
             "B"
           ]
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
         }
       },
       "required": [
@@ -744,7 +756,8 @@
         "context",
         "principle",
         "patchA",
-        "decisions"
+        "decisions",
+        "revision"
       ]
     },
     "RulesB": {
@@ -896,6 +909,9 @@
         "uncertaintyRadius": {
           "type": "number",
           "minimum": 0
+        },
+        "observerYaw": {
+          "type": "number"
         }
       },
       "required": [
@@ -1026,6 +1042,58 @@
         "rulesVersion": {
           "type": "string",
           "minLength": 1
+        },
+        "modelRevision": {
+          "const": "cognition-0.2"
+        },
+        "assessment": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "uncertainThreat": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "informationValue": {
+              "type": "number",
+              "minimum": 0
+            },
+            "scanTarget": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "sourceId": {
+                  "type": "string"
+                },
+                "headYaw": {
+                  "type": "number",
+                  "minimum": -2.4,
+                  "maximum": 2.4
+                },
+                "observedAt": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "modality": {
+                  "enum": [
+                    "vision",
+                    "audio"
+                  ]
+                }
+              },
+              "required": [
+                "sourceId",
+                "headYaw",
+                "observedAt",
+                "modality"
+              ]
+            }
+          },
+          "required": [
+            "uncertainThreat",
+            "informationValue"
+          ]
         }
       },
       "required": [
@@ -1038,7 +1106,9 @@
         "evaluation",
         "intention",
         "output",
-        "rulesVersion"
+        "rulesVersion",
+        "modelRevision",
+        "assessment"
       ]
     }
   }

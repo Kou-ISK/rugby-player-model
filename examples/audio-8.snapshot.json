@@ -114,7 +114,8 @@
         "observedAt": 0,
         "confidence": 0.55,
         "bearing": -2.1,
-        "cue": "support-call"
+        "cue": "support-call",
+        "observerYaw": 0
       }
     ]
   },

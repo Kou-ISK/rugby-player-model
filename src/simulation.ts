@@ -48,6 +48,7 @@ export function sense(world: World): Bundle {
     id: `${c.id}@${world.time.toFixed(3)}:audio`, entityId: c.id, kind: 'call', relation: 'neutral',
     modality: 'audio', observedAt: world.time, confidence: .55,
     bearing: Math.round(angle(bearing(world.body.position, c.position) - world.body.yaw) / .3) * .3, cue: c.cue,
+    observerYaw: world.body.yaw,
   });
   return { contractVersion: 1, playerId: world.playerId, time: world.time, self: structuredClone(world.body),
     vision: { horizontalFov: HORIZONTAL_FOV, range: 35 }, percepts };

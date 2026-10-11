@@ -23,7 +23,7 @@ app.innerHTML=`
 <details open><summary>候補を編集（自動解釈なし）</summary><label>A · 実行パラメータの差分 JSON<textarea id="patch" spellcheck="false">{}</textarea></label><label>B · 原則 JSON<textarea id="principle" spellcheck="false"></textarea></label><button id="save-edit">候補の編集を保存</button><p class="hint">A: scanBias / carryBias / passBias / memoryHalfLife / minimumConfidence。B: TODO欄をCodexと記述。承認前は実行に影響しません。</p></details>
 <label class="confirm"><input type="checkbox" id="owner">本人としてこの内容を確認しました</label>
 <div class="review"><button id="approve-a">A 採用</button><button id="reject-a">A 却下</button><button id="undo-a">A undo</button><button id="approve-b">B 採用</button><button id="reject-b">B 却下</button><button id="undo-b">B undo</button></div>
-<button id="compare">同条件で前後比較＋未見4seed</button><button id="export-b">B文書をダウンロード</button><pre id="comparison"></pre>
+<button id="preview">未採用候補をpreview＋層別評価</button><button id="compare">現在の承認版と比較＋層別評価</button><button id="export-b">B文書をダウンロード</button><pre id="comparison"></pre>
 <div id="status" role="status">ローカルbridge接続中…</div><p class="hint">私的session: .rpm/（gitignore）。外部送信・有料API不要。筋骨格技能・人間再現・ラグビー全規則の完成モデルではありません。</p></aside></main>`;
 const $ = <T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
 const input=(id:string)=>$<HTMLInputElement>(id);
@@ -32,7 +32,10 @@ const select=(id:string)=>$<HTMLSelectElement>(id);
 const say=(message:string)=>{$('status').textContent=message;};
 async function api(path:string,data?:unknown) {
   const res=await fetch(`/api/${path}`,data===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json','X-RPM-Local':'1'},body:JSON.stringify(data)});
-  const value=await res.json();if(!res.ok)throw new Error(value.error||'Bridge error');return value;
+  const value=await res.json();if(!res.ok){
+    if(res.status===409){input('owner').checked=false;await refresh(true);throw new Error(`変更競合: 最新内容を再表示しました。再確認してください。${value.error}`);}
+    throw new Error(value.error||'Bridge error');
+  }return value;
 }
 let state:ServerState, rules=defaultRulesA(), bVersion='B0', world=makeWorld('support',42), memory:Memory=emptyMemory(), profile:Profile=defaultProfile();
 let trace:Trace, playing=false, selected='', renderedRevision=-1;
@@ -45,14 +48,14 @@ function render(){
   input('head').value=String(world.body.headYaw*180/Math.PI);$('head-value').textContent=`${Math.round(world.body.headYaw*180/Math.PI)}°`;
   input('body').value=String(world.body.yaw*180/Math.PI);
   $('beliefs').textContent=trace.beliefs.map(b=>`${b.entityId} ${b.modality} · 観測 ${b.observedAt.toFixed(1)}s / 現在確信 ${b.currentConfidence.toFixed(2)}`).join('\n')||'未観測。世界の真値から補完しません。';
-  $('trace').textContent=JSON.stringify({attention:trace.attention,evaluation:trace.evaluation,intention:trace.intention,bodyOutput:trace.output},null,2);
+  $('trace').textContent=JSON.stringify({modelRevision:trace.modelRevision,attention:trace.attention,assessment:trace.assessment,evaluation:trace.evaluation,intention:trace.intention,bodyOutput:trace.output},null,2);
 }
 function snapshot():Snapshot{return {contractVersion:1,scene:world.scene,seed:world.seed,world:structuredClone(world),bundle:sense(world),memoryBefore:structuredClone(memory),profile:structuredClone(profile),rulesA:structuredClone(rules),rulesBVersion:bVersion};}
 function step(){memory=trace.longTermMemory;world=advance(world,trace);render();}
 function loadCandidate(){
   const c=state?.state.candidates[selected];if(!c)return;
   area('patch').value=JSON.stringify(c.patchA,null,2);area('principle').value=JSON.stringify(c.principle,null,2);
-  $('candidate-context').textContent=`${c.id}\n${c.context.scene} · seed ${c.context.seed} · ${c.context.bundle.time}s · ${c.context.bundle.playerId}\nA: ${c.decisions.A} / B: ${c.decisions.B}`;
+  $('candidate-context').textContent=`${c.id} · revision ${c.revision}\n${c.context.scene} · seed ${c.context.seed} · ${c.context.bundle.time}s · ${c.context.bundle.playerId}\nA: ${c.decisions.A} / B: ${c.decisions.B}`;
   input('owner').checked=false;
 }
 async function refresh(force=false){
@@ -81,17 +84,21 @@ function syncProfile(){input('speed').value=String(profile.ability.maxSpeed);inp
 for(const id of ['speed','pass-range','reliability','preference','adherence'])input(id).onchange=()=>{pause();const next=structuredClone(profile);next.ability.maxSpeed=Number(input('speed').value);next.ability.passRange=Number(input('pass-range').value);next.selfEstimate.passReliability=Number(input('reliability').value);next.preference.carry=Number(input('preference').value);next.tactics.adherence=Number(input('adherence').value);try{think(sense(world),memory,next,rules);profile=next;render();}catch(e){syncProfile();say(String(e));}};
 on('propose',async()=>{pause();const saved=await api('snapshot',{snapshot:snapshot()});const c=await api('propose',{snapshotId:saved.id,feedback:area('feedback').value});selected=c.id;await refresh(true);say(`候補保存: ${c.id}。実行ルールは未変更です。`);});
 select('candidates').onchange=()=>{selected=select('candidates').value;loadCandidate();};
-on('save-edit',async()=>{await api('edit',{id:selected,patchA:JSON.parse(area('patch').value),principle:JSON.parse(area('principle').value)});await refresh(true);say('候補の編集を保存。A/Bそれぞれの本人承認を待っています。');});
+on('save-edit',async()=>{await api('edit',{id:selected,patchA:JSON.parse(area('patch').value),principle:JSON.parse(area('principle').value),expectedRevision:state.state.candidates[selected]?.revision});await refresh(true);say('候補の編集を保存。A/Bそれぞれの本人承認を待っています。');});
 for(const target of ['A','B']){
   for(const decision of ['approve','reject'])on(`${decision}-${target.toLowerCase()}`,async()=>{
     if(!input('owner').checked)throw new Error('本人確認欄をチェックしてください');
     const c=state.state.candidates[selected];if(!c)throw new Error('候補を選んでください');
     if(JSON.stringify(JSON.parse(area('patch').value))!==JSON.stringify(c.patchA)||JSON.stringify(JSON.parse(area('principle').value))!==JSON.stringify(c.principle))throw new Error('変更した編集内容を先に保存してください');
-    await api('review',{id:selected,target,decision,actor:'owner'});await refresh(true);say(`${target} ${decision} を記録しました。`);
+    await api('review',{id:selected,target,decision,actor:'owner',expectedRevision:c.revision});await refresh(true);say(`${target} ${decision} を記録しました。`);
   });
-  on(`undo-${target.toLowerCase()}`,async()=>{if(!input('owner').checked)throw new Error('本人確認欄をチェックしてください');await api('undo',{target,actor:'owner'});await refresh(true);say(`${target} を直前の承認版へ戻しました。`);});
+  on(`undo-${target.toLowerCase()}`,async()=>{if(!input('owner').checked)throw new Error('本人確認欄をチェックしてください');await api('undo',{target,actor:'owner',expectedVersion:target==='A'?rules.version:bVersion});await refresh(true);say(`${target} を直前の承認版へ戻しました。`);});
 }
-on('compare',async()=>{pause();const report=await api('compare',{id:selected});$('comparison').textContent=JSON.stringify({sameConditions:report.recorded.sameConditions,scene:report.recorded.scene,seed:report.recorded.seed,time:report.recorded.time,before:report.recorded.before.intention,after:report.recorded.after.intention,versions:[report.recorded.before.rulesVersion,report.recorded.after.rulesVersion],unseen:report.unseen.map((r:any)=>({seed:r.seed,before:r.before.intention.action,after:r.after.intention.action})),B:report.B},null,2);say('保存時と現在のAを同一観測・記憶・個人条件で比較。未見はパラメータ外挿であり人間妥当性の証明ではありません。');});
+for(const mode of ['preview','active'] as const)on(mode==='preview'?'preview':'compare',async()=>{
+  pause();const report=await api('compare',{id:selected,mode,expectedRevision:state.state.candidates[selected]?.revision});
+  $('comparison').textContent=JSON.stringify({mode:report.mode,candidateRevision:report.candidateRevision,activeVersion:report.activeVersion,staleBase:report.staleBase,sameConditions:report.recorded.sameConditions,scene:report.recorded.scene,seed:report.recorded.seed,time:report.recorded.time,before:report.recorded.before.intention,after:report.recorded.after.intention,evaluation:{before:report.recorded.before.evaluation,after:report.recorded.after.evaluation},versions:[report.recorded.before.rulesVersion,report.recorded.after.rulesVersion],unseen:report.unseen.map((r:any)=>({caseId:r.caseId,strata:r.strata,seed:r.seed,before:r.before.intention.action,after:r.after.intention.action})),B:report.B},null,2);
+  say(mode==='preview'?'候補の一時previewです。実行中のA/B版・承認状態は変えていません。層別ケースで効果と反例を確認してください。':'保存時と現在の承認版Aを同じ入力で比較。層別ケースは合成回帰評価で、人間妥当性の証明ではありません。');
+});
 on('export-b',async()=>{const {markdown}=await api('export-b');const url=URL.createObjectURL(new Blob([markdown],{type:'text/markdown'}));const a=document.createElement('a');a.href=url;a.download=`RUGBY_JUDGMENT-${bVersion}.md`;a.click();URL.revokeObjectURL(url);say('現在の承認済みB文書を出力しました。');});
 setInterval(()=>{if(playing)step();},200);
 setInterval(()=>refresh().catch(e=>say(`bridge: ${e.message}`)),2500);

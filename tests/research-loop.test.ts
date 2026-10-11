@@ -13,23 +13,23 @@ test('full loop: propose/edit/independent approval/compare/undo/restart persists
   const {dir,store,cleanup}=session();try{
     const snapshot=capture('support',42,defaultRulesA(),'B0');const sid=store.saveSnapshot(snapshot);
     const candidate=store.propose(sid,'More scanning when unsure');
-    store.edit(candidate.id,{scanBias:2},principle);
+    store.edit(candidate.id,{scanBias:2},principle,1);
     assert.equal(store.active().A.version,'A0');assert.equal(store.active().B.version,'B0');
     assert.equal(store.comparison(candidate.id).recorded.after.intention.action,'carry');
-    assert.throws(()=>store.review(candidate.id,'A','approve','codex'),/owner/);
-    store.review(candidate.id,'A','approve','owner');
+    assert.throws(()=>store.review(candidate.id,'A','approve','codex',2),/owner/);
+    store.review(candidate.id,'A','approve','owner',2);
     assert.equal(store.active().A.version,'A1');assert.equal(store.active().B.version,'B0');
     assert.equal(store.comparison(candidate.id).recorded.after.intention.action,'scan');
-    assert.throws(()=>store.edit(candidate.id,{},principle),/immutable/);
-    store.review(candidate.id,'B','approve','owner');assert.equal(store.active().B.version,'B1');
+    assert.throws(()=>store.edit(candidate.id,{},principle,2),/immutable/);
+    store.review(candidate.id,'B','approve','owner',2);assert.equal(store.active().B.version,'B1');
     assert.ok(store.exportB().includes('Local owner-approved amendments (B1)'));
     const restart=new Store(dir);assert.equal(restart.active().A.version,'A1');assert.equal(restart.active().B.version,'B1');
-    restart.undo('A','owner');assert.equal(restart.active().A.version,'A0');assert.equal(restart.active().B.version,'B1');
+    restart.undo('A','owner','A1');assert.equal(restart.active().A.version,'A0');assert.equal(restart.active().B.version,'B1');
     assert.equal(restart.comparison(candidate.id).recorded.after.intention.action,'carry');
-    restart.undo('B','owner');assert.equal(new Store(dir).active().B.version,'B0');
+    restart.undo('B','owner','B1');assert.equal(new Store(dir).active().B.version,'B0');
     assert.equal(restart.read().events.filter(e=>e.action==='undo').length,2);
     assert.ok(restart.read().versionsA.A1);assert.ok(restart.read().versionsB.B1);
-    const second=restart.propose(sid,'Second trial');restart.edit(second.id,{scanBias:1},principle);restart.review(second.id,'A','approve','owner');
+    const second=restart.propose(sid,'Second trial');restart.edit(second.id,{scanBias:1},principle,1);restart.review(second.id,'A','approve','owner',2);
     assert.equal(restart.active().A.version,'A2');
     assert.deepEqual(restart.read().snapshots[sid],snapshot);
   }finally{cleanup();}
@@ -37,22 +37,22 @@ test('full loop: propose/edit/independent approval/compare/undo/restart persists
 test('reject and failed approvals do not mutate versions; independent decisions remain possible',()=>{
   const {store,cleanup}=session();try{
     const sid=store.saveSnapshot(capture('support',42,defaultRulesA(),'B0'));const c=store.propose(sid,'Draft');
-    assert.throws(()=>store.review(c.id,'A','approve','owner'),/patch/);
-    assert.throws(()=>store.review(c.id,'B','approve','owner'),/fields/);
-    store.review(c.id,'A','reject','owner');store.review(c.id,'B','reject','owner');
+    assert.throws(()=>store.review(c.id,'A','approve','owner',1),/patch/);
+    assert.throws(()=>store.review(c.id,'B','approve','owner',1),/fields/);
+    store.review(c.id,'A','reject','owner',1);store.review(c.id,'B','reject','owner',1);
     assert.equal(store.active().A.version,'A0');assert.equal(store.active().B.version,'B0');
-    assert.throws(()=>store.review(c.id,'A','approve','owner'),/Already reviewed/);
-    assert.throws(()=>store.undo('A','owner'),/Nothing/);
+    assert.throws(()=>store.review(c.id,'A','approve','owner',1),/Already reviewed/);
+    assert.throws(()=>store.undo('A','owner','A0'),/Nothing/);
   }finally{cleanup();}
 });
 test('stale candidates, unvalidated patch and inconsistent snapshots fail closed',()=>{
   const {store,cleanup}=session();try{
     const snapshot=capture('support',42,defaultRulesA(),'B0'),sid=store.saveSnapshot(snapshot);
     const first=store.propose(sid,'first'),second=store.propose(sid,'second');
-    assert.throws(()=>store.edit(first.id,{scanBias:100},principle));
-    assert.throws(()=>store.edit(first.id,{world:{}} as any,principle));
-    store.edit(first.id,{scanBias:1},principle);store.edit(second.id,{scanBias:2},principle);
-    store.review(first.id,'A','approve','owner');assert.throws(()=>store.review(second.id,'A','approve','owner'),/Stale/);
+    assert.throws(()=>store.edit(first.id,{scanBias:100},principle,1));
+    assert.throws(()=>store.edit(first.id,{world:{}} as any,principle,1));
+    store.edit(first.id,{scanBias:1},principle,1);store.edit(second.id,{scanBias:2},principle,1);
+    store.review(first.id,'A','approve','owner',2);assert.throws(()=>store.review(second.id,'A','approve','owner',2),/Stale/);
     assert.equal(store.read().candidates[second.id].decisions.A,'pending');
     snapshot.bundle.self.position.x=10;assert.throws(()=>store.saveSnapshot(snapshot),/match sensor/);
   }finally{cleanup();}

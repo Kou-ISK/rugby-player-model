@@ -5,7 +5,7 @@ export type Body = { position: Vec; yaw: number; headYaw: number; eyeHeight: num
 export type Percept = {
   id: string; entityId: string; kind: 'player' | 'ball' | 'call';
   relation: 'teammate' | 'opponent' | 'neutral'; modality: 'vision' | 'audio';
-  observedAt: number; confidence: number; position?: Vec; bearing?: number; cue?: string;
+  observedAt: number; confidence: number; position?: Vec; bearing?: number; observerYaw?: number; cue?: string;
 };
 export type Bundle = {
   contractVersion: 1; playerId: string; time: number;
@@ -38,6 +38,8 @@ export type Trace = {
   sensation: Bundle; attention: string[]; workingMemory: Belief[]; longTermMemory: Memory;
   beliefs: Belief[]; predictions: { entityId: string; basisObservedAt: number; position?: Vec; uncertaintyRadius: number; method: 'last-observation' }[];
   evaluation: Evaluation[]; intention: Evaluation; output: BodyCommand[]; rulesVersion: string;
+  assessment: { uncertainThreat: number; informationValue: number; scanTarget?: { sourceId: string; headYaw: number; observedAt: number; modality: 'vision' | 'audio' } };
+  modelRevision: 'cognition-0.2';
 };
 export type SceneId = 'support' | 'occluded' | 'audio' | 'heldout';
 export type WorldEntity = { id: string; kind: 'player' | 'ball'; team: 'blue' | 'red' | 'none'; position: Vec; radius: number };
@@ -47,7 +49,7 @@ export type Snapshot = {
   bundle: Bundle; memoryBefore: Memory; profile: Profile; rulesA: RulesA; rulesBVersion: string;
 };
 export type Candidate = {
-  id: string; createdAt: string; feedback: string; context: Snapshot;
+  id: string; revision: number; createdAt: string; feedback: string; context: Snapshot;
   principle: Principle; patchA: Partial<Omit<RulesA, 'version'>>;
   decisions: { A: 'pending' | 'approved' | 'rejected'; B: 'pending' | 'approved' | 'rejected' };
 };

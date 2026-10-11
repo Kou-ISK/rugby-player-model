@@ -20,7 +20,7 @@ npm run spike
 npm run --silent model -- --input examples/support-42.snapshot.json --steps 10
 ```
 
-- [B: RUGBY_JUDGMENT.md](RUGBY_JUDGMENT.md) — runnerなしで読める原則
+- [B: RUGBY_JUDGMENT.md](RUGBY_JUDGMENT.md) — runnerなしで読めるB0.1-draft。[単独評価packet](docs/B_EVALUATION_SCENES.md)は原則なし/旧B/新Bを比較。私的sessionのB出力は凍結B0＋本人承認済み原則です。
 - [設計と情報境界](docs/ARCHITECTURE.md)、[言語選択ADR](docs/ADR-001-runtime.md)
 - [Codex local bridge](docs/LOCAL_BRIDGE.md)、[Mac実証手順](docs/MAC_ACCEPTANCE.md)
 - [制約・再現性](docs/LIMITATIONS.md)、[権利と来歴](docs/PROVENANCE.md)

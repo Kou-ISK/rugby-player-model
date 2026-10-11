@@ -21,6 +21,9 @@ test('first-person 3D, local approvals, comparison, undo and browser restart',as
   await page.locator('#patch').fill('{"scanBias":2}');
   await page.locator('#principle').fill(JSON.stringify({id:'scan',condition:'情報が古い場合',criterion:'確認する',priority:20,exceptions:'切迫時は保有を優先',unknown:'不確実性を保持',evidence:'工学的仮説'}));
   await page.locator('#save-edit').click();await expect(page.locator('#status')).toContainText('候補の編集を保存');
+  await page.locator('#preview').click();await expect(page.locator('#comparison')).toContainText('"mode": "preview"');
+  await expect(page.locator('#comparison')).toContainText('carrier-pressure');await expect(page.locator('#versions')).toHaveText('A0 / B0');
+  await expect(page.locator('#candidate-context')).toContainText('A: pending');
   await page.locator('#patch').fill('{"scanBias":1}');await page.locator('#owner').check();await page.locator('#approve-a').click();
   await expect(page.locator('#status')).toContainText('先に保存');await expect(page.locator('#versions')).toHaveText('A0 / B0');
   await page.locator('#patch').fill('{"scanBias":2}');await page.locator('#owner').uncheck();
@@ -38,4 +41,24 @@ test('local bridge rejects cross-origin and non-JSON mutation',async({request})=
   const cross=await request.post('/api/undo',{headers:{Origin:'https://untrusted.example','X-RPM-Local':'1'},data:{target:'A',actor:'owner'}});expect(cross.status()).toBe(400);
   const missing=await request.post('/api/undo',{data:{target:'A',actor:'owner'}});expect(missing.status()).toBe(400);
   const host=await request.get('/api/state',{headers:{Host:'untrusted.example'}});expect(host.status()).toBe(403);
+});
+test('approval between client polls rejects an unseen competing edit and requires reconfirmation',async({page,request})=>{
+  await page.goto('/');await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
+  await page.locator('#feedback').fill('race reproduction');await page.locator('#propose').click();await expect(page.locator('#candidate-context')).toContainText('revision 1');
+  await page.locator('#patch').fill('{"scanBias":1}');await page.locator('#save-edit').click();await expect(page.locator('#candidate-context')).toContainText('revision 2');
+  await page.locator('#owner').check();
+  const id=await page.locator('#candidates').inputValue();const observed=await (await request.get('/api/state')).json();
+  let freezePoll=true;
+  await page.route('**/api/state',route=>freezePoll?route.fulfill({json:observed}):route.continue());
+  const c=observed.state.candidates[id];
+  const edit=await request.post('/api/edit',{headers:{'X-RPM-Local':'1'},data:{id,patchA:{scanBias:2},principle:c.principle,expectedRevision:2}});
+  expect(edit.ok()).toBeTruthy();
+  await page.route('**/api/review',route=>{freezePoll=false;return route.continue();});
+  const response=page.waitForResponse(r=>r.url().endsWith('/api/review'));
+  await page.locator('#approve-a').click();expect((await response).status()).toBe(409);
+  await expect(page.locator('#status')).toContainText('変更競合');await expect(page.locator('#candidate-context')).toContainText('revision 3');
+  await expect(page.locator('#patch')).toHaveValue(/"scanBias": 2/);await expect(page.locator('#owner')).not.toBeChecked();
+  await expect(page.locator('#versions')).toHaveText('A0 / B0');
+  await page.locator('#owner').check();await page.locator('#approve-a').click();
+  await expect(page.locator('#versions')).toHaveText(`A${Object.keys(observed.state.versionsA).length} / B0`);
 });

@@ -82,7 +82,7 @@ test('same condition comparison is deterministic and heldout seeds are distinct'
   assert.equal(report.before.intention.action,'carry');assert.equal(report.after.intention.action,'scan');
   assert.deepEqual(report.before.sensation,report.after.sensation);assert.equal(JSON.stringify(snapshot),before);
   assert.deepEqual(compare(snapshot,changed),report);
-  const suite=unseen(defaultRulesA(),changed);assert.equal(new Set(suite.map(s=>s.seed)).size,4);
+  const suite=unseen(defaultRulesA(),changed);assert.equal(new Set(suite.map(s=>s.seed)).size,8);
   for(const item of suite){assert.equal(item.scene,'heldout');assert.ok(item.before.intention.allowed&&item.after.intention.allowed);}
 });
 test('future memory and reverse time are rejected rather than silently refreshed',()=>{
