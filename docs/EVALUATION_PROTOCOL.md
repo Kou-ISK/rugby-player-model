@@ -1,5 +1,6 @@
 # 評価条件の事前凍結・匿名B入力・首振り履歴
 
+See [dynamic scene contracts, CLI and acceptance scope](DYNAMIC_SCENES.md) for the new fixed-step workflow: one A-controlled player and scripted stimuli.
 90f7154への独立レビューを受けた修正です。固定8ケースの合格を未知場面への転用成功とは呼びません。最初の本人指導・本人採点・外部AI実行は引き続き未実施です。以下はそれらを始めるための手順と記録機構です。
 
 ## 固定回帰と事前凍結した条件を分ける

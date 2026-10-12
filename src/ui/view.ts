@@ -10,6 +10,7 @@ export class View {
   private spectatorCamera = new THREE.PerspectiveCamera(55,1,.1,250);
   private controls: OrbitControls;
   private actors = new Map<string, THREE.Object3D>();
+  private selfTeam='blue';
   private self = playerModel('self', 0x4bc5ee);
   private resizeObserver: ResizeObserver;
   private disposed = false;
@@ -39,9 +40,12 @@ export class View {
     const ids = new Set(world.entities.map(e=>e.id));
     for(const [id,obj] of this.actors) if(!ids.has(id)) { this.scene.remove(obj);disposeObjectResources(obj);this.actors.delete(id); }
     for(const e of world.entities) {
-      if(!this.actors.has(e.id)){const obj=e.kind==='ball'?ballModel():playerModel(e.id,e.team==='blue'?0x4bc5ee:0xf17b68).group;this.actors.set(e.id,obj);this.scene.add(obj);}
-      const obj=this.actors.get(e.id)!;obj.position.set(e.position.x,e.kind==='ball'?.22:0,e.position.z);obj.visible=this.spectator||visible(world,e);
+      const appearanceId=world.dynamic?`actor-${world.dynamic.scene.definition.actors.findIndex(a=>a.id===e.id)}`:e.id;
+      if(!this.actors.has(e.id)){const obj=e.kind==='ball'?ballModel():playerModel(appearanceId,e.team==='blue'?0x4bc5ee:0xf17b68).group;this.actors.set(e.id,obj);this.scene.add(obj);}
+      const obj=this.actors.get(e.id)!;obj.position.set(e.position.x,e.kind==='ball'?.22:0,e.position.z);obj.rotation.y=e.yaw??0;obj.visible=this.spectator||visible(world,e);
     }
+    const team=world.dynamic?.scene.definition.actors.find(a=>a.id===world.dynamic!.scene.definition.controlledPlayerId)?.team??'blue';
+    if(team!==this.selfTeam){this.scene.remove(this.self.group);disposeObjectResources(this.self.group);this.self=playerModel('self',team==='blue'?0x4bc5ee:0xf17b68);this.selfTeam=team;this.scene.add(this.self.group);}
     const b=world.body;this.self.group.position.set(b.position.x,0,b.position.z);this.self.group.rotation.y=b.yaw;
     // The original skinned body merges its head. Hide the whole self in first
     // person to avoid camera clipping; the camera never follows model bones.

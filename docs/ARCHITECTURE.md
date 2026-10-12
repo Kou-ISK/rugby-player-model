@@ -1,5 +1,6 @@
 # Research architecture
 
+See [dynamic scene contracts, CLI and acceptance scope](DYNAMIC_SCENES.md) for the new fixed-step workflow: one A-controlled player and scripted stimuli.
 Two independent deliverables share research context, not an approval switch:
 
 - **A** is a deterministic executable prototype. The `think(Bundle, Memory, Profile, RulesA)` function accepts a validated observation boundary and returns an inspectable trace and capability-labelled body requests.

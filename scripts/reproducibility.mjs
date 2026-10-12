@@ -8,6 +8,7 @@ const manifestPath = resolve(root, 'research/reproducibility-manifest.json');
 // Explicit local-review inventory: never scan private sessions, env vars or downloaded plans/ZIPs.
 // Included P2P procedural source is pending a separate public-release decision.
 const inventory = [
+  'src/scene.ts', 'tests/dynamic-scenes.test.ts', 'tests/browser/dynamic-scenes.spec.ts', 'examples/dynamic-support.scene.json', 'docs/DYNAMIC_SCENES.md',
   '.gitignore', '.nvmrc', '.github/workflows/ci.yml', 'AGENTS.md', 'README.md', 'index.html',
   'package.json', 'package-lock.json', 'tsconfig.json', 'playwright.config.ts', 'RUGBY_JUDGMENT.md',
   'research/b-evaluation-baseline.json',
@@ -62,7 +63,7 @@ function buildManifest() {
     runtime: { nodeMajor: 24, referenceNode: '24.19.0', macVerifiedNode: '24.21.0', packageVersion: pkg.version, npmLockVersion: lock.lockfileVersion,
       dependencies: pkg.dependencies, devDependencies: pkg.devDependencies,
       network: 'Required for initial dependency/browser installation; no external AI service required for local execution.' },
-    contracts: { observationVersion: 1, schema: 'schemas/contracts.schema.json', bridgeApiVersion: 4,
+    contracts: { observationVersion: 1, schema: 'schemas/contracts.schema.json', bridgeApiVersion: 5,
       units: { distance: 'meter', angle: 'radian', time: 'second', attackDirection: '+z' } },
     artifacts: {
       A: { modelRevision: 'cognition-0.3', rulesBaseline: 'A0', type: 'hand-written-deterministic-heuristic', trainedWeights: false,
@@ -83,7 +84,7 @@ function buildManifest() {
       coverage: 'published fixed regression probes using the captured player profile; separately frozen owner-declared conditions track exposure/reuse, not proven novelty or generalization',
     },
     determinism: { generator: 'uint32 LCG: state = (1664525 * state + 1013904223) mod 2^32', simulationStepSeconds: 0.2,
-      snapshotIncludes: ['world', 'observation bundle', 'ordered static-study observation events when captured', 'prior memory', 'profile', 'RulesA', 'B version'],
+      snapshotIncludes: ['immutable dynamic scene revision when present', 'world', 'observation bundle', 'ordered static-study v1 or fixed-step-study v2 observation events when captured', 'prior memory', 'profile', 'RulesA', 'B version'],
       notSeedControlled: ['feedback UUIDs', 'wall-clock timestamps', 'unsaved manual interaction history'],
       crossPlatformBitwiseEquality: 'not-guaranteed' },
     reproduction: { guide: 'docs/REPRODUCTION.md', commands: [

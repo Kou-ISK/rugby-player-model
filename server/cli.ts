@@ -1,6 +1,7 @@
+import { trackingMap } from '../src/scene';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { Store, type Target } from './store';
-import { capture, observationContext } from '../src/research';
+import { capture, captureSceneAt, observationContext } from '../src/research';
 import type { SceneId } from '../src/contracts';
 import { sense } from '../src/simulation';
 import { replayObservationHistory } from '../src/observation-history';
@@ -11,6 +12,13 @@ const store = new Store();
 let result: unknown;
 try {
   switch (command) {
+    case 'scene-create': result=store.createScene(JSON.parse(readFileSync(flag('--file'),'utf8')),args.includes('--seed')?Number(flag('--seed')):null);break;
+    case 'scene-revise': result=store.reviseScene(id,Number(flag('--revision')),JSON.parse(readFileSync(flag('--file'),'utf8')));break;
+    case 'scene-compare': result=store.compareScenes(id,flag('--after'),flag('--rules'),Number(flag('--steps','5')));break;
+    case 'scene-comparisons': result=store.read().sceneComparisons;break;
+    case 'scenes': result=Object.values(store.read().scenes).flat().map(({definition,trackingIds,...ref})=>({...ref,actorCount:definition.actors.length,durationTicks:definition.durationTicks}));break;
+    case 'scene-authoring': {const scene=store.getScene(id,Number(flag('--revision')));result={scene,authorToTracking:trackingMap(scene),warning:'Authoring/audit only. Includes future stimulus and author names. Never pass to A or a blinded B evaluator.'};break;}
+    case 'scene-snapshot': {const active=store.active(),scene=store.getScene(id,Number(flag('--revision')));const snapshot=captureSceneAt(scene,active.A,active.B.version,Number(flag('--tick','0')));result={snapshotId:store.saveSnapshot(snapshot),tick:snapshot.world.dynamic!.tick};break;}
     case 'status': result = { directory: store.dir, active: store.active(), candidates: Object.values(store.read().candidates).map(c => ({ id: c.id, revision: c.revision, feedback: c.feedback, decisions: c.decisions })) }; break;
     case 'snapshot': {
       const active = store.active(); const scene = flag('--scene', 'support') as SceneId;
@@ -23,7 +31,7 @@ try {
     case 'snapshot-export': result=store.read().snapshots[id];if(!result)throw new Error('Unknown snapshot');break;
     case 'freeze-evaluation': result=store.freezeEvaluation(JSON.parse(readFileSync(flag('--file'),'utf8')));break;
     case 'evaluation-sets': result=Object.values(store.read().evaluationSets).map(set=>({id:set.id,at:set.at,digest:set.digest,caseCount:set.draft.cases.length}));break;
-    case 'propose': result = store.propose(id, flag('--feedback'),flag('--evaluation-set')||undefined); break;
+    case 'propose': result = store.propose(id, flag('--feedback'),flag('--evaluation-set')||undefined,args.includes('--from-tick')?{fromTick:Number(flag('--from-tick')),toTick:Number(flag('--to-tick')),playerId:flag('--player','observer-0')}:undefined); break;
     case 'context': {
       const c = store.read().candidates[id]; if (!c) throw new Error('Unknown candidate');
       result = observationContext(c); break;
@@ -45,7 +53,7 @@ try {
       const path = flag('--out'); if (!path) throw new Error('--out required, e.g. .rpm/RUGBY_JUDGMENT.local.md');
       writeFileSync(path, store.exportB(), { mode: 0o600 }); result = { path, version: store.active().B.version }; break;
     }
-    default: result = { usage: ['status', 'snapshot --scene support --seed 42 --head -2',
+    default: result = { usage: ['scene-create --file .rpm/scene.json [--seed N]', 'scene-revise SCENE_ID --revision N --file .rpm/scene.json', 'scenes', 'scene-compare SNAPSHOT --after SNAPSHOT --rules A0 --steps 5', 'scene-comparisons', 'scene-authoring SCENE_ID --revision N', 'scene-snapshot SCENE_ID --revision N --tick 10', 'propose SNAPSHOT --feedback text --from-tick 3 --to-tick 10 --player observer-0','status', 'snapshot --scene support --seed 42 --head -2',
       'propose SNAPSHOT --feedback "your correction"', 'context CANDIDATE', 'edit CANDIDATE --file .rpm/edit.json --revision N',
       'approve|reject CANDIDATE --target A|B --by owner --revision N', 'preview CANDIDATE --revision N', 'compare CANDIDATE', 'undo A|B --by owner --version A1|B1',
       'return CANDIDATE --target A|B --by owner --revision N --reason "why"',

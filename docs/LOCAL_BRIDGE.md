@@ -1,5 +1,6 @@
 # Codexと使うローカルfile/CLI bridge
 
+See [dynamic scene contracts, CLI and acceptance scope](DYNAMIC_SCENES.md) for the new fixed-step workflow: one A-controlled player and scripted stimuli.
 通常のCodexでこのリポジトリを開き、ローカルファイルを一緒に編集します。新たな有料API・鍵・AI自動送信は不要です。自然言語を自動で実行規則に変換する機能はありません。`propose` は場面付きの原則**候補**を保存するだけです。
 
 未使用条件を評価する場合は、フィードバックより先に [評価条件を凍結](EVALUATION_PROTOCOL.md) します。固定8ケースは本人のprofileを引き継ぐ回帰試験であり、未見評価ではありません。UIの首振り観測履歴は静止研究として保存・再生します。

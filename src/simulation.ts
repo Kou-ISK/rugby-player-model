@@ -1,9 +1,11 @@
+import { trackingMap, updateSceneFrame } from './scene';
 import type { Body, Bundle, SceneId, Vec, World, WorldEntity, Trace } from './contracts';
 export const distance = (a: Vec, b: Vec) => Math.hypot(a.x - b.x, a.z - b.z);
 export const angle = (v: number) => Math.atan2(Math.sin(v), Math.cos(v));
 export const bearing = (a: Vec, b: Vec) => Math.atan2(b.x - a.x, b.z - a.z);
 export const HORIZONTAL_FOV = Math.PI / 2;
 export function makeWorld(scene: SceneId, seed: number): World {
+  if(scene==='dynamic')throw new Error('Dynamic scenes require an imported scene revision');
   if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) throw new Error('seed must be uint32');
   let n = seed >>> 0;
   const random = () => { n = (Math.imul(n, 1664525) + 1013904223) >>> 0; return n / 4294967296; };
@@ -39,13 +41,16 @@ export function visible(world: World, entity: WorldEntity): boolean {
 }
 // This adapter alone reads the world. It constructs a fresh whitelist payload.
 export function sense(world: World): Bundle {
+  const aliases=world.dynamic?trackingMap(world.dynamic.scene):null;
+  const entityId=(id:string)=>aliases?(id==='@ball'?'object-ball':aliases[id]??id.replace('@sound-','sound-')):id;
+  const team=world.dynamic?.scene.definition.actors.find(a=>a.id===world.dynamic!.scene.definition.controlledPlayerId)?.team??'blue';
   const percepts: Bundle['percepts'] = world.entities.filter(e => visible(world, e)).map(e => ({
-    id: `${e.id}@${world.time.toFixed(3)}:vision`, entityId: e.id, kind: e.kind,
-    relation: e.team === 'blue' ? 'teammate' : e.team === 'red' ? 'opponent' : 'neutral',
+    id: `${entityId(e.id)}@${world.time.toFixed(3)}:vision`, entityId: entityId(e.id), kind: e.kind,
+    relation: e.team === 'none' ? 'neutral' : e.team === team ? 'teammate' : 'opponent',
     modality: 'vision', observedAt: world.time, confidence: .9, position: { ...e.position },
   }));
   for (const c of world.calls) if (distance(world.body.position, c.position) <= 20) percepts.push({
-    id: `${c.id}@${world.time.toFixed(3)}:audio`, entityId: c.id, kind: 'call', relation: 'neutral',
+    id: `${entityId(c.id)}@${world.time.toFixed(3)}:audio`, entityId: entityId(c.id), kind: 'call', relation: 'neutral',
     modality: 'audio', observedAt: world.time, confidence: .55,
     bearing: Math.round(angle(bearing(world.body.position, c.position) - world.body.yaw) / .3) * .3, cue: c.cue,
     observerYaw: world.body.yaw,
@@ -54,6 +59,7 @@ export function sense(world: World): Bundle {
     vision: { horizontalFov: HORIZONTAL_FOV, range: 35 }, percepts };
 }
 export function advance(world: World, trace: Trace, dt = .2): World {
+  if(world.dynamic&&(dt!==.2||world.dynamic.tick>=world.dynamic.scene.definition.durationTicks))throw new Error('Dynamic scene ended or clock is not 0.2s');
   const next = structuredClone(world); next.time = Math.round((world.time + dt) * 1000) / 1000;
   for (const command of trace.output) {
     if (command.status !== 'supported') continue;
@@ -69,6 +75,7 @@ export function advance(world: World, trace: Trace, dt = .2): World {
         next.emittedCalls = [...(next.emittedCalls ?? []), { at: world.time, playerId: world.playerId, cue: command.value }].slice(-32);
     }
   }
+  if(next.dynamic){next.dynamic.tick++;return updateSceneFrame(next);}
   const ball = next.entities.find(e => e.id === 'ball')!;
   if (next.body.hasBall) ball.position = { x: next.body.position.x, z: next.body.position.z + .4 };
   return next;

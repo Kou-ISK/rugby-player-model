@@ -1,5 +1,6 @@
 # Rugby Player Model — research foundation
 
+See [dynamic scene contracts, CLI and acceptance scope](docs/DYNAMIC_SCENES.md) for the new fixed-step workflow: one A-controlled player and scripted stimuli.
 選手の観測から判断する実行モデル **A** と、生成AIが単独で使える原則文書 **B** を別々に育てるローカル研究基盤です。人間再現や筋骨格技能の完成モデルではありません。
 
 ## Mac quick start

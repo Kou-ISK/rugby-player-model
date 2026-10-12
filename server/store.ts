@@ -1,3 +1,4 @@
+import { validateSceneDefinition, sceneContent, sceneWorld, sceneRef, type SceneRevision, type CoachingWindow, type ApplicationPoint } from '../src/scene';
 import { mkdirSync, readFileSync, writeFileSync, renameSync, rmSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { randomUUID, createHash } from 'node:crypto';
@@ -5,13 +6,16 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { defaultRulesA, type Candidate, type Principle, type RulesA, type RulesB, type Snapshot, type StudyNotes } from '../src/contracts';
 import { validate, validateSnapshot } from '../src/validation';
-import { candidateDraft, compare, regressionCompare, experimentRun } from '../src/research';
+import { candidateDraft, compare, regressionCompare, experimentRun, replay } from '../src/research';
 import { sense } from '../src/simulation';
 import { assertSnapshotHistory } from '../src/observation-history';
 import type { Experiment, BReview, BMaterial } from './experiment-types';
-import { canonical, digest, conditionDigest, checkEvaluationDraft, anonymizeCases, type FrozenEvaluation, type BArm, type CaseGroup } from './evaluation';
-const fingerprint = () => createHash('sha256').update(['src/contracts.ts','src/cognition.ts','src/simulation.ts','src/research.ts','src/observation-history.ts','src/validation.ts','server/evaluation.ts','schemas/contracts.schema.json'].map(path => readFileSync(new URL('../'+path, import.meta.url))).reduce((a,b)=>Buffer.concat([a,b]),Buffer.alloc(0))).digest('hex');
+import { canonical, digest, conditionDigest, stimulusDigest, checkEvaluationDraft, anonymizeCases, type FrozenEvaluation, type BArm, type CaseGroup } from './evaluation';
+const fingerprint = () => createHash('sha256').update(['src/contracts.ts','src/scene.ts','src/cognition.ts','src/simulation.ts','src/research.ts','src/observation-history.ts','src/validation.ts','server/evaluation.ts','schemas/contracts.schema.json'].map(path => readFileSync(new URL('../'+path, import.meta.url))).reduce((a,b)=>Buffer.concat([a,b]),Buffer.alloc(0))).digest('hex');
 const loadedFingerprint = fingerprint();
+// Opaque slot identities are stable across copies/renames. Never hash author text or future paths.
+// This also keeps A's existing ID tie-breaks reproducible across independent scene imports.
+const trackingId=(index:number)=>{const h=createHash('sha256').update(`rpm-observation-slot-v1:${index}`).digest('hex');return `track-${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20,32)}`;};
 const hash = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 function gitProvenance(){
   const options={cwd:fileURLToPath(new URL('../',import.meta.url)),encoding:'utf8' as const,timeout:2000,stdio:['ignore','pipe','ignore'] as ['ignore','pipe','ignore']};
@@ -20,16 +24,17 @@ function gitProvenance(){
 }
 export type Target = 'A' | 'B';
 type Event = { id: string; at: string; action: string; target?: Target; candidateId?: string; actor: string; version?: string;
-  candidateRevision?: number; reviewedContent?: { patchA: Candidate['patchA']; principle: Principle; notes?: StudyNotes }; confirmedVersion?: string; reason?: string; parentCandidateId?: string };
+  candidateRevision?: number; reviewedContent?: { patchA: Candidate['patchA']; principle: Principle; notes?: StudyNotes }; confirmedVersion?: string; reason?: string; parentCandidateId?: string; sceneId?:string; sceneRevision?:number; application?:ApplicationPoint };
 export class ConflictError extends Error { readonly statusCode = 409; }
 function checkRevision(c: Candidate, expected: number) {
   if (!Number.isInteger(expected) || expected < 1) throw new Error('expectedRevision is required');
   if (c.revision !== expected) throw new ConflictError('Candidate revision changed; reload and confirm the displayed content again');
 }
-export type State = { format: 1; revision: number; snapshots: Record<string, Snapshot>; candidates: Record<string, Candidate>;
+export type SceneComparison = {id:string;at:string;kind:'changed-scene-fixed-rules';sameConditions:false;rulesA:RulesA;before:{snapshotId:string;snapshot:Snapshot;run:ReturnType<typeof replay>};after:{snapshotId:string;snapshot:Snapshot;run:ReturnType<typeof replay>}};
+export type State = { sceneComparisons:Record<string,SceneComparison>; scenes:Record<string,SceneRevision[]>; format: 1; revision: number; snapshots: Record<string, Snapshot>; candidates: Record<string, Candidate>;
   versionsA: Record<string, RulesA>; versionsB: Record<string, RulesB>; activeA: string[]; activeB: string[]; events: Event[];
   experiments: Record<string, Experiment>; bReviews: BReview[]; evaluationSets:Record<string,FrozenEvaluation> };
-const initial = (): State => ({ format: 1, revision: 0, snapshots: {}, candidates: {}, versionsA: { A0: defaultRulesA() },
+const initial = (): State => ({ sceneComparisons:{}, scenes:{}, format: 1, revision: 0, snapshots: {}, candidates: {}, versionsA: { A0: defaultRulesA() },
   versionsB: { B0: { version: 'B0', principles: [] } }, activeA: ['A0'], activeB: ['B0'], events: [], experiments: {}, bReviews: [], evaluationSets:{} });
 export class Store {
   readonly dir: string;
@@ -40,7 +45,7 @@ export class Store {
     if (state.format !== 1 || !Number.isInteger(state.revision)) throw new Error('Unsupported/corrupt session format');
     // Legacy sessions retain their data. Historical events are not retroactively attested.
     for (const c of Object.values(state.candidates)) c.revision ??= 1;
-    state.experiments ??= {};state.bReviews ??= [];state.evaluationSets??={};
+    state.experiments ??= {};state.bReviews ??= [];state.evaluationSets??={};state.scenes??={};state.sceneComparisons??={};
     return state;
   }
   private transact<T>(fn: (s: State) => T): T {
@@ -54,23 +59,72 @@ export class Store {
     } finally { rmSync(lock, { recursive: true }); }
   }
   active(s = this.read()) { return { A: s.versionsA[s.activeA.at(-1)!], B: s.versionsB[s.activeB.at(-1)!] }; }
+  getScene(id:string, revision:number):SceneRevision {
+    const scene=this.read().scenes[id]?.find(x=>x.revision===revision);if(!scene)throw new Error('Unknown scene revision');return structuredClone(scene);
+  }
+  createScene(definition:unknown,generationSeed:number|null=null):SceneRevision {
+    validateSceneDefinition(definition);this.checkSeed(generationSeed);
+    return this.transact(s=>{
+      const scene:SceneRevision={sceneId:randomUUID(),revision:1,contentHash:digest(sceneContent(definition)),definition:structuredClone(definition),generationSeed,
+        trackingIds:definition.actors.map((_,i)=>trackingId(i)),createdAt:new Date().toISOString()};
+      s.scenes[scene.sceneId]=[scene];s.events.push({id:randomUUID(),at:scene.createdAt,action:'scene-create',actor:'local',sceneId:scene.sceneId,sceneRevision:1});return scene;
+    });
+  }
+  reviseScene(id:string,expectedRevision:number,definition:unknown):SceneRevision {
+    validateSceneDefinition(definition);
+    return this.transact(s=>{
+      const versions=s.scenes[id],previous=versions?.at(-1);if(!previous)throw new Error('Unknown scene');
+      if(previous.revision!==expectedRevision)throw new ConflictError('Scene revision conflict; reread the authoring scene');
+      const next:SceneRevision={...previous,revision:previous.revision+1,definition:structuredClone(definition),contentHash:digest(sceneContent(definition)),
+        trackingIds:definition.actors.map((_,i)=>previous.trackingIds[i]??trackingId(i)),createdAt:new Date().toISOString()};
+      versions.push(next);s.events.push({id:randomUUID(),at:next.createdAt,action:'scene-revise',actor:'local',sceneId:id,sceneRevision:next.revision});return next;
+    });
+  }
+  private checkSeed(seed:number|null){if(seed!==null&&(!Number.isInteger(seed)||seed<0||seed>0xffffffff))throw new Error('seed must be uint32 or null');}
+  private assertSceneBinding(snapshot:Snapshot,s=this.read()){
+    const r=snapshot.world.dynamic?.scene;if(!r)return;
+    const stored=s.scenes[r.sceneId]?.find(x=>x.revision===r.revision);
+    if(!stored||canonical(stored)!==canonical(r)||r.contentHash!==digest(sceneContent(r.definition)))throw new Error('Snapshot must use an imported immutable scene revision');
+  }
+  recordApplication(point:ApplicationPoint){
+    validate('ApplicationPoint',point);
+    return this.transact(s=>{
+      const existing=s.events.find(e=>e.application?.receiptId===point.receiptId);
+      if(existing){if(canonical(existing.application)!==canonical(point))throw new ConflictError('Application receipt conflict');return existing;}
+      const scene=s.scenes[point.sceneId]?.find(r=>r.revision===point.revision);
+      if(!scene||scene.contentHash!==point.contentHash||point.tick>scene.definition.durationTicks||!s.versionsA[point.fromA]||!s.versionsA[point.toA]||!s.versionsB[point.fromB]||!s.versionsB[point.toB])throw new Error('Invalid application point');
+      const event:Event={id:randomUUID(),at:new Date().toISOString(),action:'apply-at-tick',actor:'ui-self-reported',application:structuredClone(point)};
+      s.events.push(event);return event;
+    });
+  }
+  compareScenes(beforeId:string,afterId:string,rulesVersion:string,steps:number){
+    return this.transact(s=>{
+      const before=s.snapshots[beforeId],after=s.snapshots[afterId],rules=s.versionsA[rulesVersion];
+      if(!before?.world.dynamic||!after?.world.dynamic||!rules)throw new Error('Two dynamic snapshots and a known A version are required');
+      if(canonical(before.profile)!==canonical(after.profile))throw new Error('Scene comparison must keep the same profile');
+      this.assertSceneBinding(before,s);this.assertSceneBinding(after,s);
+      const result:SceneComparison={id:randomUUID(),at:new Date().toISOString(),kind:'changed-scene-fixed-rules',sameConditions:false,rulesA:structuredClone(rules),
+        before:{snapshotId:beforeId,snapshot:structuredClone(before),run:replay(before,rules,steps)},after:{snapshotId:afterId,snapshot:structuredClone(after),run:replay(after,rules,steps)}};
+      s.sceneComparisons[result.id]=result;return result;
+    });
+  }
   saveSnapshot(snapshot: unknown): string {
     validateSnapshot(snapshot);
-    assertSnapshotHistory(snapshot);
+    assertSnapshotHistory(snapshot);this.assertSceneBinding(snapshot);
     if (JSON.stringify(sense(snapshot.world)) !== JSON.stringify(snapshot.bundle)) throw new Error('Snapshot perception does not match sensor adapter');
     return this.transact(s => { const id = randomUUID(); s.snapshots[id] = structuredClone(snapshot); return id; });
   }
   freezeEvaluation(draft:unknown):FrozenEvaluation {
-    checkEvaluationDraft(draft);
+    checkEvaluationDraft(draft);for(const c of draft.cases)this.assertSceneBinding(c.snapshot);
     return this.transact(s=>{
       const known=new Set(Object.values(s.candidates).map(c=>conditionDigest(c.context)));
       if(draft.cases.some(c=>known.has(conditionDigest(c.snapshot))))throw new Error('Evaluation observations were already used for coaching in this session');
       const set:FrozenEvaluation={id:randomUUID(),at:new Date().toISOString(),frozenAtRevision:s.revision,
-        digest:digest(draft),profile:structuredClone(draft.cases[0].snapshot.profile),draft:structuredClone(draft),novelty:'owner-declared-not-independently-verified'};
+        digest:digest(draft),profile:structuredClone(draft.cases[0].snapshot.profile),draft:structuredClone(draft),novelty:'owner-declared-not-independently-verified',stimuli:draft.cases.map(c=>({stimulusDigest:stimulusDigest(c.snapshot),observationDigest:conditionDigest(c.snapshot)}))};
       s.evaluationSets[set.id]=set;return set;
     });
   }
-  propose(snapshotId: string, feedback: string, evaluationSetId?:string): Candidate {
+  propose(snapshotId: string, feedback: string, evaluationSetId?:string, window?:{fromTick:number;toTick:number;playerId:string}): Candidate {
     if (!feedback.trim() || feedback.length > 4000) throw new Error('Feedback must be 1–4000 characters');
     return this.transact(s => {
       const context = s.snapshots[snapshotId]; if (!context) throw new Error('Unknown snapshot');
@@ -79,7 +133,13 @@ export class Store {
         if(canonical(set.profile)!==canonical(context.profile))throw new Error('Candidate profile differs from the frozen evaluation profile');
         if(set.draft.cases.some(c=>conditionDigest(c.snapshot)===conditionDigest(context)))throw new Error('Frozen evaluation evidence cannot be used as the coaching scene');
       }
-      const c = candidateDraft(randomUUID(), feedback, context);if(evaluationSetId)c.evaluationSetId=evaluationSetId;s.candidates[c.id] = c;
+      const c = candidateDraft(randomUUID(), feedback, context);
+      if(context.world.dynamic){
+        const d=context.world.dynamic,firstTick=Math.round((context.observationHistory?.events[0].bundle.time??context.bundle.time)/.2);
+        c.coaching={...sceneRef(d.scene),playerId:'observer-0',fromTick:window?.fromTick??firstTick,toTick:window?.toTick??d.tick};
+        validate('CoachingWindow',c.coaching);
+        if((window&&window.playerId!=='observer-0')||c.coaching.toTick!==d.tick||c.coaching.fromTick<firstTick||c.coaching.fromTick>c.coaching.toTick)throw new Error('Coaching must pin the observed player and an acquired interval ending at the snapshot tick');
+      }else if(window)throw new Error('Tick windows require a dynamic scene');if(evaluationSetId)c.evaluationSetId=evaluationSetId;s.candidates[c.id] = c;
       s.events.push({ id: randomUUID(), at: new Date().toISOString(), action: 'propose', candidateId: c.id, actor: 'local' }); return c;
     });
   }
@@ -132,7 +192,7 @@ export class Store {
       const parent=s.candidates[id];if(!parent)throw new Error('Unknown candidate');checkRevision(parent,expectedRevision);
       const active=this.active(s), context=structuredClone(parent.context);
       context.rulesA=structuredClone(active.A);context.rulesBVersion=active.B.version;
-      const child=candidateDraft(randomUUID(),reason,context);child.parentCandidateId=id;
+      const child=candidateDraft(randomUUID(),reason,context);child.parentCandidateId=id;if(parent.coaching)child.coaching=structuredClone(parent.coaching);
       if(parent.evaluationSetId)child.evaluationSetId=parent.evaluationSetId;
       child.patchA=structuredClone(parent.patchA);child.principle=structuredClone(parent.principle);
       if(parent.notes)child.notes=structuredClone(parent.notes);
@@ -179,7 +239,9 @@ export class Store {
       if(set&&Object.values(s.candidates).some(candidate=>frozenEvidence.has(conditionDigest(candidate.context))))throw new Error('Frozen evaluation observations became coaching data');
       const results=experimentRun(c.context,afterA,steps,set?.draft.cases.map((test,i)=>({id:`frozen-${i+1}`,snapshot:test.snapshot})));
       const useIndex=set?Object.values(s.experiments).filter(e=>e.evaluation?.set.id===set.id).length+1:0;
-      const previouslyEvaluated=Object.values(s.experiments).some(e=>e.results.observationCases.some(test=>frozenEvidence.has(conditionDigest(test))));
+      const frozenStimuli=new Set(set?.draft.cases.map(test=>stimulusDigest(test.snapshot)).filter((x):x is string=>x!==null)??[]);
+      const previouslyEvaluated=Object.values(s.experiments).some(e=>e.results.observationCases.some(test=>frozenEvidence.has(conditionDigest(test)))||
+        [e.candidate.context,...(e.evaluation?.set.draft.cases.map(c=>c.snapshot)??[])].some(snapshot=>{const id=stimulusDigest(snapshot);return id!==null&&frozenStimuli.has(id);}));
       const B:Experiment['B']={before:this.bMaterial(beforeB),after:this.bMaterial(afterB,mode==='preview'),status:mode==='preview'?'proposed':'approved-version'};
       const e:Experiment={id:randomUUID(),at:new Date().toISOString(),candidateId:id,candidateRevision:c.revision,mode,
         modelRevision:results.recorded.after.frames[0].trace.modelRevision,engineFingerprint:loadedFingerprint,

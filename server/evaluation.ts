@@ -1,3 +1,4 @@
+import { sceneContent } from '../src/scene';
 import { createHash, randomUUID } from 'node:crypto';
 import type { Bundle, Memory, Profile, Snapshot } from '../src/contracts';
 import type { experimentRun } from '../src/research';
@@ -8,10 +9,22 @@ import { assertSnapshotHistory } from '../src/observation-history';
 export { canonical };
 export const digest=(value:unknown)=>createHash('sha256').update(canonical(value)).digest('hex');
 // Changing a label, seed, rules, or hidden world alone does not make known evidence new.
-export const conditionDigest=(s:Pick<Snapshot,'bundle'|'memoryBefore'|'profile'>)=>digest({bundle:s.bundle,memoryBefore:s.memoryBefore,profile:s.profile});
+export function conditionDigest(s:Pick<Snapshot,'bundle'|'memoryBefore'|'profile'>){
+  if(s.bundle.playerId!=='observer-0')return digest({bundle:s.bundle,memoryBefore:s.memoryBefore,profile:s.profile});
+  // Session-specific tracking UUIDs are not fresh evidence. Normalize by acquired evidence order.
+  const value=structuredClone({bundle:s.bundle,memoryBefore:s.memoryBefore,profile:s.profile});
+  const aliases=new Map<string,string>(),observations=new Map<string,string>();
+  for(const p of [...value.memoryBefore.episodes,...value.bundle.percepts]){
+    if(!aliases.has(p.entityId))aliases.set(p.entityId,`entity-${aliases.size}`);
+    if(!observations.has(p.id))observations.set(p.id,`observation-${observations.size}`);
+    p.entityId=aliases.get(p.entityId)!;p.id=observations.get(p.id)!;
+  }
+  return digest(value);
+}
+export const stimulusDigest=(s:Snapshot)=>s.world.dynamic?digest({scene:sceneContent(s.world.dynamic.scene.definition),fromTick:s.world.dynamic.tick,toTick:s.world.dynamic.scene.definition.durationTicks,profile:s.profile}):null;
 export type EvaluationDraft={criteria:string;noveltyAttestation:'not-used-for-coaching';cases:{label:string;snapshot:Snapshot}[]};
 export type FrozenEvaluation={id:string;at:string;frozenAtRevision:number;digest:string;profile:Profile;draft:EvaluationDraft;
-  novelty:'owner-declared-not-independently-verified'};
+  novelty:'owner-declared-not-independently-verified';stimuli?:{stimulusDigest:string|null;observationDigest:string}[]};
 export function checkEvaluationDraft(value:unknown):asserts value is EvaluationDraft {
   const d=value as EvaluationDraft;
   if(!d||typeof d!=='object'||Object.keys(d).some(k=>!['criteria','noveltyAttestation','cases'].includes(k))||typeof d.criteria!=='string'||!d.criteria.trim()||d.criteria.length>4000||d.noveltyAttestation!=='not-used-for-coaching'||!Array.isArray(d.cases)||d.cases.length<1||d.cases.length>12)throw new Error('Evaluation requires criteria, not-used-for-coaching attestation and 1–12 cases');
@@ -26,8 +39,8 @@ export function checkEvaluationDraft(value:unknown):asserts value is EvaluationD
 }
 export type CaseGroup='regression'|'frozen';
 export type BArm='none'|'before'|'after';
-export type AnonymousCase={id:string;bundle:Bundle;memoryBefore:Memory;profile:Profile};
-export type BCaseMap={id:string;group:'recorded'|CaseGroup;caseId:string;scene:string;seed:number;entityAliases:Record<string,string>};
+export type AnonymousCase={id:string;bundle:Bundle;memoryBefore:Memory;profile:Profile;observations?:Bundle[];initialMemory?:Memory};
+export type BCaseMap={id:string;group:'recorded'|CaseGroup;caseId:string;scene:string;seed:number|null;entityAliases:Record<string,string>};
 export function anonymizeCases(cases:ReturnType<typeof experimentRun>['observationCases']){
   const modelCases:AnonymousCase[]=[],evaluatorMap:BCaseMap[]=[];
   for(const c of cases){
@@ -37,7 +50,11 @@ export function anonymizeCases(cases:ReturnType<typeof experimentRun>['observati
     const bundle=structuredClone(c.bundle),memoryBefore=structuredClone(c.memoryBefore);
     bundle.playerId=entity(bundle.playerId);
     for(const p of [...bundle.percepts,...memoryBefore.episodes]){p.entityId=entity(p.entityId);p.id=observation(p.id);}
-    modelCases.push({id,bundle,memoryBefore,profile:structuredClone(c.profile)});
+    const timeline=c.observations?structuredClone(c.observations):undefined;
+    const initialMemory=c.initialMemory?structuredClone(c.initialMemory):undefined;
+    for(const b of timeline??[]){b.playerId=entity(b.playerId);for(const p of b.percepts){p.entityId=entity(p.entityId);p.id=observation(p.id);}}
+    for(const p of initialMemory?.episodes??[]){p.entityId=entity(p.entityId);p.id=observation(p.id);}
+    modelCases.push({id,bundle,memoryBefore,profile:structuredClone(c.profile),...(timeline?{observations:timeline,initialMemory}:{})});
     evaluatorMap.push({id,group:c.group,caseId:c.caseId,scene:c.scene,seed:c.seed,entityAliases:{...aliases}});
   }
   // Stable across arms, shuffled relative to the publicly known regression order.

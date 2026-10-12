@@ -1,3 +1,4 @@
+import { assertDynamicWorld } from './scene';
 import Ajv from 'ajv';
 import schema from '../schemas/contracts.schema.json';
 import type { Bundle, Snapshot, Memory } from './contracts';
@@ -28,5 +29,8 @@ export function validateEvidence(bundle: Bundle, memory: Memory): void {
 export function validateSnapshot(value: unknown): asserts value is Snapshot {
   validate<Snapshot>('Snapshot', value);
   validateEvidence(value.bundle, value.memoryBefore);
+  if((value.contractVersion===2)!==!!value.world.dynamic || (value.scene==='dynamic')!==!!value.world.dynamic)throw new Error('Snapshot scene/contract mismatch');
+  if(!value.world.dynamic&&value.seed===null)throw new Error('Static snapshots require a uint32 seed');
+  assertDynamicWorld(value.world);
   if (value.world.time !== value.bundle.time || value.world.seed !== value.seed || value.world.scene !== value.scene || value.world.playerId !== value.bundle.playerId) throw new Error('Snapshot context mismatch');
 }

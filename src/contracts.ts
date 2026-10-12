@@ -1,3 +1,4 @@
+import type { SceneRevision, SceneRef, CoachingWindow } from './scene';
 // Contract v1; metric units, radians, seconds. +z is the attacking direction.
 export type Vec = { x: number; z: number };
 export type Action = 'scan' | 'hold' | 'carry' | 'pass' | 'support';
@@ -49,22 +50,23 @@ export type Trace = {
   modelRevision: 'cognition-0.3';
   appliedRules: { id: string; action: Action; weight: number; call?: string }[];
 };
-export type SceneId = 'support' | 'occluded' | 'audio' | 'heldout';
-export type WorldEntity = { id: string; kind: 'player' | 'ball'; team: 'blue' | 'red' | 'none'; position: Vec; radius: number };
-export type World = { scene: SceneId; seed: number; time: number; playerId: string; body: Body; entities: WorldEntity[]; calls: { id: string; position: Vec; cue: string }[];
+export type SceneId = 'support' | 'occluded' | 'audio' | 'heldout' | 'dynamic';
+export type WorldEntity = { id: string; kind: 'player' | 'ball'; team: 'blue' | 'red' | 'none'; position: Vec; radius: number; yaw?: number };
+export type World = { scene: SceneId; seed: number | null; time: number; playerId: string; body: Body; entities: WorldEntity[]; calls: { id: string; position: Vec; cue: string }[];
+  dynamic?: {scene:SceneRevision;tick:number};
   emittedCalls?: { at: number; playerId: string; cue: string }[] };
 export type Snapshot = {
-  contractVersion: 1; scene: SceneId; seed: number; world: World;
+  contractVersion: 1 | 2; scene: SceneId; seed: number | null; world: World;
   bundle: Bundle; memoryBefore: Memory; profile: Profile; rulesA: RulesA; rulesBVersion: string;
   observationHistory?: ObservationHistory;
 };
 export type ObservationEvent = { sequence:number; trigger:'initial'|'head-turn'|'body-turn'|'step'|'configuration'|'restore';
   bundle:Bundle; profile:Profile; rulesA:RulesA };
-export type ObservationHistory = { version:1; mode:'static-study'; initialMemory:Memory; events:ObservationEvent[] };
+export type ObservationHistory = { version:1|2; mode:'static-study'|'fixed-step-study'; sceneRef?:SceneRef; initialMemory:Memory; events:ObservationEvent[] };
 export type Candidate = {
   id: string; revision: number; createdAt: string; feedback: string; context: Snapshot;
   principle: Principle; patchA: Partial<Omit<RulesA, 'version'>>;
-  notes?: StudyNotes; parentCandidateId?: string; evaluationSetId?: string;
+  coaching?: CoachingWindow; notes?: StudyNotes; parentCandidateId?: string; evaluationSetId?: string;
   decisions: { A: 'pending' | 'approved' | 'rejected' | 'returned'; B: 'pending' | 'approved' | 'rejected' | 'returned' };
 };
 export const emptyMemory = (): Memory => ({ episodes: [], lastTime: 0 });

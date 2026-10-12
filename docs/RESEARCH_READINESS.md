@@ -1,5 +1,6 @@
 # 研究開始条件の点検と追加実装
 
+See [dynamic scene contracts, CLI and acceptance scope](DYNAMIC_SCENES.md) for the new fixed-step workflow: one A-controlled player and scripted stimuli.
 29単体／5ブラウザの旧合格はソフトウェア配線の証拠であり、研究プロセス全体の完了判定ではない。以下はaf31359での監査と今回の対応。条件付き原則・差戻し来歴・複数step実験の固定保存・B評価packetと回答紐付けを追加し、合成UI/CLI loopと実server再起動2回を通した。
 
 **本人とCodexで最初の限定実験を始める配線は揃った。本人受入と科学的妥当性は未確認。** 完成した人間認知・身体・試合モデルという意味で「全部完成」ではない。自然言語の意味解釈、未知場面の選定、Bの外部実行／採点、採用判断は二人三脚の手順として残す。
