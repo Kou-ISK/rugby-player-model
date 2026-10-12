@@ -5,20 +5,20 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
 import { Store } from '../server/store';
-import { capture, experimentRun, observationContext, unseen } from '../src/research';
+import { capture, experimentRun, observationContext, regressionCompare } from '../src/research';
 import { defaultRulesA, defaultProfile, emptyMemory, type ContextRule, type RulesA } from '../src/contracts';
 import { think } from '../src/cognition';
 import { makeWorld, sense, advance } from '../src/simulation';
 const edit=JSON.parse(readFileSync('examples/conditional-coaching-edit.json','utf8'));
 const rules=():RulesA=>({...defaultRulesA(),...edit.patchA,version:'trial'});
 function scope(fn:(store:Store,dir:string)=>void){const dir=mkdtempSync(join(tmpdir(),'rpm-readiness-'));try{fn(new Store(dir),dir);}finally{rmSync(dir,{recursive:true,force:true});}}
-function transferChecks(results:ReturnType<typeof unseen>){
+function transferChecks(results:ReturnType<typeof regressionCompare>){
  const get=(id:string)=>results.find(r=>r.caseId===id)!;
  return [get('carrier-open').before.intention.action==='carry'&&get('carrier-open').after.intention.action==='scan',
   get('carrier-pressure').after.intention.action==='hold',get('carrier-receiver').after.intention.action==='pass',get('noncarrier-open').after.intention.action==='support'];
 }
 test('conditional coaching transfers to a different scene and preserves pressure/receiver/noncarrier controls; constant stubs fail',()=>{
- const valid=unseen(defaultRulesA(),rules());assert.ok(transferChecks(valid).every(Boolean));
+ const valid=regressionCompare(defaultRulesA(),rules(),defaultProfile());assert.ok(transferChecks(valid).every(Boolean));
  const trained=experimentRun(capture('support',42,defaultRulesA(),'B0'),rules(),5);
  assert.equal(trained.recorded.before.frames[0].trace.intention.action,'carry');assert.equal(trained.recorded.after.frames[0].trace.intention.action,'scan');
  assert.equal(trained.diagnostic.homogeneousWarning,false);assert.ok(trained.diagnostic.distinctFirstActions.length>=4);
@@ -27,7 +27,7 @@ test('conditional coaching transfers to a different scene and preserves pressure
   const stub=structuredClone(valid);for(const r of stub)r.after.intention.action=action;
   assert.ok(!transferChecks(stub).every(Boolean),`constant ${action} incorrectly passed`);
  }
- assert.ok(!transferChecks(unseen(defaultRulesA(),{...defaultRulesA(),scanBias:2})).every(Boolean));
+ assert.ok(!transferChecks(regressionCompare(defaultRulesA(),{...defaultRulesA(),scanBias:2},defaultProfile())).every(Boolean));
  for(const seed of [17,811,9876]){
   const s=capture('support',seed,defaultRulesA(),'B0');assert.equal(experimentRun(s,rules(),3).recorded.after.frames[0].trace.intention.action,'scan');
  }
@@ -68,8 +68,8 @@ test('return, revise, independent adoption, durable runs, B replacement and undo
  const run=store.runExperiment(child.id,1,5,'active');assert.equal(run.B.after.version,'B1');assert.equal(run.B.after.structuredAmendments[0].id,edit.principle.id);
  assert.ok(run.engineFingerprint.length===64);const pinned=JSON.stringify(run);
  assert.equal(run.provenance.node,process.version);assert.equal(run.provenance.resultSha256,createHash('sha256').update(JSON.stringify(run.results)).digest('hex'));
- const packet=store.bPacket(run.id);assert.ok(!JSON.stringify(packet).includes('"world"'));assert.equal(packet.cases.length,9);
- store.saveBReview(run.id,'Synthetic mock response; not an AI evaluation','Needs another observation; alternatives retained','Transport test only, no human scoring');
+ const packet=store.bPacket(run.id,'after','regression');assert.ok(!JSON.stringify(packet).includes('"world"'));assert.equal(packet.cases.length,8);
+ store.saveBReview(run.id,'Synthetic mock response; not an AI evaluation','Needs another observation; alternatives retained','Transport test only, no human scoring','after','regression');
  const changed=store.revise(child.id,'Revise the same B principle',1);store.edit(changed.id,{}, {...edit.principle,criterion:'Revised wording'},1,edit.notes);
  store.review(changed.id,'B','approve','owner',2);assert.equal(store.active().B.principles.length,1);assert.equal(store.active().B.principles[0].criterion,'Revised wording');
  store.undo('B','owner','B2');assert.equal(store.active().B.principles[0].criterion,edit.principle.criterion);
@@ -80,6 +80,6 @@ test('return, revise, independent adoption, durable runs, B replacement and undo
  assert.equal(restarted.comparison(child.id).recorded.after.intention.action,'carry');
 }));
 test('legacy sessions retain their candidates and initialize new research record collections without silently adopting rules',()=>scope((store,dir)=>{
- const original=store.read();delete (original as any).experiments;delete (original as any).bReviews;
- writeFileSync(join(dir,'state.json'),JSON.stringify(original));const restarted=new Store(dir);assert.deepEqual(restarted.read().experiments,{});assert.deepEqual(restarted.read().bReviews,[]);assert.equal(restarted.active().A.contextRules,undefined);
+ const original=store.read();delete (original as any).experiments;delete (original as any).bReviews;delete (original as any).evaluationSets;
+ writeFileSync(join(dir,'state.json'),JSON.stringify(original));const restarted=new Store(dir);assert.deepEqual(restarted.read().experiments,{});assert.deepEqual(restarted.read().bReviews,[]);assert.deepEqual(restarted.read().evaluationSets,{});assert.equal(restarted.active().A.contextRules,undefined);
 }));

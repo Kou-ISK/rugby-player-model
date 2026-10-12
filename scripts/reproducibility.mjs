@@ -11,17 +11,17 @@ const inventory = [
   '.gitignore', '.nvmrc', '.github/workflows/ci.yml', 'AGENTS.md', 'README.md', 'index.html',
   'package.json', 'package-lock.json', 'tsconfig.json', 'playwright.config.ts', 'RUGBY_JUDGMENT.md',
   'research/b-evaluation-baseline.json',
-  'src/contracts.ts', 'src/cognition.ts', 'src/simulation.ts', 'src/research.ts', 'src/validation.ts',
+  'src/observation-history.ts', 'src/contracts.ts', 'src/cognition.ts', 'src/simulation.ts', 'src/research.ts', 'src/validation.ts',
   'src/ui/main.ts', 'src/ui/models.ts', 'src/ui/view.ts', 'src/ui/style.css',
   'src/ui/p2p/models.ts', 'src/ui/p2p/contact-pose.ts', 'src/ui/p2p/REUSE-NOTICE.md', 'src/ui/p2p/kit-manifest.json',
-  'server/store.ts', 'server/dev.ts', 'server/cli.ts', 'server/experiment-types.ts',
+  'server/evaluation.ts', 'server/store.ts', 'server/dev.ts', 'server/cli.ts', 'server/experiment-types.ts',
   'scripts/make-samples.ts', 'scripts/run-model.ts', 'scripts/spike.ts', 'scripts/reproducibility.mjs',
   'schemas/contracts.schema.json',
   'examples/support-42.snapshot.json', 'examples/occluded-77.snapshot.json', 'examples/audio-8.snapshot.json', 'examples/candidate-edit.json', 'examples/conditional-coaching-edit.json',
   'docs/ADR-001-runtime.md', 'docs/ARCHITECTURE.md', 'docs/B_REVIEW.md', 'docs/B_EVALUATION_SCENES.md',
-  'docs/RESEARCH_READINESS.md', 'docs/RESEARCH_LOOP.md', 'docs/MAC_RESEARCH_CYCLE.md', 'docs/LOCAL_BRIDGE.md', 'docs/MAC_ACCEPTANCE.md', 'docs/MAC_HEADLESS.md', 'docs/LIMITATIONS.md', 'docs/PROVENANCE.md', 'docs/VERIFICATION.md',
+  'docs/EVALUATION_PROTOCOL.md', 'docs/RESEARCH_READINESS.md', 'docs/RESEARCH_LOOP.md', 'docs/MAC_RESEARCH_CYCLE.md', 'docs/LOCAL_BRIDGE.md', 'docs/MAC_ACCEPTANCE.md', 'docs/MAC_HEADLESS.md', 'docs/LIMITATIONS.md', 'docs/PROVENANCE.md', 'docs/VERIFICATION.md',
   'docs/MODEL_CARD.md', 'docs/DATA_CARD.md', 'docs/PUBLICATION_SCOPE.md', 'docs/REPRODUCTION.md', 'docs/versions/RUGBY_JUDGMENT-B0.md',
-  'tests/research-readiness.test.ts', 'tests/browser/research-cycle.spec.ts', 'tests/cognition.test.ts', 'tests/p2p-adapter.test.ts', 'tests/browser/p2p-view.spec.ts', 'tests/research-loop.test.ts', 'tests/review-regressions.test.ts', 'tests/browser/workbench.spec.ts',
+  'tests/evaluation-boundaries.test.ts', 'tests/research-readiness.test.ts', 'tests/browser/research-cycle.spec.ts', 'tests/cognition.test.ts', 'tests/p2p-adapter.test.ts', 'tests/browser/p2p-view.spec.ts', 'tests/research-loop.test.ts', 'tests/review-regressions.test.ts', 'tests/browser/workbench.spec.ts',
 ].sort();
 const readJson = path => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 const digest = path => createHash('sha256').update(readFileSync(resolve(root, path))).digest('hex');
@@ -62,7 +62,7 @@ function buildManifest() {
     runtime: { nodeMajor: 24, referenceNode: '24.19.0', macVerifiedNode: '24.21.0', packageVersion: pkg.version, npmLockVersion: lock.lockfileVersion,
       dependencies: pkg.dependencies, devDependencies: pkg.devDependencies,
       network: 'Required for initial dependency/browser installation; no external AI service required for local execution.' },
-    contracts: { observationVersion: 1, schema: 'schemas/contracts.schema.json', bridgeApiVersion: 3,
+    contracts: { observationVersion: 1, schema: 'schemas/contracts.schema.json', bridgeApiVersion: 4,
       units: { distance: 'meter', angle: 'radian', time: 'second', attackDirection: '+z' } },
     artifacts: {
       A: { modelRevision: 'cognition-0.3', rulesBaseline: 'A0', type: 'hand-written-deterministic-heuristic', trainedWeights: false,
@@ -80,10 +80,10 @@ function buildManifest() {
         { caseId: 'carrier-missing', seed: 65536 }, { caseId: 'carrier-memory', seed: 65537 },
         { caseId: 'noncarrier-audio-left', seed: 104728 }, { caseId: 'noncarrier-audio-right', seed: 104729 },
       ],
-      coverage: 'published synthetic regression probes; no statistical population/generalization claim',
+      coverage: 'published fixed regression probes using the captured player profile; separately frozen owner-declared conditions track exposure/reuse, not proven novelty or generalization',
     },
     determinism: { generator: 'uint32 LCG: state = (1664525 * state + 1013904223) mod 2^32', simulationStepSeconds: 0.2,
-      snapshotIncludes: ['world', 'observation bundle', 'prior memory', 'profile', 'RulesA', 'B version'],
+      snapshotIncludes: ['world', 'observation bundle', 'ordered static-study observation events when captured', 'prior memory', 'profile', 'RulesA', 'B version'],
       notSeedControlled: ['feedback UUIDs', 'wall-clock timestamps', 'unsaved manual interaction history'],
       crossPlatformBitwiseEquality: 'not-guaranteed' },
     reproduction: { guide: 'docs/REPRODUCTION.md', commands: [

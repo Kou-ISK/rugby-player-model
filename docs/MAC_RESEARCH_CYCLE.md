@@ -1,4 +1,4 @@
-# Mac上の追加研究loop検証
+# Mac上の追加研究loop検証（90f7154の履歴）
 
 対象はローカル `codex/research-loop-acceptance`。基点は `af313597ece951f888bb1e13824ad79a66d5ea45`、そのP2P adapter基点はPR #1 head `9bb52f4563254ae35fb2ed54ce722492e165e44c`。このファイルを含むcommitと再現manifestで最終ソースを特定します。公開push・remote CI・新しい独立レビューは未実施です。
 
@@ -24,6 +24,12 @@ Node24.21.0、既存のChrome154 headless、1worker、software描画、低いプ
 
 Macのheadlessソフトウェア実証です。本人が画面を見て指導したこと、研究原則を実際に承認したこと、Bの外部AI品質、人間や試合への改善は示しません。固定回帰ケースは公開後も未知であり続けるわけではありません。最初の本人実験で未使用条件・反例と成功／失敗基準を本人が選びます。
 
-最終確認は34単体／6ブラウザ、型検査、build、65ファイルのmanifest照合が合格。固定B入力は5886a70のままです。buildのbundleサイズ警告は残ります。
+90f7154時点の確認は34単体／6ブラウザ、型検査、build、65ファイルのmanifest照合が合格。固定B入力は5886a70のままです。buildのbundleサイズ警告は残ります。
 
 旧29単体／5ブラウザの記録は [MAC_HEADLESS.md](MAC_HEADLESS.md) に保存。この拡張の集計と機械可読合成証跡は作業フォルダの `evidence/readiness-final-check.log`、`evidence/readiness-final-browser.log`、`evidence/readiness-browser.json`、`evidence/research-cycle-summary.json` を参照します。
+
+## 独立レビュー修正後
+
+現行はprofile固定の回帰試験、指導前の評価条件凍結、匿名B入力、首振り観測履歴を追加。[評価手順と制約](EVALUATION_PROTOCOL.md)参照。追加単体7件と拡張したresearch-cycleブラウザ試験を実装し、証跡は `evidence/evaluation-final-check.log`、`evidence/evaluation-final-browser.log`、`evidence/evaluation-cycle-summary.json` に分離して保存する。旧B packetに状況ラベルがあった事実や、旧版が全首振り軌跡を保存していなかったことは上書きしない。
+
+修正後の最終Mac確認は41単体／6ブラウザ、型検査、build、69ファイルmanifestが合格。事前凍結2条件、首振り4イベント（同時刻3件＋0.2秒step）、匿名B入力、再利用表示、実server再起動2回を合成sessionで確認した。本人受入と実AI評価の完了は主張しない。

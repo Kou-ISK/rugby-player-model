@@ -21,6 +21,7 @@ npm run --silent model -- --input examples/support-42.snapshot.json --steps 10
 ```
 
 - [B: RUGBY_JUDGMENT.md](RUGBY_JUDGMENT.md) — runnerなしで読めるB0.1-draft。[単独評価packet](docs/B_EVALUATION_SCENES.md)は原則なし/旧B/新Bを比較。私的sessionのB出力は凍結B0＋本人承認済み原則です。
+- [事前凍結・匿名B入力・首振り履歴の手順](docs/EVALUATION_PROTOCOL.md) — 固定回帰を未見評価と区別。自然言語の解釈は本人とCodexの共同作業。
 - [研究開始条件の点検](docs/RESEARCH_READINESS.md)、[共同研究loop全手順](docs/RESEARCH_LOOP.md)、[今回のMac合成検証](docs/MAC_RESEARCH_CYCLE.md)
 - [設計と情報境界](docs/ARCHITECTURE.md)、[言語選択ADR](docs/ADR-001-runtime.md)
 - [Codex local bridge](docs/LOCAL_BRIDGE.md)、[Mac実証手順](docs/MAC_ACCEPTANCE.md)、[Mac headless記録](docs/MAC_HEADLESS.md)

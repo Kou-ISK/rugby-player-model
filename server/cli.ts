@@ -3,6 +3,7 @@ import { Store, type Target } from './store';
 import { capture, observationContext } from '../src/research';
 import type { SceneId } from '../src/contracts';
 import { sense } from '../src/simulation';
+import { replayObservationHistory } from '../src/observation-history';
 const [command = 'help', id, ...rest] = process.argv.slice(2);
 const args = process.argv.slice(2);
 const flag = (name: string, fallback = '') => args.includes(name) ? args[args.indexOf(name) + 1] : fallback;
@@ -18,7 +19,11 @@ try {
       snapshot.world.body.headYaw = Number(flag('--head', '0')); snapshot.bundle = sense(snapshot.world);
       result = { snapshotId: store.saveSnapshot(snapshot) }; break;
     }
-    case 'propose': result = store.propose(id, flag('--feedback')); break;
+    case 'history-replay': {const snapshot=store.read().snapshots[id];if(!snapshot?.observationHistory)throw new Error('No observation event history in this snapshot; legacy snapshots have no reconstructed trajectory');result=replayObservationHistory(snapshot.observationHistory);break;}
+    case 'snapshot-export': result=store.read().snapshots[id];if(!result)throw new Error('Unknown snapshot');break;
+    case 'freeze-evaluation': result=store.freezeEvaluation(JSON.parse(readFileSync(flag('--file'),'utf8')));break;
+    case 'evaluation-sets': result=Object.values(store.read().evaluationSets).map(set=>({id:set.id,at:set.at,digest:set.digest,caseCount:set.draft.cases.length}));break;
+    case 'propose': result = store.propose(id, flag('--feedback'),flag('--evaluation-set')||undefined); break;
     case 'context': {
       const c = store.read().candidates[id]; if (!c) throw new Error('Unknown candidate');
       result = observationContext(c); break;
@@ -32,8 +37,9 @@ try {
     case 'run': result=store.runExperiment(id,Number(flag('--revision')),Number(flag('--steps','5')),flag('--mode','preview') as 'preview'|'active');break;
     case 'experiments': result=Object.values(store.read().experiments).map(e=>({id:e.id,at:e.at,candidateId:e.candidateId,mode:e.mode,candidateRevision:e.candidateRevision}));break;
     case 'experiment': result=store.read().experiments[id];if(!result)throw new Error('Unknown experiment');break;
-    case 'b-packet': result=store.bPacket(id);break;
-    case 'b-review': {const input=JSON.parse(readFileSync(flag('--file'),'utf8'));result=store.saveBReview(id,input.model,input.output,input.assessment);break;}
+    case 'b-packet': result=store.bPacket(id,flag('--arm') as 'none'|'before'|'after',flag('--cases') as 'regression'|'frozen');break;
+    case 'b-evaluator-map': result=store.bEvaluatorMap(id);break;
+    case 'b-review': {const input=JSON.parse(readFileSync(flag('--file'),'utf8'));result=store.saveBReview(id,input.model,input.output,input.assessment,input.arm,input.group);break;}
     case 'export-b-json': result=store.exportBData();break;
     case 'export-b': {
       const path = flag('--out'); if (!path) throw new Error('--out required, e.g. .rpm/RUGBY_JUDGMENT.local.md');
@@ -45,7 +51,9 @@ try {
       'return CANDIDATE --target A|B --by owner --revision N --reason "why"',
       'revise CANDIDATE --revision N --reason "change requested"',
       'run CANDIDATE --revision N --steps 5 --mode preview|active', 'experiments', 'experiment EXPERIMENT_ID',
-      'b-packet EXPERIMENT_ID', 'b-review EXPERIMENT_ID --file .rpm/b-review.json',
+      'snapshot-export SNAPSHOT_ID', 'history-replay SNAPSHOT_ID', 'freeze-evaluation --file .rpm/evaluation-plan.json', 'evaluation-sets',
+      'propose SNAPSHOT_ID --feedback text --evaluation-set FROZEN_SET_ID',
+      'b-packet EXPERIMENT_ID --arm none|before|after --cases regression|frozen', 'b-evaluator-map EXPERIMENT_ID', 'b-review EXPERIMENT_ID --file .rpm/b-review.json',
       'export-b-json', 'export-b --out .rpm/RUGBY_JUDGMENT.local.md'] };
   }
   console.log(JSON.stringify(result, null, 2));

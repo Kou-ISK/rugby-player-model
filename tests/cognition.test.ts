@@ -4,7 +4,7 @@ import { defaultProfile, defaultRulesA, emptyMemory } from '../src/contracts';
 import { makeWorld, sense, advance } from '../src/simulation';
 import { think, capabilities } from '../src/cognition';
 import { validate, validateSnapshot } from '../src/validation';
-import { capture, compare, unseen } from '../src/research';
+import { capture, compare, regressionCompare } from '../src/research';
 const run=(bundle= sense(makeWorld('support',42)), memory=emptyMemory(), profile=defaultProfile(), rules=defaultRulesA())=>think(bundle,memory,profile,rules);
 
 test('contracts round-trip multiple synthetic scenes and seeds',()=>{
@@ -82,7 +82,7 @@ test('same condition comparison is deterministic and heldout seeds are distinct'
   assert.equal(report.before.intention.action,'carry');assert.equal(report.after.intention.action,'scan');
   assert.deepEqual(report.before.sensation,report.after.sensation);assert.equal(JSON.stringify(snapshot),before);
   assert.deepEqual(compare(snapshot,changed),report);
-  const suite=unseen(defaultRulesA(),changed);assert.equal(new Set(suite.map(s=>s.seed)).size,8);
+  const suite=regressionCompare(defaultRulesA(),changed,defaultProfile());assert.equal(new Set(suite.map(s=>s.seed)).size,8);
   for(const item of suite){assert.equal(item.scene,'heldout');assert.ok(item.before.intention.allowed&&item.after.intention.allowed);}
 });
 test('future memory and reverse time are rejected rather than silently refreshed',()=>{

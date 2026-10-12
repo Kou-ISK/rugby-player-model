@@ -3,6 +3,11 @@ import schema from '../schemas/contracts.schema.json';
 import type { Bundle, Snapshot, Memory } from './contracts';
 const ajv = new Ajv({ allErrors: true, strict: false });
 ajv.addSchema(schema);
+export function canonicalJson(value:unknown):string {
+  if(Array.isArray(value))return '['+value.map(canonicalJson).join(',')+']';
+  if(value&&typeof value==='object')return '{'+Object.entries(value).filter(([,v])=>v!==undefined).sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>JSON.stringify(k)+':'+canonicalJson(v)).join(',')+'}';
+  return JSON.stringify(value);
+}
 export function validate<T>(kind: keyof typeof schema.$defs, value: unknown): asserts value is T {
   const check = ajv.getSchema(`${schema.$id}#/$defs/${kind}`)!;
   if (!check(value)) throw new Error(`${kind}: ${ajv.errorsText(check.errors)}`);

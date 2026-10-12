@@ -1,6 +1,6 @@
 # Model card — provisional research foundation
 
-This card covers executable **A** and distinguishes it from the independently reviewed principle document **B**. Status: **uncalibrated, provisional, not a validated human or rugby-performance model**. Model revision is `cognition-0.3`; package version is `0.2.0`. The exact implementation is identified by the Git commit containing the [reproduction manifest](../research/reproducibility-manifest.json) and its source-file hashes. Rule version A0 alone does not identify an executable.
+This card covers executable **A** and distinguishes it from the independently reviewed principle document **B**. Status: **uncalibrated, provisional, not a validated human or rugby-performance model**. Model revision is `cognition-0.3`; package version is `0.3.0`. The exact implementation is identified by the Git commit containing the [reproduction manifest](../research/reproducibility-manifest.json) and its source-file hashes. Rule version A0 alone does not identify an executable.
 
 ## Purpose and method
 
@@ -28,7 +28,7 @@ Remembered uncertainty can penalize approach and suggest re-observation; audio m
 
 ## Capabilities and failure modes
 
-Supported: synthetic sensing, bounded memory, traceable heuristic decisions, simple locomotion/head yaw and semantic call events, one-decision comparisons and 1–20-step recorded experiments, conditional coaching candidates, reasoned return/revision, independent A/B review, undo and local persistence. See the [readiness audit](RESEARCH_READINESS.md) for scope and the [Mac cycle record](MAC_RESEARCH_CYCLE.md) for software evidence.
+Supported: synthetic sensing, bounded memory, traceable heuristic decisions, simple locomotion/head yaw and semantic call events, ordered static-study head/body observation replay, profile-preserving fixed regressions, prospectively frozen evaluation conditions, and 1–20-step recorded experiments, conditional coaching candidates, reasoned return/revision, independent A/B review, undo and local persistence. See the [readiness audit](RESEARCH_READINESS.md) for scope and the [Mac cycle record](MAC_RESEARCH_CYCLE.md) for software evidence.
 
 Unsupported: physiological/human validity; learned tactical skill; joint/muscle/posture control; realistic passing/release/catching/contact/kicking; voice production; independent eye gaze; complete rugby rules; other autonomous players; match outcomes. All other players remain static in a run. The renderer now reuses the verified P2P procedural kit through a presentation-only adapter on a local review branch. No gait/contact hint is used as evidence of a skill. Public release of the imported UNLICENSED source remains pending.
 

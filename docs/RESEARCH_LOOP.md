@@ -2,6 +2,8 @@
 
 このloopの目的は、本人の指導を条件付き仮説として明示し、適用場面と反例の両方で試して残すことです。動作が変わるだけでは改善とは判定しません。本人が画面を見て行う最初の実験は未実施です。
 
+事前凍結・匿名B比較・首振り履歴の現行手順は [EVALUATION_PROTOCOL.md](EVALUATION_PROTOCOL.md)。未使用条件で試す場合、指導を入力する前にfreezeします。固定8ケースだけでは未知への転用評価を完了した扱いにしません。
+
 ## 1. 場面と指導を保存
 
 一人称で首を振る／再生／停止し、短い指導を入力して候補を保存します。scene・seed・time・player、身体／首、観測と履歴、profile、A/B基準版を記録します。`context CANDIDATE_ID` または「Codex用の観測contextを保存」でCodexへ渡します。世界真値のenvelopeは含まれません。
@@ -31,7 +33,7 @@ Aの限定的な宣言ルールは次の語彙を使います。scene・seed・�
 
 ## 3. 未採用のまま実験を記録
 
-「未採用候補で再実行・記録」で1〜20stepを実行します。1stepは0.2秒。記録場面と8つの固定回帰ケースを、同じ初期世界・記憶・profileからbefore/afterで再生します。行動が違えば、その後の観測が異なることはあります。
+「未採用候補で再実行・記録」で1〜20stepを実行します。1stepは0.2秒。記録場面と8つの固定回帰ケースを、指導候補のprofileを全てへ固定してbefore/afterで再生します。事前凍結setを候補作成時に選んだ場合は、別のfrozenTrialsも保存します。行動が違えば、その後の観測が異なることはあります。
 
 ```sh
 npm run --silent bridge -- run CANDIDATE_ID --revision CONFIRMED_REVISION --steps 5 --mode preview > .rpm/experiment-preview.json
@@ -60,20 +62,21 @@ npm run bridge -- revise CANDIDATE_ID --revision CONFIRMED_REVISION --reason "�
 
 ## 5. Bを独立に試す
 
-保存した実験を選び「B評価packet」。または以下を実行します。
+保存した実験を選び「匿名B入力」。または以下を実行します。
 
 ```sh
-npm run --silent bridge -- b-packet EXPERIMENT_ID > .rpm/B-packet.json
+npm run --silent bridge -- b-packet EXPERIMENT_ID --arm after --cases frozen > .rpm/B-after.json
+npm run --silent bridge -- b-evaluator-map EXPERIMENT_ID > .rpm/B-evaluator-only.json
 npm run --silent bridge -- export-b-json > .rpm/B-current.json
 npm run bridge -- b-review EXPERIMENT_ID --file .rpm/B-response.json
 ```
 
-packetには記録場面＋8対照の観測・記憶・profile、before/after Bの全文Markdownと構造化追加原則が入ります。Aの結果・隠れた世界は渡しません。構造化JSONは承認された追加原則であり、凍結baseline全文を機械的に構造化したと主張しません。未採用Bは文書内でもNOT approvedと表示します。
+model用入力は指定した一群のB文書／構造化追加原則と匿名ケースだけです。原則なし群は --arm none、before群は --arm before。固定回帰には --cases regression を指定し、未見と呼びません。評価用ラベル・scene・seed・採点基準・A結果・worldは別の評価側対応表に残し、モデルへ渡しません。構造化JSONは追加原則であり、baseline全文の機械構造化を主張しません。
 
-本人が原則なし／before B／after Bそれぞれの新しい会話を作り、その群に割り当てたB文書（原則なし群には無し）と共通の観測ケースだけを渡します。複数群を含むpacket全体やAの結果を各会話へ渡すと比較条件を混ぜるため、packetは条件分割の保管用にします。[B評価手順](B_REVIEW.md)に沿い、判断・使った原則・不確実性・反例・自己レビューを求めます。UIまたは以下のJSONで回答を保存します。
+本人が原則なし／before B／after Bそれぞれの新しい会話を作り、その群に割り当てたB文書（原則なし群には無し）と共通の観測ケースだけを渡します。それぞれの新しい会話へ対応する一群の匿名入力だけを渡し、他群の回答・評価側対応表・A結果は持ち込みません。[B評価手順](B_REVIEW.md)に沿い、判断・使った原則・不確実性・反例・自己レビューを求めます。UIまたは以下のJSONで回答を保存します。
 
 ```json
-{"model":"実際のモデル名・設定・実行日","output":"回答全文（条件名を含む）","assessment":"本人の採点、未確認事項、反例"}
+{"arm":"after","group":"frozen","model":"実際のモデル名・設定・実行日","output":"回答全文（条件名を含む）","assessment":"本人の採点、未確認事項、反例"}
 ```
 
 保存は実験への紐付けであり、正しさを承認する機能ではありません。記録は常に `unverified-external-response` / `humanValidated:false`。原則準拠とラグビー上の妥当性を分けて本人が判断します。API・課金・外部自動送信は追加していません。今回の合成mockはBの実際の生成AI評価ではありません。
@@ -84,15 +87,15 @@ packetには記録場面＋8対照の観測・記憶・profile、before/after B�
 
 状態は私的な `.rpm/` に保存します。長い履歴を蓄積する本格運用の前にはバックアップとストレージ拡張を検討します。初回の本人受入では「画面で見えた情報」「指導の意図」「適用条件と反例」「独立A/Bの判断」「復元できたか」を [Mac受入記録](MAC_ACCEPTANCE.md) に残してください。
 
-## 0.2.0への互換性と移行
+## 現行0.3.0への互換性と移行
 
 | 対象 | 互換性／操作 |
 |---|---|
-| package | 0.1.0→0.2.0。依存version／解決先は不変、lockのpackage版だけ更新 |
+| package | 0.1.0／0.2.0→0.3.0。依存version／解決先は不変、lockのpackage版だけ更新 |
 | 観測／snapshot | contractVersion 1を維持。旧3fixtureをそのまま読み、通常の数値ルールは同じ判定を返す |
 | A trace | 新規実行はcognition-0.3／appliedRules付き。JSON Schemaは旧cognition-0.2 traceも読む |
-| 私的session | format 1の旧候補・版・履歴を保持。experiments／bReviewsが無ければ空として読む。原則を自動採用しない |
-| bridge | API 2→3。旧serverを止めて新しいコードで再起動。旧serverへの新UIの書き込みは拒否 |
+| 私的session | format 1の旧候補・版・履歴を保持。experiments／bReviews／evaluationSetsが無ければ空として読む。原則を自動採用しない |
+| bridge | API 2／3→4。旧serverを止めて新しいコードで再起動。旧serverへの新UIの書き込みは拒否 |
 | B | 凍結B0＋明示採用した追加原則。既存B評価baselineとroot B0.1-draftは今回変更しない |
 
 コードを戻す際はsessionも更新前バックアップへ戻す別作業です。新形式で書いたsessionを旧コードへ上書きで読み込ませる前方互換性は保証しません。A/Bの研究上のundoはコードのdowngradeとは別操作です。

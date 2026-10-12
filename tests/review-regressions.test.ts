@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Store } from '../server/store';
-import { capture, unseen } from '../src/research';
+import { capture, regressionCompare } from '../src/research';
 import { defaultProfile, defaultRulesA, emptyMemory, type Memory, type Principle } from '../src/contracts';
 import { makeWorld, sense } from '../src/simulation';
 import { think } from '../src/cognition';
@@ -55,7 +55,7 @@ test('paired audio direction and absence change head output with profile and vis
   assert.ok(!l.beliefs.find(b=>b.modality==='audio')!.position);
 });
 test('evaluation suite includes possession, pressure, missing observation, memory and audio',()=>{
-  const suite=unseen(defaultRulesA(),defaultRulesA());
+  const suite=regressionCompare(defaultRulesA(),defaultRulesA(),defaultProfile());
   assert.ok(suite.some(s=>s.before.sensation.self.hasBall));assert.ok(suite.some(s=>!s.before.sensation.self.hasBall));
   assert.ok(suite.some(s=>s.before.evaluation.some(e=>e.action==='pass'&&e.allowed)));
   assert.ok(suite.some(s=>s.before.beliefs.some(b=>b.age>.5)));

@@ -5,10 +5,12 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { defaultRulesA, type Candidate, type Principle, type RulesA, type RulesB, type Snapshot, type StudyNotes } from '../src/contracts';
 import { validate, validateSnapshot } from '../src/validation';
-import { candidateDraft, compare, unseen, experimentRun } from '../src/research';
+import { candidateDraft, compare, regressionCompare, experimentRun } from '../src/research';
 import { sense } from '../src/simulation';
+import { assertSnapshotHistory } from '../src/observation-history';
 import type { Experiment, BReview, BMaterial } from './experiment-types';
-const fingerprint = () => createHash('sha256').update(['src/contracts.ts','src/cognition.ts','src/simulation.ts','src/research.ts','src/validation.ts','schemas/contracts.schema.json'].map(path => readFileSync(new URL('../'+path, import.meta.url))).reduce((a,b)=>Buffer.concat([a,b]),Buffer.alloc(0))).digest('hex');
+import { canonical, digest, conditionDigest, checkEvaluationDraft, anonymizeCases, type FrozenEvaluation, type BArm, type CaseGroup } from './evaluation';
+const fingerprint = () => createHash('sha256').update(['src/contracts.ts','src/cognition.ts','src/simulation.ts','src/research.ts','src/observation-history.ts','src/validation.ts','server/evaluation.ts','schemas/contracts.schema.json'].map(path => readFileSync(new URL('../'+path, import.meta.url))).reduce((a,b)=>Buffer.concat([a,b]),Buffer.alloc(0))).digest('hex');
 const loadedFingerprint = fingerprint();
 const hash = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 function gitProvenance(){
@@ -26,9 +28,9 @@ function checkRevision(c: Candidate, expected: number) {
 }
 export type State = { format: 1; revision: number; snapshots: Record<string, Snapshot>; candidates: Record<string, Candidate>;
   versionsA: Record<string, RulesA>; versionsB: Record<string, RulesB>; activeA: string[]; activeB: string[]; events: Event[];
-  experiments: Record<string, Experiment>; bReviews: BReview[] };
+  experiments: Record<string, Experiment>; bReviews: BReview[]; evaluationSets:Record<string,FrozenEvaluation> };
 const initial = (): State => ({ format: 1, revision: 0, snapshots: {}, candidates: {}, versionsA: { A0: defaultRulesA() },
-  versionsB: { B0: { version: 'B0', principles: [] } }, activeA: ['A0'], activeB: ['B0'], events: [], experiments: {}, bReviews: [] });
+  versionsB: { B0: { version: 'B0', principles: [] } }, activeA: ['A0'], activeB: ['B0'], events: [], experiments: {}, bReviews: [], evaluationSets:{} });
 export class Store {
   readonly dir: string;
   constructor(directory = process.env.RPM_SESSION_DIR || '.rpm') { this.dir = resolve(directory); mkdirSync(this.dir, { recursive: true, mode: 0o700 }); }
@@ -38,7 +40,7 @@ export class Store {
     if (state.format !== 1 || !Number.isInteger(state.revision)) throw new Error('Unsupported/corrupt session format');
     // Legacy sessions retain their data. Historical events are not retroactively attested.
     for (const c of Object.values(state.candidates)) c.revision ??= 1;
-    state.experiments ??= {};state.bReviews ??= [];
+    state.experiments ??= {};state.bReviews ??= [];state.evaluationSets??={};
     return state;
   }
   private transact<T>(fn: (s: State) => T): T {
@@ -54,14 +56,30 @@ export class Store {
   active(s = this.read()) { return { A: s.versionsA[s.activeA.at(-1)!], B: s.versionsB[s.activeB.at(-1)!] }; }
   saveSnapshot(snapshot: unknown): string {
     validateSnapshot(snapshot);
+    assertSnapshotHistory(snapshot);
     if (JSON.stringify(sense(snapshot.world)) !== JSON.stringify(snapshot.bundle)) throw new Error('Snapshot perception does not match sensor adapter');
     return this.transact(s => { const id = randomUUID(); s.snapshots[id] = structuredClone(snapshot); return id; });
   }
-  propose(snapshotId: string, feedback: string): Candidate {
+  freezeEvaluation(draft:unknown):FrozenEvaluation {
+    checkEvaluationDraft(draft);
+    return this.transact(s=>{
+      const known=new Set(Object.values(s.candidates).map(c=>conditionDigest(c.context)));
+      if(draft.cases.some(c=>known.has(conditionDigest(c.snapshot))))throw new Error('Evaluation observations were already used for coaching in this session');
+      const set:FrozenEvaluation={id:randomUUID(),at:new Date().toISOString(),frozenAtRevision:s.revision,
+        digest:digest(draft),profile:structuredClone(draft.cases[0].snapshot.profile),draft:structuredClone(draft),novelty:'owner-declared-not-independently-verified'};
+      s.evaluationSets[set.id]=set;return set;
+    });
+  }
+  propose(snapshotId: string, feedback: string, evaluationSetId?:string): Candidate {
     if (!feedback.trim() || feedback.length > 4000) throw new Error('Feedback must be 1–4000 characters');
     return this.transact(s => {
       const context = s.snapshots[snapshotId]; if (!context) throw new Error('Unknown snapshot');
-      const c = candidateDraft(randomUUID(), feedback, context); s.candidates[c.id] = c;
+      if(evaluationSetId){
+        const set=s.evaluationSets[evaluationSetId];if(!set)throw new Error('Freeze evaluation conditions before proposing feedback');
+        if(canonical(set.profile)!==canonical(context.profile))throw new Error('Candidate profile differs from the frozen evaluation profile');
+        if(set.draft.cases.some(c=>conditionDigest(c.snapshot)===conditionDigest(context)))throw new Error('Frozen evaluation evidence cannot be used as the coaching scene');
+      }
+      const c = candidateDraft(randomUUID(), feedback, context);if(evaluationSetId)c.evaluationSetId=evaluationSetId;s.candidates[c.id] = c;
       s.events.push({ id: randomUUID(), at: new Date().toISOString(), action: 'propose', candidateId: c.id, actor: 'local' }); return c;
     });
   }
@@ -115,6 +133,7 @@ export class Store {
       const active=this.active(s), context=structuredClone(parent.context);
       context.rulesA=structuredClone(active.A);context.rulesBVersion=active.B.version;
       const child=candidateDraft(randomUUID(),reason,context);child.parentCandidateId=id;
+      if(parent.evaluationSetId)child.evaluationSetId=parent.evaluationSetId;
       child.patchA=structuredClone(parent.patchA);child.principle=structuredClone(parent.principle);
       if(parent.notes)child.notes=structuredClone(parent.notes);
       s.candidates[child.id]=child;s.events.push({id:randomUUID(),at:new Date().toISOString(),action:'revise',actor:'local',candidateId:child.id,parentCandidateId:id,reason});
@@ -140,7 +159,7 @@ export class Store {
     const after = options.mode === 'preview' ? { ...c.context.rulesA, ...c.patchA, version: `preview:${c.id}:r${c.revision}` } : active.A;
     validate('RulesA', after);
     return { mode: options.mode, candidateRevision: c.revision, activeVersion: active.A.version,
-      staleBase: c.context.rulesA.version !== active.A.version, recorded: compare(c.context, after), unseen: unseen(c.context.rulesA, after),
+      staleBase: c.context.rulesA.version !== active.A.version, recorded: compare(c.context, after), regressionKind:'published-fixed-regression', regression: regressionCompare(c.context.rulesA, after,c.context.profile),
       B: { before: c.context.rulesBVersion, after: active.B, evaluation: 'Manual standalone-model review required; no AI service called.' } };
   }
   runExperiment(id: string, expectedRevision: number, steps: number, mode: 'preview'|'active') {
@@ -153,7 +172,14 @@ export class Store {
       const afterA=mode==='preview'?{...beforeA,...c.patchA,version:`preview:${id}:r${c.revision}`}:active.A;
       const beforeB=s.versionsB[c.context.rulesBVersion];if(!beforeB)throw new Error('Missing captured B version');
       const afterB=mode==='preview'?{version:`preview:${id}:r${c.revision}`,principles:[...beforeB.principles.filter(p=>p.id!==c.principle.id),c.principle]}:active.B;
-      const results=experimentRun(c.context,afterA,steps);
+      const set=c.evaluationSetId?s.evaluationSets[c.evaluationSetId]:undefined;
+      if(c.evaluationSetId&&!set)throw new Error('Missing frozen evaluation set');
+      if(set&&(digest(set.draft)!==set.digest||canonical(set.profile)!==canonical(c.context.profile)))throw new Error('Frozen evaluation digest/profile mismatch');
+      const frozenEvidence=new Set(set?.draft.cases.map(test=>conditionDigest(test.snapshot))??[]);
+      if(set&&Object.values(s.candidates).some(candidate=>frozenEvidence.has(conditionDigest(candidate.context))))throw new Error('Frozen evaluation observations became coaching data');
+      const results=experimentRun(c.context,afterA,steps,set?.draft.cases.map((test,i)=>({id:`frozen-${i+1}`,snapshot:test.snapshot})));
+      const useIndex=set?Object.values(s.experiments).filter(e=>e.evaluation?.set.id===set.id).length+1:0;
+      const previouslyEvaluated=Object.values(s.experiments).some(e=>e.results.observationCases.some(test=>frozenEvidence.has(conditionDigest(test))));
       const B:Experiment['B']={before:this.bMaterial(beforeB),after:this.bMaterial(afterB,mode==='preview'),status:mode==='preview'?'proposed':'approved-version'};
       const e:Experiment={id:randomUUID(),at:new Date().toISOString(),candidateId:id,candidateRevision:c.revision,mode,
         modelRevision:results.recorded.after.frames[0].trace.modelRevision,engineFingerprint:loadedFingerprint,
@@ -161,22 +187,33 @@ export class Store {
           lockSha256:hash(readFileSync(new URL('../package-lock.json',import.meta.url))),snapshotSha256:hash(JSON.stringify(c.context)),
           resultSha256:hash(JSON.stringify(results)),beforeBSha256:hash(B.before.markdown),afterBSha256:hash(B.after.markdown)},
         candidate:structuredClone(c),beforeA:structuredClone(beforeA),afterA:structuredClone(afterA),
-        B,results};
+        B,results,bInputs:anonymizeCases(results.observationCases),
+        ...(set?{evaluation:{set:structuredClone(set),useIndex,status:!previouslyEvaluated&&useIndex===1?'first-recorded-use-owner-declared' as const:'reused-not-unseen' as const}}:{})};
       s.experiments[e.id]=e;return e;
     });
   }
-  bPacket(experimentId: string) {
+  bPacket(experimentId: string, arm:BArm, group:CaseGroup) {
     const e=this.read().experiments[experimentId];if(!e)throw new Error('Unknown experiment');
-    return { experimentId:e.id,candidateRevision:e.candidateRevision,B:e.B,cases:e.results.observationCases,
-      instructions:'Use separate fresh conversations for no-principles / before B / after B. Give each conversation only its assigned B material (none for baseline) and the same observation-only cases, not this whole multi-arm packet or A results. Return decision, principle IDs, uncertainty, counterexample and self-review. Do not infer hidden world state. Human rugby assessment is separate from principle compliance.',
-      externalExecution:'Manual in an existing AI conversation; no service called or result inferred by this export.' };
+    if(!['none','before','after'].includes(arm)||!['regression','frozen'].includes(group))throw new Error('Select one B arm (none/before/after) and case group (regression/frozen)');
+    if(!e.bInputs)throw new Error('Legacy experiment lacks anonymous B inputs; keep its history and record a new experiment');
+    const ids=new Set(e.bInputs.evaluatorMap.filter(c=>c.group===group).map(c=>c.id));
+    if(!ids.size)throw new Error('No frozen evaluation conditions were linked before coaching');
+    const material=arm==='none'?undefined:e.B[arm];
+    return { instructions:'Judge each anonymous case only from the supplied observations and memory. Return its id, decision, uncertainty, alternatives and self-review; cite a principle only if one is supplied. Do not infer hidden world state.',
+      principles:material?.markdown??null,structuredAmendments:material?.structuredAmendments??[],cases:e.bInputs.modelCases.filter(c=>ids.has(c.id)) };
   }
-  saveBReview(experimentId: string, model: string, output: string, assessment: string) {
+  bEvaluatorMap(experimentId:string){
+    const e=this.read().experiments[experimentId];if(!e?.bInputs)throw new Error('Unknown or legacy experiment without anonymous inputs');
+    return {experimentId:e.id,evaluation:e.evaluation??null,BVersions:[e.B.before.version,e.B.after.version],
+      mapping:e.bInputs.evaluatorMap,warning:'Evaluator-only. Never give this mapping, its labels/seeds, scoring criteria or A results to the evaluated model.'};
+  }
+  saveBReview(experimentId: string, model: string, output: string, assessment: string, arm:BArm, group:CaseGroup) {
+    const inputSha256=digest(this.bPacket(experimentId,arm,group));
     for(const [name,value,max] of [['model',model,400],['output',output,40000],['assessment',assessment,4000]] as const)
       if(typeof value!=='string'||!value.trim()||value.length>max)throw new Error(`${name} requires 1–${max} characters`);
     return this.transact(s=>{
       if(!s.experiments[experimentId])throw new Error('Unknown experiment');
-      const review:BReview={id:randomUUID(),at:new Date().toISOString(),experimentId,model,output,assessment,status:'unverified-external-response',humanValidated:false};
+      const review:BReview={id:randomUUID(),at:new Date().toISOString(),experimentId,model,output,assessment,status:'unverified-external-response',humanValidated:false,arm,group,inputSha256};
       s.bReviews.push(review);return review;
     });
   }
