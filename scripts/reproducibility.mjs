@@ -6,7 +6,7 @@ import { resolve, relative, sep } from 'node:path';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const manifestPath = resolve(root, 'research/reproducibility-manifest.json');
 // Explicit local-review inventory: never scan private sessions, env vars or downloaded plans/ZIPs.
-// Included P2P procedural source is pending a separate public-release decision.
+// Bounded P2P source publication is owner-authorized; its declared license remains UNLICENSED.
 const inventory = [
   'start-rpm.command', 'bridge-rpm.command', 'scripts/local-launcher.mjs', 'tests/local-launcher.test.mjs', 'docs/LOCAL_STORAGE.md', 'docs/MAC_START.md',
   'src/playback.ts', 'tests/dynamic-review-regressions.test.ts', 'src/scene.ts', 'tests/dynamic-scenes.test.ts', 'tests/browser/dynamic-scenes.spec.ts', 'examples/dynamic-support.scene.json', 'docs/DYNAMIC_SCENES.md',
@@ -97,8 +97,8 @@ function buildManifest() {
       ciRun: 'https://github.com/Kou-ISK/rugby-player-model/actions/runs/38156672972', ciConclusion: 'success',
       scope: 'software checks, not scientific/human/Mac acceptance; inspect current PR checks for subsequent commits' },
     rights: { declaredLicense: pkg.license, licenseDecision: 'pending-owner-decision', publicationScope: 'docs/PUBLICATION_SCOPE.md',
-      privateDataIncluded: false, p2pSourceReuse: 'verified-procedural-source-local-review-only', p2pZipChecksum: '0b24168eb6874b1bb2cacaea5b5926346050ac4baa5acebf32a31b6bcefa07bd', p2pPublicRelease: 'pending-owner-license-and-parent-review' },
-    remaining: ['owner Mac research-loop acceptance', 'P2P publication/license decision and parent review', 'human calibration/validation', 'independent B evaluation results not claimed'],
+      privateDataIncluded: false, p2pSourceReuse: 'verified-procedural-source-owner-authorized-publication', p2pZipChecksum: '0b24168eb6874b1bb2cacaea5b5926346050ac4baa5acebf32a31b6bcefa07bd', p2pPublicRelease: 'owner-authorized-2026-10-12-unlicensed-retained' },
+    remaining: ['owner Mac research-loop acceptance', 'future OSS/license selection not made', 'human calibration/validation', 'independent B evaluation results not claimed'],
     files,
   };
 }

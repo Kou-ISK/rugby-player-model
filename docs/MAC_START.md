@@ -25,4 +25,4 @@
 
 研究正本は `~/Research/rugby-player-model/sessions/owner-primary/state.json`、作業案は `work/`、出力コピーは `exports/`。詳細は [LOCAL_STORAGE.md](LOCAL_STORAGE.md)。追加のAPIキー・有料AI接続は不要です。
 
-受入済みなのはS1–S5の合成実装です。本人が実画面と会話で一周するS6、Bの実AI評価はこれからです。headless試験・仮承認を本人の研究原則への承認と扱いません。公開はこの配置作業と別に確認します。
+受入済みなのはS1–S5の合成実装です。本人が実画面と会話で一周するS6、Bの実AI評価はこれからです。headless試験・仮承認を本人の研究原則への承認と扱いません。コード・合成fixture・文書の公開範囲は [PUBLICATION_SCOPE.md](PUBLICATION_SCOPE.md) を参照してください。私的sessionは公開しません。

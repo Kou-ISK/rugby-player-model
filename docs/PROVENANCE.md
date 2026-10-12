@@ -1,4 +1,4 @@
-# Provenance and license decision pending
+# Provenance and authorized publication
 
 ## Inputs and retrieval status
 
@@ -11,7 +11,9 @@ Verified models.ts SHA256: `07b7965746b80d1cb222b5e13254369a257620bc42781a95821e
 
 `src/ui/p2p/models.ts` and `contact-pose.ts` preserve the kit bytes. `src/ui/models.ts` is the RPM adapter. Original [reuse notice](../src/ui/p2p/REUSE-NOTICE.md) and [kit manifest](../src/ui/p2p/kit-manifest.json) retain the original scope/rights evidence. No GLB, engine, truth-aware camera, P2P core type, Auth, Blob, match data or other source was imported. The existing pinned Three package remains external; installed `three/LICENSE` retains its own MIT notice (three.js authors), which does not relicense P2P.
 
-**Local review only: do not publicly push this branch before parent review and the owner's publication/license decision for the extracted UNLICENSED source.** User-authorized private reuse does not grant public sublicensing. These display meshes do not verify running, contact or ball-handling skills.
+**Publication authorization, 2026-10-12:** the owner explicitly approved public release of the reviewed RPM code, authored synthetic fixtures and documentation, including `src/ui/p2p/models.ts` and the minimal `src/ui/p2p/contact-pose.ts`. The dynamic implementation through `9467c34` and stable Mac setup through `7fa228c` completed independent review. The authorization is recorded here as a scope summary; private conversation text is not included.
+
+The two extracted code files remain byte-identical to the verified kit. The [reuse notice](../src/ui/p2p/REUSE-NOTICE.md) adds the publication amendment while retaining the original handoff record; `kit-manifest.json` remains the unchanged historical pre-publication manifest. Its `published: false` and original gate describe that handoff, not the current authorization. Public display of this bounded source does not adopt an OSS license, authorize unrelated P2P material or verify running, contact or ball-handling skills.
 
 ## Current status
 

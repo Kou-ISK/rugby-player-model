@@ -1,4 +1,14 @@
-# Reuse evidence and publication gate
+# Reuse evidence and authorized publication
+
+## Publication amendment — 2026-10-12
+
+The owner explicitly authorized public release of RPM's reviewed code, synthetic fixtures and documentation, including the unmodified procedural source in `models.ts` and the minimal kit-authored presentation type in `contact-pose.ts`. The authorization covers these bounded extracted files and their provenance records, not the full private P2P application, GLB/motion assets, credentials, private research sessions or personal information. Independent implementation and stable Mac setup reviews passed.
+
+UNLICENSED remains the declared status. No MIT, Apache, Creative Commons or other new license is adopted, and public availability is not presented as a blanket sublicensing grant. Attribution and the original source/hash evidence below remain in place. The original kit manifest is preserved unchanged as a historical handoff record; its pre-publication flags are superseded only for the public-release scope stated here. See [current RPM publication scope](../../../docs/PUBLICATION_SCOPE.md).
+
+## Original private-handoff record — historical
+
+The following records the restrictions and evidence at kit preparation, before the explicit publication authorization above.
 
 This is a bounded private handoff under the user's explicit permission to reuse P2P display/player-model mechanisms for RPM. It is not permission to publish P2P wholesale, runtime credentials or third-party material.
 

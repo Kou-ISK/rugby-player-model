@@ -31,4 +31,4 @@ npm run --silent model -- --input examples/support-42.snapshot.json --steps 10
 - [制約・再現性](docs/LIMITATIONS.md)、[権利と来歴](docs/PROVENANCE.md)
 - [再現manifest](research/reproducibility-manifest.json)と[再現手順](docs/REPRODUCTION.md)、[モデルカード](docs/MODEL_CARD.md)、[データカード](docs/DATA_CARD.md)、[公開範囲](docs/PUBLICATION_SCOPE.md)
 
-Cloudの検証合格と、本人Macでの共同研究loop実証は別です。このローカルreview branchは検証済みP2P手続き描画kitを再利用します（表示用mock）。原本の公開は親review・権利確認待ちです。ライセンスは未決（UNLICENSED）です。
+Cloudの検証合格と、本人Macでの共同研究loop実証は別です。検証済みP2P手続き描画と最小姿勢型を表示adapterで再利用し、これらを含むコード・合成fixture・文書の公開は本人承認済みです。私的研究sessionは公開対象外です。ライセンスはUNLICENSEDを維持しています。[公開範囲](docs/PUBLICATION_SCOPE.md)を参照してください。

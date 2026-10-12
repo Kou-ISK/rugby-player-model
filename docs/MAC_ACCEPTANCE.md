@@ -44,4 +44,4 @@ Owner / date:
 - 白画面：ブラウザのWebGL利用可否とConsoleを確認。CloudではLinux Chromiumのみ検証済みで、Safariの動作保証はまだありません。
 - `Session busy`：[lock回復手順](LOCAL_BRIDGE.md)を使用。
 - 画面の首振りは動くがパスしない：パス実行は未対応であり、意図としてのみ出力します。
-- このlocal branchは取得・hash照合済みのP2P原本を表示adapterで再利用します。[来歴](PROVENANCE.md)参照。実身体技能と公開権利は別の未完了ゲートです。
+- 取得・hash照合済みのP2P原本を表示adapterで再利用します。抽出描画・最小姿勢型を含む公開は本人承認済みで、UNLICENSEDを維持します。[来歴](PROVENANCE.md)参照。実身体技能・本人画面受入・B実AI評価は別途未完了です。

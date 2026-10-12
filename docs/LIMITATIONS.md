@@ -26,7 +26,7 @@ The evaluation suite now explicitly stratifies eight synthetic conditions: carri
 - The Mac bridge exports one B arm with anonymous cases, excluding evaluation labels/scene/seed/world/A outputs. A separate evaluator map retains metadata and criteria. External responses are tied to experiment, arm, case group and input hash. No external AI is called; the Mac acceptance response is a synthetic mock. No B benefit or owner screen acceptance is inferred. Prior B work reported elsewhere is separate evidence.
 - Meaningful call selection emits a semantic event only, with a bounded history/cooldown. Voice, acoustics and teammate reaction remain unsupported.
 - JSON state is a single-file local store. Long research histories and many full-trace experiments may require migration to a larger storage backend; no multi-user authentication or distributed writer support is claimed.
-- P2P procedural source is hash-verified and reused in this local review branch. Publication rights remain pending. These display models do not establish body skills; the self-model is hidden in first person. Other players remain static. Mac headless evidence is distinct from owner interaction.
+- P2P procedural source is hash-verified and reused under the owner-authorized publication scope; UNLICENSED is retained. These display models do not establish body skills; the self-model is hidden in first person. Other players use scripted paths in dynamic scenes and remain static in legacy scenes. Mac headless evidence is distinct from owner interaction.
 
 ## Verification commands
 

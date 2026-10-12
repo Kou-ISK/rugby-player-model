@@ -1,4 +1,4 @@
-# Mac headless verification — local review branch
+# Mac headless verification
 
 On 2026-10-11 UTC, the owner's Mac ran the research foundation from a fresh checkout of PR #1 head `9bb52f4563254ae35fb2ed54ce722492e165e44c`, followed by this local P2P adapter branch. macOS 26.6.2 / arm64, dedicated Node 24.21.0 / npm 11.19.0 / Chrome 154.0.8037.98, unchanged package-lock. Screen unlock and system/browser safety settings were not changed. Existing video processing was not controlled or stopped.
 
@@ -17,10 +17,18 @@ This is **automated synthetic Mac evidence**, not owner screen acceptance, appro
 
 Browser checks use one headless Chrome worker and SwiftShader software rendering in a temporary profile with Chromium sandbox enabled, at low process priority. The default research screen renders only on input, simulation step, resize or spectator orbit changes. Paused sessions do not run a continuous rendering loop.
 
-Final verification of this tree: `npm run check` passed (manifest, typecheck, 29 unit tests, build); all **5 browser tests passed together in 41.6 seconds**. The build retains its advisory large-bundle warning. A 1,000-decision spike and the 10-step support/42 CLI replay also ran locally; their timings are plumbing evidence, not performance guarantees.
+Final verification of the initial P2P adapter tree: `npm run check` passed (manifest, typecheck, 29 unit tests, build); all **5 browser tests passed together in 41.6 seconds**. The build retains its advisory large-bundle warning. A 1,000-decision spike and the 10-step support/42 CLI replay also ran locally; their timings are plumbing evidence, not performance guarantees.
 
 ## Remaining owner work
 
 Follow [MAC_ACCEPTANCE.md](MAC_ACCEPTANCE.md) after unlocking the screen normally. The owner must actually view the scene, give feedback and decide which real candidates to adopt. Safari and interactive native-GPU rendering have not been verified. B's independent AI evaluation and scientific calibration remain separate. A physical pass, contact, gait or muscle model has not been added.
 
-This branch is local and pending parent review. P2P source remains UNLICENSED with its original notices; public push requires the separate publication/license decision described in [PROVENANCE.md](PROVENANCE.md). Cloud CI evidence belongs to the original PR head; no new remote CI is claimed for this local branch.
+The evidence above describes the initial P2P adapter stage. The current publication scope is authorized as recorded in [PROVENANCE.md](PROVENANCE.md); UNLICENSED and original attribution remain. Historical Cloud CI results belong to their recorded commits, not automatically to a later public head.
+
+## Dynamic scenes and stable Mac setup — 2026-10-12
+
+The dynamic implementation at `9467c34` and stable local setup at `7fa228c` passed independent review. The latter passed **61 Node tests, typecheck, build and the 82-file reproduction manifest**, plus **9 Mac headless browser tests** in 59.3 seconds. The original P2P geometry and minimal pose type retained their verified hashes.
+
+Recorded checks include coaching replay from the interval start with only prefix memory, conservative frozen-condition exposure/reuse checks, team/appearance mesh replacement and disposal, and read-only saved before/after 3D playback returning to the same research snapshot. Stable and legacy launchers used the same external private session, refused occupied ports, and stopped with Control-C. A separate synthetic session retained scene, candidate and experiment records through browser reload and server restart; saved state bytes were unchanged by comparison playback.
+
+The configured owner session remained empty. Synthetic tests did not approve real principles. Dedicated Node 24.21.0, a fixed lockfile, one headless Chrome worker, sandbox-enabled SwiftShader and low process priority were used. The existing large-bundle and software-rendering performance warnings remain. See [MAC_START.md](MAC_START.md) for the owner's next steps; S6 screen acceptance and independent B AI evaluation are still unperformed.
