@@ -1,7 +1,7 @@
 import { performance } from 'node:perf_hooks';
-import { capture } from '../src/research';
+import { capture } from '../tools/workbench/research';
 import { defaultRulesA } from '../src/contracts';
-import { think } from '../src/cognition';
+import { think } from '../models/player/reference/src/cognition';
 const scene=capture('support',42,defaultRulesA(),'B0');
 const start=performance.now();
 let trace;

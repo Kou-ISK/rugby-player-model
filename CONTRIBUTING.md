@@ -2,7 +2,7 @@
 
 Use public synthetic inputs in a new session. The workbench and CLI are local tools;
 neither Codex nor a paid AI account is required. Begin with the README and the
-[research loop](docs/RESEARCH_LOOP.md). The migration branch is completing a fully
+[research loop](./tools/workbench/docs/RESEARCH_LOOP.md). The migration branch is completing a fully
 manual tutorial and a versioned proposal import/reproduction path.
 
 Keep A (executable cognition) and B (independent principles) separate. A proposal

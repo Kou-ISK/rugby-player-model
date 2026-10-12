@@ -40,4 +40,4 @@ npm run test:browser
 
 With an already installed browser, `RPM_CHROMIUM=/absolute/path/to/chromium npm run test:browser` avoids a browser download. Cloud used its installed Chromium because the browser-download service was unavailable. Do not reinterpret that download failure as a test failure: actual tests ran against the installed browser. First dependency/browser installation and GitHub CI provisioning are network operations; core tests and app execution after installation need no remote service.
 
-CI uses only package install, typechecking, Node tests, build, a small spike and browser tests. No paid cloud resources, secrets or production deployment. Repository workflows are provided; local Cloud command success is distinct from a remotely completed CI run. See [verification evidence](VERIFICATION.md).
+CI uses only package install, typechecking, Node tests, build, a small spike and browser tests. No paid cloud resources, secrets or production deployment. Repository workflows are provided; local Cloud command success is distinct from a remotely completed CI run. See [verification evidence](./verification/VERIFICATION.md).

@@ -8,17 +8,17 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "dev": "tsx server/dev.ts",
-    "bridge": "tsx server/cli.ts",
+    "dev": "tsx tools/workbench/server/dev.ts",
+    "bridge": "tsx tools/workbench/server/cli.ts",
     "spike": "tsx scripts/spike.ts",
-    "model": "tsx scripts/run-model.ts",
+    "model": "tsx tools/simulation/cli.ts",
     "samples": "tsx scripts/make-samples.ts",
     "manifest:check": "node scripts/reproducibility.mjs",
     "manifest:write": "node scripts/reproducibility.mjs --write",
-    "test": "node --import tsx --test --test-concurrency=1 models/player/tests/*.test.ts tests/*.test.ts tests/*.test.mjs",
+    "test": "node --import tsx --test --test-concurrency=1 models/player/tests/*.test.ts tools/*/tests/*.test.ts tools/*/tests/*.test.mjs",
     "typecheck": "tsc --noEmit",
-    "build": "npm run build:player && vite build",
-    "test:browser": "playwright test",
+    "build": "npm run build:player && vite build tools/workbench --outDir ../../dist --emptyOutDir",
+    "test:browser": "playwright test --config tools/workbench/playwright.config.ts",
     "check": "npm run manifest:check && npm run typecheck && npm test && npm run build",
     "build:player": "tsc -p models/player/tsconfig.build.json"
   },

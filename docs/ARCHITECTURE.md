@@ -1,10 +1,10 @@
 # Research architecture
 
-See [dynamic scene contracts, CLI and acceptance scope](DYNAMIC_SCENES.md) for the new fixed-step workflow: one A-controlled player and scripted stimuli.
+See [dynamic scene contracts, CLI and acceptance scope](../tools/workbench/docs/DYNAMIC_SCENES.md) for the new fixed-step workflow: one A-controlled player and scripted stimuli.
 Two independent deliverables share research context, not an approval switch:
 
 - **A** is a deterministic executable prototype. The `think(Bundle, Memory, Profile, RulesA)` function accepts a validated observation boundary and returns an inspectable trace and capability-labelled body requests.
-- **B** is [RUGBY_JUDGMENT.md](../RUGBY_JUDGMENT.md), a standalone principle system with conditions, criteria, priorities, exceptions, uncertainty and evidence. Any general-purpose AI can use it without A. Its local approved amendments are exported into a complete Markdown document.
+- **B** is [RUGBY_JUDGMENT.md](../models/judgment/RUGBY_JUDGMENT.md), a standalone principle system with conditions, criteria, priorities, exceptions, uncertainty and evidence. Any general-purpose AI can use it without A. Its local approved amendments are exported into a complete Markdown document.
 
 ## Data boundaries
 
@@ -69,9 +69,9 @@ The JSON session is written atomically under a single-writer directory lock. Fai
 
 The fixed eight regressions preserve the captured player profile. Separately frozen conditions are attached when feedback is first proposed; criteria/profile/digest precede coaching, and repeated exposure is marked rather than claimed unseen.
 
-B model packets contain only one arm (none/before/after) and anonymous observation/profile/memory cases from the selected fixed-regression or frozen set. Situation labels, scene/seed, scoring criteria, world truth, A outputs and experiment identifiers are kept in a separate evaluator-only map. Each arm is evaluated in a separate fresh conversation. Responses are linked to the arm, case group and input hash. External responses and assessment notes are tied to an experiment and explicitly remain unverified. No model is called by the bridge. Preview B amendments are marked NOT approved. See [complete local loop](RESEARCH_LOOP.md).
+B model packets contain only one arm (none/before/after) and anonymous observation/profile/memory cases from the selected fixed-regression or frozen set. Situation labels, scene/seed, scoring criteria, world truth, A outputs and experiment identifiers are kept in a separate evaluator-only map. Each arm is evaluated in a separate fresh conversation. Responses are linked to the arm, case group and input hash. External responses and assessment notes are tied to an experiment and explicitly remain unverified. No model is called by the bridge. Preview B amendments are marked NOT approved. See [complete local loop](../tools/workbench/docs/RESEARCH_LOOP.md).
 
-UI snapshots now retain ordered observation events with head/body orientation, simulation time, profile and A configuration. Replaying these inputs does not query the world. Manual turns in static-study share a simulation time and are ordered by sequence; only a step advances by 0.2s. This is not wall-clock reaction-time research. Stored experiments distinguish fixed-observation-history comparisons from action-driven closed-loop replays. See [evaluation protocol](EVALUATION_PROTOCOL.md) for the manual coaching boundary and limitations.
+UI snapshots now retain ordered observation events with head/body orientation, simulation time, profile and A configuration. Replaying these inputs does not query the world. Manual turns in static-study share a simulation time and are ordered by sequence; only a step advances by 0.2s. This is not wall-clock reaction-time research. Stored experiments distinguish fixed-observation-history comparisons from action-driven closed-loop replays. See [evaluation protocol](../evaluation/PROTOCOL.md) for the manual coaching boundary and limitations.
 
 ## Scope of extensibility
 
