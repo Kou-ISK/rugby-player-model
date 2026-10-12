@@ -1,19 +1,48 @@
-# 本人の継続研究の保存場所
+# Current Mac storage, startup and recovery
 
-ソース・仕様・合成fixtureは `~/Documents/workSpace/rugby-player-model`、私的な研究sessionは `~/Research/rugby-player-model/sessions/owner-primary` に分けます。対象は生成scene、観測履歴、短い指導、候補、採否、実験記録です。今回、実試合映像の保管や入力資料の集約は行いません。
+The configured Mac keeps source code and private research data in separate directory trees:
 
-`state.json` が場面版・snapshot・候補・A/B版・採否・評価・実験を一体で保存します。分割して手編集せず、UI/bridgeを使います。`work/` はscene生成案・context・候補編集案、`exports/` は研究記録から出力したコピー用です。私的sessionをGitへ追加しません。
+| Item | Configured location |
+|---|---|
+| Stable source entrance | `~/Documents/workSpace/rugby-player-model` |
+| Private research session | `~/Research/rugby-player-model/sessions/owner-primary` |
+| Shared path configuration | `~/Library/Application Support/RugbyPlayerModel/paths.json` |
+| Dedicated Node 24 runtime | `~/Library/Application Support/RugbyPlayerModel/runtime/` |
 
-このMacの `~/Library/Application Support/RugbyPlayerModel/paths.json` に絶対パスの `sourceRoot`、`dataRoot`、`sessionDir`、`nodePath`、`port` を保存します。専用Node 24は同じ場所の `runtime/` です。設定・runtimeは研究データや公開成果物ではありません。
+The configuration contains absolute `sourceRoot`, `dataRoot`, `sessionDir`, `nodePath` and `port` values. The launchers validate their real paths. They refuse missing sessions, source/data overlap and a session outside `dataRoot`; they do not fall back to an empty development session.
 
-repo直下の `start-rpm.command` と `bridge-rpm.command` が同じ設定を使います。`tools/workbench/platform/macos/local-launcher.mjs` は実在する絶対パスを確認し、source/dataの重なりやdata外のsessionを拒否します。保存先がないときに `.rpm/` へ切り替えたり空の代替sessionを作ったりしません。初回の空sessionは配置工程で明示的に用意します。
+## Start, stop and resume
 
-開発用 `npm run dev` / `npm run bridge` は従来どおり `.rpm/` が既定です。本人の通常研究には上記commandを使ってください。`RPM_PATHS_FILE` で別の明示設定、`RPM_SESSION_DIR` でdataRoot内の既存sessionを選べます。合成試験は本人sessionと別にし、試験を本人の採用や研究成果に数えません。
+From the configured stable source, run `./start-rpm.command` and open its displayed local URL. Stop with Control-C in the starting terminal. Use `./bridge-rpm.command status` to inspect the same session through the command line. Resume with the same launcher; do not initialize a replacement session.
 
-CLIの `--file` / `--out` とshellのリダイレクトは自動移動しません。通常はsessionの `work/` / `exports/` の絶対パスを指定します。ブラウザのダウンロードもブラウザの保存先へ出るため、必要な出力だけ `exports/` へ保存してください。exportはsession正本を置き換えません。
+The launchers follow `paths.json`, even when invoked from a different copy of the repository. To test an uninstalled checkout, follow [FIRST_RUN.md](FIRST_RUN.md) with an explicit new synthetic `RPM_SESSION_DIR`. Development `npm run dev` and `npm run bridge` otherwise default to `.rpm/` in that checkout. Tutorial data and actual owner research must remain separate.
 
-配置変更時はserverと書込みCLIを止め、全sessionを控え、まずコピーしてhash・commit・作業差分を確認します。新配置の読み出しが一致するまで元を残します。ソースだけを移すときは `sourceRoot` だけを更新し、sessionを変えません。Nodeと依存もrepo旧パスへのリンクに依存させません。
+On the architecture candidate, `npm run bridge -- stop` also stops the server instance identified by that same session. This is a new command; the current old stable binary may not have it. Control-C remains available for both versions. Do not stop unrelated processes or clear a running writer's lock.
 
-今回の移行は受入済み `9467c34` からの独立コピーです。基点 `00e74f6` に保留15編集がある元repo、その保全manifest・patch、私的な入力原本・検証証拠は以前の作業場所に保持します。保留差分を一括適用せず、launcherとテストを選択採用し、保存場所案と案内は今回の範囲に合わせて書き直しています。P2P公開準備の文言は採用していません。
+## What is stored
 
-起動と本人の最初の一周は [MAC_START.md](./MAC_START.md)。S1–S5の合成実装受入と、S6の本人実画面受入・B実AI評価は別です。配置変更は原則採用や公開を意味しません。
+`state.json` is the session's authoritative state: scene versions, snapshots, candidates, A/B versions, decisions, experiment results and reviews. `work/` holds explicit scene/context/edit files; `exports/` holds selected output copies. Use UI/CLI operations rather than editing internal state. Keep private feedback, real data and credentials out of Git and public proposals.
+
+CLI `--file`, `--out` and shell redirection paths are not automatically moved into the session. Use explicit absolute paths for actual research files. Browser downloads follow the browser's chosen destination and do not replace session state.
+
+## This architecture migration
+
+The stable source is pinned at `ecc5c298b928ff860e124735decc587c0f7537af` while the architecture candidate is independently reviewed in a separate checkout. No stable source switch, owner-session migration or owner research approval is implied by candidate tests. The older `9467c34` placement is recorded in [storage history](LOCAL_STORAGE_HISTORY.md), not the procedure for this migration.
+
+After exact-head verification and independent review, the M7 installation sequence is:
+
+1. Confirm that the research server and all session writers are stopped. Leave unrelated jobs running.
+2. Preserve a restoration point for the current source, configuration and private data, including new records. Record their hashes and any existing user changes.
+3. Prepare the reviewed source and its locked Node 24 dependencies in a durable location. Test with a separate synthetic session first.
+4. Atomically update the source entrance/configuration while retaining the same `dataRoot` and `sessionDir`. Do not copy a tutorial state over the owner state.
+5. Check startup, shutdown, command-line access and the unchanged private destination. The owner's first research walkthrough and A/B adoption remain separate actions.
+
+## State compatibility and rollback
+
+The architecture candidate reads session formats 1 and 2. Reading format 1 does not rewrite its records or old digests. A new session or a successful write uses outer format 2 while preserving historical records and hashes. The previous stable binary accepts only format 1 and therefore refuses format 2.
+
+Changing an active A mode back to legacy does not make format 2 readable by an old binary. If records have been written by the new version, preserve that entire session and use a format-2-compatible reader when reverting the source entrance. Do not overwrite newer records with an older backup or delete them to force compatibility. If an old compatible snapshot is needed for diagnosis, work on a separate copy and keep the current session intact.
+
+For a stale writer lock after a crash, first confirm all session writers are stopped and preserve the session. Then remove only that session's stale `.lock`; never remove a live lock or silently initialize a corrupt state. The [genuine synthetic legacy fixture](../../../evaluation/baselines/LEGACY_SESSION.md) documents the tested compatibility boundary.
+
+Mac headless checks verify software behavior. They are not evidence that the owner used the screen or accepted a research principle.

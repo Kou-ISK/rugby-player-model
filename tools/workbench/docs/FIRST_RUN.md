@@ -1,49 +1,89 @@
-# 初めての研究loop（公開合成チュートリアル）
+# First research session with synthetic data
 
-Node 24とGitを用意し、repositoryのrootで実行します。Codex・本人Mac用launcher・dot・API鍵・有料AIは不要です。Aのソフトウェア検証、Bの手動評価、本人による研究原則の採用は別です。以下の採否は新しい合成チュートリアルsessionにだけ行います。
+[日本語の手順](FIRST_RUN.ja.md)
+
+This tutorial starts with public examples and a new private session. **A** is the executable player model; **B** is a separate document of judgment principles. You will save a proposed change, preview it, adopt A and B separately, undo them, and reproduce a shared proposal in another session. These are synthetic software exercises, not approval of research principles.
+
+You need Node.js 24 and this repository's public files. No AI product, API key, paid service or owner-specific configuration is required. B can also be evaluated [without any A experiment](B_STANDALONE.md).
+
+## 1. Create a session
+
+Run these commands from the repository root:
 
 ```sh
 npm ci
 export RPM_SESSION_DIR="$PWD/.rpm/tutorial"
 npm run bridge -- session init --dir "$RPM_SESSION_DIR" --synthetic
-npm run dev
 ```
 
-表示されたloopback URLをブラウザで開きます。既存sessionならinitは拒否するので、別の新しい保存先を選びます。既存データを消してinitし直す操作はありません。停止は起動したTerminalでControl-C、または同じ `RPM_SESSION_DIR` の別Terminalで `npm run bridge -- stop`。後者はそのsessionの起動instanceを照合し、他のプロセスをkillしません。再開は同じ保存先で `npm run dev`。
+The session holds observations, candidates, versions and decisions. Initialization refuses an existing state file. Choose another new directory instead of deleting an existing session. To resume, set the same `RPM_SESSION_DIR` and omit initialization.
 
-## 画面から行う
+To use the browser, run `npm run dev` and open the displayed local URL. Keep that terminal open. For command-line work at the same time, open a second terminal in the repository and set the same `RPM_SESSION_DIR`. The commands below use the same storage as the browser.
 
-1. 支援の場面、seed 42、一人称で始めます。首を約−110°へ振って支援選手を観測し、0°へ戻します。世界表示はspectator、選手の観測・記憶は別の欄です。画面のscene/seed/player/timeを確認し、snapshotを保存します。
-2. フィードバックを短く記入し「この場面で候補を保存」。下の「AI不要の手動候補入力」で条件・判断基準・例外・不明時・根拠・変更理由・期待・反例を記入し、編集欄へ反映します。候補編集欄を確認し保存。JSON欄は直接手動でも編集できます。`Codex用の観測context`は任意の補助で、worldを含みません。
-3. 「保存済み候補をpreview＋固定回帰」で未採用差分を確認。候補のモードを「H-WM-1：容量指定」、K=1として保存し、同じ観測で従来・無制限・有限を保存比較します。無制限対有限が容量対照、従来対無制限はpolicy差です。保持観測による危険／定位は容量制約外です。受け手の比較・選択への制約であり、全判断をK件に制限する、人間作業記憶の完成モデルではありません。
-4. 合成試験として本人チェックを一操作ごとに入れ、Aだけ採用。Bが変わらないことを確認します。次にBだけ採用。B全文置換を試す場合は編集時に「新baselineへ全文置換」を選び、本文と引き継ぐ原則の順序付き配列を明示します。旧本文は上書きされません。
-5. AだけundoしてBが維持されることを確認し、Bも別操作でundoします。候補・実験・採否の履歴は残ります。停止・再起動して候補、mode/K、保存arm、現在A/B版を再確認します。保存frameの比較は再計算しません。
-6. 「共有提案」で対象A/B、作者、権利根拠を記入し、この合成候補への許諾チェックを入れてexport。候補と許諾した合成入力だけが列挙されます。私的session全体・採用履歴・絶対保存pathは梱包しません。
-7. 別の新規sessionでファイルを選びvalidate → import-inert → preview/reproduce。未承認取込でactive A/Bは変わりません。新run IDで再実行され、元runと意味結果digestを比較します。B単独再現を選べます。
-8. 研究reviewは実施したrunを選び、scope・限界・理由を記入して記録します。チュートリアルでは「合成ソフトウェア試験の模擬review」を明示。永久IDから機構/原則、仮説、反例/ケース、run、review、提案成果物をたどれます。撤回は理由を追記し、負の証拠を削除しません。
-
-## CLIで同じ操作を行う
-
-各JSON応答からIDとrevisionを読み、下の大文字プレースホルダーを置き換えます。採用の直前に最新値を自動取得して渡すのではなく、表示した内容と版を確認します。
+## 2. Capture the player's observations
 
 ```sh
 npm run bridge -- snapshot --scene support --seed 42 --head -2
 npm run bridge -- snapshot-turn SNAPSHOT_ID --head 0
-npm run bridge -- propose TURNED_SNAPSHOT_ID --feedback '合成試験：支援の鮮度と不確実性を確認する'
+npm run bridge -- propose TURNED_SNAPSHOT_ID --feedback 'Synthetic study: check receiver freshness and uncertainty'
 npm run --silent bridge -- context CANDIDATE_ID
+```
+
+Read the IDs in each JSON response and replace the uppercase placeholders in the next command. The first capture looks behind the player; the next turns forward at the same simulation time. The saved history keeps their order and original observation times. Only a simulation step advances time.
+
+The context contains permitted observations, memory and player settings for a collaborator. It omits world truth. A full snapshot also contains synthetic world state for reproduction and spectator display; do not give that full envelope to an evaluator restricted to the player's perspective.
+
+## 3. Edit and preview a candidate
+
+```sh
 npm run bridge -- edit CANDIDATE_ID --revision 1 --file tools/workbench/examples/conditional-coaching-edit.json
 npm run bridge -- mode-edit CANDIDATE_ID --revision 2 --mode finite --k 1
 npm run --silent bridge -- preview CANDIDATE_ID --revision 3
 npm run bridge -- mode-study CANDIDATE_ID --revision 3 --k 1
+```
+
+The example includes a proposed A rule, an independent B principle, a reason, an expected effect and a counterexample. Editing and previewing do not adopt either output.
+
+The saved comparison has three arms: legacy, the receiver-selection policy with unlimited capacity, and that same policy with finite capacity. Finite versus unlimited tests capacity; legacy versus unlimited tests the policy change. Encoding, retrieved evidence and retained memory stay fixed within the capacity pair. Risk and orienting still use retained evidence. This is an unvalidated receiver-selection hypothesis, not a completed human memory model.
+
+## 4. Adopt and undo each output separately
+
+The following commands are explicit **synthetic tutorial decisions**. Check the displayed candidate contents and revision first. Do not automatically fetch a newer revision and pass it into an approval command.
+
+```sh
 npm run bridge -- approve CANDIDATE_ID --target A --by owner --revision 3
+npm run bridge -- status
 npm run bridge -- approve CANDIDATE_ID --target B --by owner --revision 3
 npm run bridge -- compare CANDIDATE_ID
 npm run bridge -- undo A --by owner --version A1
 npm run bridge -- undo B --by owner --version B1
-npm run bridge -- proposal export CANDIDATE_ID --revision 3 --targets A,B --author 'Synthetic tutorial' --rights '自作合成素材、明示したMIT許諾範囲' --public-synthetic --out "$RPM_SESSION_DIR/proposal.rpm-proposal.json"
 ```
 
-次のsessionでは元のsessionの保存先を渡さず、exportしたファイルだけを渡します。
+In this new session, A adoption produces `A1 / B0`; B adoption produces `A1 / B1`. Undoing A preserves B. Undoing B restores the original B text and amendment order. The candidate and historical decisions remain. Use the actual displayed version numbers if you have performed additional operations.
+
+A stale revision is rejected with a conflict, represented as HTTP 409 in the browser. Failed operations leave the state unchanged. A B full-text replacement is another explicit proposal: it creates a new baseline reference and B version, preserving the old baseline for undo.
+
+## 5. Stop and restart
+
+If the browser server is running, stop it with Control-C in its terminal, or run this from a terminal with the same session setting:
+
+```sh
+npm run bridge -- stop
+```
+
+This checks the session's running instance rather than killing an arbitrary process. Start again with the same `RPM_SESSION_DIR` and `npm run dev`. Candidates, active versions, decisions and saved comparisons persist. Saved animation frames are replayed without rerunning cognition. Stop this test server before starting another server on the same port; do not stop unrelated jobs.
+
+## 6. Share a permitted synthetic proposal
+
+Even an unadopted or undone candidate can be exported:
+
+```sh
+npm run bridge -- proposal export CANDIDATE_ID --revision 3 --targets A,B --author 'Synthetic tutorial' --rights 'Authored synthetic example within the stated MIT scope' --public-synthetic --out "$RPM_SESSION_DIR/proposal.rpm-proposal.json"
+```
+
+The confirmation applies only to the selected candidate and listed synthetic inputs. It does not authorize sharing a whole private session. The package contains fixed inputs, base versions, proposed changes, expectations, counterexamples, references and a reference run. It does not contain local adoption events or absolute session paths.
+
+In another copy of the public source, install the locked dependencies with `npm ci`. Transfer the proposal file, then start a separate session:
 
 ```sh
 export RPM_SESSION_DIR="$PWD/.rpm/tutorial-receiver"
@@ -54,22 +94,40 @@ npm run bridge -- proposal reproduce LOCAL_CANDIDATE_ID --manifest CONFIRMED_MAN
 npm run bridge -- proposal list
 ```
 
-採用する場合は `proposal adopt LOCAL_CANDIDATE_ID --target A --by owner --session-revision CONFIRMED_SESSION_REVISION --manifest CONFIRMED_MANIFEST_SHA256 --run LOCAL_RUN_ID --reason '合成試験の採用理由'`。Bは対象をBにした別操作です。undoは上と同じです。旧revisionは409相当のConflictErrorで拒否され、内容を再確認します。失敗時には状態を書き換えません。
+Import is inert: A/B remain unapproved. Reproduction creates a new execution ID, timestamp and environment record, then compares a semantic result hash with the reference run. That hash includes observation identity/time/confidence, scores, intentions, body requests, next memory and B text/order. It excludes the new run's management ID, wall clock and environment.
 
-基準版が異なる場合は `proposal rebase LOCAL_CANDIDATE_ID --session-revision N --reason '理由' --targets A,B --author '作者' --rights '許諾根拠' --public-synthetic`。新しい未承認revisionを作り、再度reproduceしてから判断します。初版のデータrebaseは1ケースの固定観測に限定し、多caseやcode-review-refは明示的に拒否します。Bは提案の本文・原則順序を引き継ぐため、現在Bとの違いをレビューしてください。自動mergeしません。
+To adopt an imported result, inspect its before/after contents, manifest hash, local run and session revision. Then use a separate command for each target:
 
-Bだけの評価は `b-standalone-packet --file CASES.json [--version B0]`。CASES.jsonは `[{"id":"case-1","bundle":...,"memory":...,"profile":...}]`。A実験ID、world、評価基準は受け取りません。任意のAIまたは手作業で評価し、`b-standalone-review --file REVIEW.json`で `{cases,bVersion,model,output,assessment}` を保存できます。外部AIは呼ばず、未検証回答として記録します。
+```sh
+npm run bridge -- proposal adopt LOCAL_CANDIDATE_ID --target A --by owner --session-revision CONFIRMED_SESSION_REVISION --manifest CONFIRMED_MANIFEST_SHA256 --run LOCAL_RUN_ID --reason 'Explicit synthetic tutorial decision'
+```
 
-`research-review LOCAL_CANDIDATE_ID --run LOCAL_RUN_ID --status restrict --scope '合成固定観測' --limits '人の妥当性未評価' --reason '反例を保持する' --synthetic`、`research-evidence`、`research-withdraw HYPOTHESIS_URN --version 1 --reason '反例による撤回'`で参照を保存・表示・撤回できます。採用や科学的支持を自動発生させません。
+Repeat for B only after checking the newly displayed session revision. Undo uses the commands above. If the active baseline changed, `proposal rebase` requires a reason and explicit rights confirmation, creates a new unapproved revision, and requires another reproduction. The current data-only rebase supports one fixed-observation case; multiple cases and code-review references require a reviewed revision. B text and amendment order must be reviewed against the new baseline rather than automatically merged.
 
-## 共有形式と限界
+## Browser controls
 
-初版の運搬形式は `.rpm-proposal.json`。versioned manifestと列挙したUTF-8データentryを一つのJSON envelopeに保存します。ZIPや実行環境は不要です。16 MiB payload / 256 entry / 1 MiB manifestを上限とし、未知field/version、重複キー、危険path、実行物、壊れたhash、不足参照を拒否します。HTMLとして解釈せず、外部資源を取得しません。hashは署名や作者認証ではありません。
+The current browser labels are Japanese. The [Japanese guide](FIRST_RUN.ja.md) gives the same workflow; these translations identify the main controls:
 
-engine参照と入力が揃い、binaryだけが未導入ならimport-inertまで可能です。A実行はengine-unavailableで停止し、別engineへ黙って置き換えません。B単独本文再現は独立に可能です。再現は実行管理ID・壁時計・環境を別記録し、観測ID・観測時刻・score・意図・次Memory・B本文/順序を含む意味結果を比較します。
+| Label | Action |
+|---|---|
+| `snapshot保存` | Save the current scene, player, seed, time and observations |
+| `この場面で候補を保存` | Save feedback as a candidate |
+| `AI不要の手動候補入力` | Enter rules, conditions, reasons and counterexamples by hand |
+| `保存済み候補をpreview＋固定回帰` | Preview the saved candidate and fixed regression cases |
+| `同じ観測で従来・無制限・有限を保存比較` | Save the three research-mode arms |
+| `本人としてこの内容を確認しました` | Confirm the displayed contents for one decision |
+| `共有提案` | Export, validate, import and reproduce proposals |
 
-この手順の自動試験はMac headlessの合成試験です。本人が画面で操作した実証、認知仮説の実測、外部AIによるB評価とは区別します。
+Choose the support scene and seed 42, use the first-person view, turn the head to about −110° and back to 0°, then save a snapshot. The observation/memory panel is separate from spectator world truth. A/B adoption and undo have separate buttons. B replacement requires a new text and an explicit ordered list of principles to retain. Selecting a different imported proposal clears its displayed preview and confirmation; reproduce that proposal before adopting it. A concurrent write clears confirmation and requires another check.
 
-## 保存形式と復旧
+## Evaluation records and limits
 
-新規sessionはstate format 2です。format 1は読み取れ、最初の明示的な保存操作でformat 2になります。個々の旧記録と旧digestは保持します。旧バイナリはformat 2を拒否するため、古いコードへ戻して新記録を黙って誤解釈しません。入口を戻す場合もformat 2対応readerを使い、旧backupで新しい記録を上書きしないでください。
+For B alone, use the complete [none / old / new comparison guide](B_STANDALONE.md). It saves the actual input packet and fixed document reference, with separate principle-conformance and rugby-validity assessments. No A experiment or external AI call is required.
+
+`research-review` records an explicit review of an actual local proposal run, including scope, limits and reason. In a tutorial, pass `--synthetic` and identify it as a mock software review. `research-evidence` follows fixed references from mechanisms and principles through hypotheses, counterexamples, runs, reviews and proposed artifacts. `research-withdraw` appends a reason without removing negative evidence or old versions.
+
+The `.rpm-proposal.json` format accepts only listed data entries. It rejects unknown versions/fields, duplicate decoded JSON keys, unsafe paths, executable entries, broken hashes and missing references. The A contract hash must match its referenced engine's execution schema. If an exact engine reference is complete but its binary is unavailable, import remains inert and A execution is blocked; B text reproduction remains independent. Hashes do not authenticate an author.
+
+New sessions use outer state format 2. Format 1 can be read without rewriting its records or hashes; the first explicit write upgrades the outer session format. Old binaries reject format 2. Recovery must preserve newer records and use a compatible reader; do not overwrite them with an older backup. See the [storage and recovery guide](LOCAL_STORAGE.md).
+
+Automated acceptance uses only synthetic sessions. Mac headless success, a person's actual screen walkthrough, human cognitive validity and real AI evaluation of B are separate outcomes.
