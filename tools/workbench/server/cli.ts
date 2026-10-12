@@ -1,3 +1,4 @@
+import { finiteMode,legacyMode,unlimitedMode } from '../../../models/player/reference/src/index.js';
 import { trackingMap } from '../../simulation/src/scene';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { Store, type Target } from './store';
@@ -18,12 +19,12 @@ try {
     case 'scene-comparisons': result=store.read().sceneComparisons;break;
     case 'scenes': result=Object.values(store.read().scenes).flat().map(({definition,trackingIds,...ref})=>({...ref,actorCount:definition.actors.length,durationTicks:definition.durationTicks}));break;
     case 'scene-authoring': {const scene=store.getScene(id,Number(flag('--revision')));result={scene,authorToTracking:trackingMap(scene),warning:'Authoring/audit only. Includes future stimulus and author names. Never pass to A or a blinded B evaluator.'};break;}
-    case 'scene-snapshot': {const active=store.active(),scene=store.getScene(id,Number(flag('--revision')));const snapshot=captureSceneAt(scene,active.A,active.B.version,Number(flag('--tick','0')));result={snapshotId:store.saveSnapshot(snapshot),tick:snapshot.world.dynamic!.tick};break;}
+    case 'scene-snapshot': {const active=store.active(),scene=store.getScene(id,Number(flag('--revision')));const snapshot=captureSceneAt(scene,active.A,active.B.version,Number(flag('--tick','0')),active.executionMode);result={snapshotId:store.saveSnapshot(snapshot),tick:snapshot.world.dynamic!.tick};break;}
     case 'status': result = { directory: store.dir, active: store.active(), candidates: Object.values(store.read().candidates).map(c => ({ id: c.id, revision: c.revision, feedback: c.feedback, decisions: c.decisions })) }; break;
     case 'snapshot': {
       const active = store.active(); const scene = flag('--scene', 'support') as SceneId;
       if (!['support','occluded','audio','heldout'].includes(scene)) throw new Error('Unknown scene');
-      const snapshot = capture(scene, Number(flag('--seed', '42')), active.A, active.B.version);
+      const snapshot = capture(scene, Number(flag('--seed', '42')), active.A, active.B.version,active.executionMode);
       snapshot.world.body.headYaw = Number(flag('--head', '0')); snapshot.bundle = sense(snapshot.world);
       result = { snapshotId: store.saveSnapshot(snapshot) }; break;
     }
@@ -36,10 +37,13 @@ try {
       const c = store.read().candidates[id]; if (!c) throw new Error('Unknown candidate');
       result = observationContext(c); break;
     }
-    case 'edit': { const edit = JSON.parse(readFileSync(flag('--file'), 'utf8')); result = store.edit(id, edit.patchA, edit.principle, Number(flag('--revision')),edit.notes); break; }
+    case 'edit': { const edit = JSON.parse(readFileSync(flag('--file'), 'utf8')); result = store.edit(id, edit.patchA, edit.principle, Number(flag('--revision')),edit.notes,edit.executionMode); break; }
     case 'approve': case 'reject': case 'return': store.review(id, flag('--target') as Target, command, flag('--by'), Number(flag('--revision')),flag('--reason')); result = store.active(); break;
     case 'revise': result=store.revise(id,flag('--reason'),Number(flag('--revision')));break;
     case 'undo': store.undo(id as Target, flag('--by'), flag('--version')); result = store.active(); break;
+    case 'mode-study': result=store.modeStudy(id,Number(flag('--revision')),Number(flag('--k')));break;
+    case 'mode-studies': result=store.read().modeStudies;break;
+    case 'mode-edit': {const c=store.read().candidates[id];if(!c)throw new Error('Unknown candidate');const m=flag('--mode');if(!['legacy','finite','unlimited'].includes(m))throw new Error('--mode must be legacy/finite/unlimited');result=store.edit(id,c.patchA,c.principle,Number(flag('--revision')),c.notes,m==='legacy'?legacyMode():m==='finite'?finiteMode(Number(flag('--k'))):unlimitedMode());break;}
     case 'compare': result = store.comparison(id); break;
     case 'preview': result = store.comparison(id, { mode: 'preview', expectedRevision: Number(flag('--revision')) }); break;
     case 'run': result=store.runExperiment(id,Number(flag('--revision')),Number(flag('--steps','5')),flag('--mode','preview') as 'preview'|'active');break;

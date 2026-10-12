@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+import { legacyMode, finiteMode, unlimitedMode, type ExecutionMode } from '../../../../models/player/reference/src/execution-mode.js';
 import './style.css';
 import { recordedWorld } from '../../../simulation/src/playback';
 import { sceneWorld, sceneRef, sceneDiagnostics, type SceneRef } from '../../../simulation/src/scene';
@@ -6,14 +7,14 @@ import { defaultProfile, defaultRulesA, emptyMemory } from '../../../../models/p
 import type { Memory, Profile, RulesA, Trace } from '../../../../models/player/reference/src/contracts.js';
 import type { Candidate, Snapshot, ApplicationPoint } from '../../../experiments/src/contracts';
 import type { SceneId } from '../../../simulation/src/contracts';
-import { think } from '../../../../models/player/reference/src/cognition';
+import { thinkWithMode } from '../../../../models/player/reference/src/cognition';
 import { advance, makeWorld, sense } from '../../../simulation/src/index';
 import { View } from '../rendering/view';
 import { observationContext } from '../../research';
 import { newHistory, appendObservation, replayObservationHistory, HISTORY_LIMIT } from '../../../experiments/src/history';
 import type { ObservationEvent } from '../../../../models/player/reference/src/contracts.js';
 import type { Experiment } from '../../../experiments/src/records';
-type ServerState = { apiVersion: 5; state: { scenes:Record<string,(SceneRef&{durationTicks:number;actorCount:number})[]>; revision: number; snapshots: Record<string, Snapshot>; candidates: Record<string,Candidate>; evaluationSets:Record<string,{id:string;at:string;digest:string;caseCount:number}>; experiments: Record<string,{id:string;at:string;candidateId:string;mode:string}>; bReviews: {experimentId:string;model:string;assessment:string}[] }; active: { A: RulesA; B: { version: string } } };
+type ServerState = { apiVersion: 6; state: { modeStudies:Record<string,{candidateId:string;arms:unknown[]}>; scenes:Record<string,(SceneRef&{durationTicks:number;actorCount:number})[]>; revision: number; snapshots: Record<string, Snapshot>; candidates: Record<string,Candidate>; evaluationSets:Record<string,{id:string;at:string;digest:string;caseCount:number}>; experiments: Record<string,{id:string;at:string;candidateId:string;mode:string}>; bReviews: {experimentId:string;model:string;assessment:string}[] }; active: { executionMode:ExecutionMode; A: RulesA; B: { version: string } } };
 const app=document.querySelector<HTMLDivElement>('#app')!;
 app.innerHTML=`
 <header><div><span class="eyebrow">RUGBY PLAYER MODEL · 研究基盤</span><h1>選手の視点から、判断を研究する。</h1></div><div class="badge">LOCAL / PRIVATE</div></header>
@@ -30,7 +31,7 @@ app.innerHTML=`
 </section><aside><span class="eyebrow">共同研究 LOOP</span><h2>気づきを原則候補にする</h2><p>場面・時刻・選手・観測を保存。Codexと候補を編集し、本人がA/Bを別に承認します。</p>
 <label>指導前に凍結した評価条件<select id="evaluation-sets"><option value="">なし（固定回帰のみ）</option></select></label><p class="hint">未使用条件と同じprofile・評価基準をCLIで先にfreeze。自然言語の意味解釈とJSON化はCodexと手動で行います。</p><label>指導する区間の開始tick<input id="from-tick" type="number" min="0" value="0"></label><p id="coaching-window" class="hint"></p><label for="feedback">フィードバック</label><textarea id="feedback" placeholder="例：見失った支援選手の位置を断定せず、首を振って確認したい。"></textarea><button id="propose" class="primary">この場面で候補を保存</button>
 <label>保存済み候補<select id="candidates"><option value="">候補なし</option></select></label><p id="candidate-context" class="hint"></p>
-<details open><summary>候補を編集（自動解釈なし）</summary><label>A · 実行パラメータの差分 JSON<textarea id="patch" spellcheck="false">{}</textarea></label><label>B · 原則 JSON<textarea id="principle" spellcheck="false"></textarea></label><label>変更理由・予測・反例 JSON<textarea id="study-notes" placeholder='{"rationale":"理由","expectedEffect":"対象条件で予測する変化","counterexample":"変えない条件／反例"}'></textarea></label><button id="save-edit">候補の編集を保存</button><p class="hint">A: contextRules（観測条件・例外・行動／模擬call）、scanBias等。contextRulesは配列全体を置換するため既存原則を保持して編集。B: TODO欄をCodexと記述。承認前は実行に影響しません。</p></details>
+<details open><summary>候補を編集（自動解釈なし）</summary><label>候補のA研究モード<select id="execution-mode"><option value="legacy">従来</option><option value="finite">H-WM-1：容量指定</option><option value="unlimited">H-WM-1：無制限</option></select></label><label>K<input id="execution-k" type="number" min="1" max="128" value="4"></label><p class="hint">未検証の研究モード。受け手の比較・選択に対する容量制約です。全判断をK件に制限する、人間作業記憶の完成モデルではありません。保持観測による危険／定位と既存のfresh判定は容量制約外です。選択だけでは実行中のAを変更しません。</p><button id="mode-study">同じ観測で従来・無制限・有限を保存比較</button><pre id="mode-study-result"></pre><label>A · 実行パラメータの差分 JSON<textarea id="patch" spellcheck="false">{}</textarea></label><label>B · 原則 JSON<textarea id="principle" spellcheck="false"></textarea></label><label>変更理由・予測・反例 JSON<textarea id="study-notes" placeholder='{"rationale":"理由","expectedEffect":"対象条件で予測する変化","counterexample":"変えない条件／反例"}'></textarea></label><button id="save-edit">候補の編集を保存</button><p class="hint">A: contextRules（観測条件・例外・行動／模擬call）、scanBias等。contextRulesは配列全体を置換するため既存原則を保持して編集。B: TODO欄をCodexと記述。承認前は実行に影響しません。</p></details>
 <button id="codex-context">Codex用の観測contextを保存</button><button id="restore-candidate">候補の場面を復元</button><label>差戻し・再提案の理由<textarea id="review-reason"></textarea></label><button id="revise">同場面で新候補（現承認版基準）</button><label class="confirm"><input type="checkbox" id="owner">本人としてこの内容を確認しました</label>
 <div class="review"><button id="approve-a">A 採用</button><button id="reject-a">A 却下</button><button id="return-a">A 差戻し</button><button id="undo-a">A undo</button><button id="approve-b">B 採用</button><button id="reject-b">B 却下</button><button id="return-b">B 差戻し</button><button id="undo-b">B undo</button></div>
 <button id="preview">保存済み候補をpreview＋固定回帰</button><button id="compare">現在の承認版と比較＋固定回帰</button><button id="export-b">B文書をダウンロード</button><pre id="comparison"></pre>
@@ -51,6 +52,7 @@ async function api(path:string,data?:unknown) {
   }return value;
 }
 let state:ServerState, rules=defaultRulesA(), bVersion='B0', world=makeWorld('support',42), memory:Memory=emptyMemory(), profile:Profile=defaultProfile();
+let executionMode:ExecutionMode=legacyMode();
 let trace:Trace, playing=false, selected='', renderedRevision=-1, displayedCandidate='';
 let history=newHistory(memory);
 const view=new View($('viewport'));
@@ -86,9 +88,9 @@ function comparisonStep(){const c=comparisonPlayback!;if(c.index<comparisonRun()
 function pause(){playing=false;$('play').textContent='再生';}
 function render(){
   if(comparisonPlayback){renderComparison();return;}
-  if(!history.events.length)appendObservation(history,sense(world),profile,rules,'initial');
+  if(!history.events.length)appendObservation(history,sense(world),profile,rules,'initial',executionMode);
   $('history-status').textContent=`観測履歴 ${history.events.length}/256件 · ${history.mode} · 頭向き（眼球の独立計測なし）`;
-  trace=think(sense(world),memory,profile,rules); view.draw(world);
+  trace=thinkWithMode(sense(world),memory,profile,rules,executionMode); view.draw(world);
   $('clock').textContent=`${world.time.toFixed(1)}s · ${world.dynamic?`tick ${world.dynamic.tick}/${world.dynamic.scene.definition.durationTicks} · r${world.dynamic.scene.revision}`:`seed ${world.seed}`}`;$('intention').textContent=trace.intention.action;
   input('from-tick').disabled=!world.dynamic;input('from-tick').max=String(world.dynamic?.tick??0);
   $('coaching-window').textContent=world.dynamic?`対象 observer-0 · 終了tick ${world.dynamic.tick} · 場面 ${world.dynamic.scene.sceneId} / r${world.dynamic.scene.revision}`:'静的snapshot: 観測時刻を固定';
@@ -96,21 +98,21 @@ function render(){
   input('head').value=String(world.body.headYaw*180/Math.PI);$('head-value').textContent=`${Math.round(world.body.headYaw*180/Math.PI)}°`;
   input('body').value=String(world.body.yaw*180/Math.PI);
   $('beliefs').textContent=trace.beliefs.map(b=>`${b.entityId} ${b.modality} · 観測 ${b.observedAt.toFixed(1)}s / 現在確信 ${b.currentConfidence.toFixed(2)}`).join('\n')||'未観測。世界の真値から補完しません。';
-  $('trace').textContent=JSON.stringify({modelRevision:trace.modelRevision,attention:trace.attention,assessment:trace.assessment,appliedRules:trace.appliedRules,emittedCalls:world.emittedCalls??[],diagnostics:sceneDiagnostics(world),evaluation:trace.evaluation,intention:trace.intention,bodyOutput:trace.output},null,2);
+  $('trace').textContent=JSON.stringify({modelRevision:trace.modelRevision,executionMode,deliberation:trace.deliberation,attention:trace.attention,assessment:trace.assessment,appliedRules:trace.appliedRules,emittedCalls:world.emittedCalls??[],diagnostics:sceneDiagnostics(world),evaluation:trace.evaluation,intention:trace.intention,bodyOutput:trace.output},null,2);
 }
-function snapshot():Snapshot{return {contractVersion:world.dynamic?2:1,scene:world.scene,seed:world.seed,world:structuredClone(world),bundle:sense(world),memoryBefore:structuredClone(memory),profile:structuredClone(profile),rulesA:structuredClone(rules),rulesBVersion:bVersion,observationHistory:structuredClone(history)};}
+function snapshot():Snapshot{return {contractVersion:world.dynamic?2:1,scene:world.scene,seed:world.seed,world:structuredClone(world),bundle:sense(world),memoryBefore:structuredClone(memory),profile:structuredClone(profile),rulesA:structuredClone(rules),rulesBVersion:bVersion,executionMode:structuredClone(executionMode),observationHistory:structuredClone(history)};}
 function observe(trigger:ObservationEvent['trigger'],update:()=>void=()=>{}){
   if(history.events.length>=HISTORY_LIMIT)throw new Error('観測履歴が256件です。snapshotを保存してresetしてください。');
   memory=history.events.length?structuredClone(trace.longTermMemory):structuredClone(history.initialMemory);
-  update();appendObservation(history,sense(world),profile,rules,history.events.length?trigger:'initial');render();
+  update();appendObservation(history,sense(world),profile,rules,history.events.length?trigger:'initial',executionMode);render();
 }
 function step(){if(world.dynamic&&world.dynamic.tick>=world.dynamic.scene.definition.durationTicks){pause();say('場面の終端です。snapshotを保存して比較、またはresetしてください。');return;}observe('step',()=>{world=advance(world,trace);});}
 function restoreSnapshot(saved:Snapshot){
   const nextHistory=saved.observationHistory?structuredClone(saved.observationHistory):newHistory(saved.memoryBefore,saved.world);
-  const changed=!!saved.observationHistory&&JSON.stringify(saved.rulesA)!==JSON.stringify(rules);
+  const changed=!!saved.observationHistory&&(JSON.stringify(saved.rulesA)!==JSON.stringify(rules)||JSON.stringify(saved.executionMode??legacyMode())!==JSON.stringify(executionMode));
   if(changed&&nextHistory.events.length>=HISTORY_LIMIT)throw new Error('履歴上限のため承認版を変えた復元は不可。保存結果を参照し、新しい場面でresetしてください。');
   pause();world=structuredClone(saved.world);memory=structuredClone(saved.memoryBefore);profile=structuredClone(saved.profile);history=nextHistory;
-  trace=think(saved.bundle,saved.memoryBefore,saved.profile,saved.rulesA);
+  trace=thinkWithMode(saved.bundle,saved.memoryBefore,saved.profile,saved.rulesA,saved.executionMode??legacyMode());
   select('scene').value=world.dynamic?`${world.dynamic.scene.sceneId}:${world.dynamic.scene.revision}`:world.scene;input('seed').value=String(world.seed??0);input('from-tick').value=String(Math.round((history.events[0]?.bundle.time??world.time)/.2));syncProfile();
   if(changed)observe('restore');else render();
 }
@@ -119,6 +121,8 @@ function loadCandidate(){
   area('study-notes').value=c.notes?JSON.stringify(c.notes,null,2):'';
   area('patch').value=JSON.stringify(c.patchA,null,2);area('principle').value=JSON.stringify(c.principle,null,2);
   $('candidate-context').textContent=`${c.id} · revision ${c.revision}\n${c.context.scene} · seed ${c.context.seed} · ${c.context.bundle.time}s · ${c.context.bundle.playerId}${c.coaching?` · r${c.coaching.revision} · tick ${c.coaching.fromTick}–${c.coaching.toTick}`:""}\nA: ${c.decisions.A} / B: ${c.decisions.B}${c.parentCandidateId?` · 親候補 ${c.parentCandidateId}`:""}`;
+  const savedStudy=Object.values(state.state.modeStudies).filter(study=>study.candidateId===c.id).at(-1);$('mode-study-result').textContent=savedStudy?JSON.stringify(savedStudy,null,2):'';
+  const mode=c.executionMode??c.context.executionMode??legacyMode();select('execution-mode').value=mode.mode==='legacy'?'legacy':mode.capacity.kind;if(mode.mode==='h-wm-1'&&mode.capacity.kind==='finite')input('execution-k').value=String(mode.capacity.k);
   input('owner').checked=false;
 }
 let refreshQueue:Promise<void>=Promise.resolve(),pendingApplication:ApplicationPoint|undefined;
@@ -128,13 +132,13 @@ async function refreshState(force=false){
   if(pendingApplication){await api('application',{point:pendingApplication});pendingApplication=undefined;}
   const data:ServerState=await api('state');
   if(comparisonPlayback)return;
-  bridgeReady=data.apiVersion===5;
+  bridgeReady=data.apiVersion===6;
   if(!bridgeReady){pause();input('owner').checked=false;throw new Error('古いbridgeです。dev serverを停止して再起動してください。');}
   if(!force&&data.state.revision===renderedRevision)return;
   const changed=rules.version!==data.active.A.version||bVersion!==data.active.B.version;
   const oldA=rules.version,oldB=bVersion;
   if(changed){pause();if(history.events.length>=HISTORY_LIMIT)throw new Error('履歴上限のため承認版の適用を停止しました。snapshotを保存しresetしてください。');}
-  state=data;renderedRevision=data.state.revision;rules=data.active.A;bVersion=data.active.B.version;
+  state=data;renderedRevision=data.state.revision;rules=data.active.A;bVersion=data.active.B.version;executionMode=data.active.executionMode;
   const sceneSelection=select('scene').value;
   for(const option of Array.from(select('scene').options))if(option.value.includes(':'))option.remove();
   for(const revisions of Object.values(data.state.scenes))for(const r of revisions)select('scene').append(new Option(`動的 ${r.sceneId.slice(0,8)} / r${r.revision} · ${r.actorCount}人`,`${r.sceneId}:${r.revision}`));
@@ -175,10 +179,11 @@ on('view',()=>{view.spectator=!view.spectator;$('view').textContent=view.spectat
 input('head').oninput=()=>{pause();const next=Number(input('head').value)*Math.PI/180;if(next===world.body.headYaw)return;try{observe('head-turn',()=>{world.body.headYaw=next;});}catch(e){render();say(String(e));}};
 input('body').oninput=()=>{pause();const next=Number(input('body').value)*Math.PI/180;if(next===world.body.yaw)return;try{observe('body-turn',()=>{world.body.yaw=next;});}catch(e){render();say(String(e));}};
 function syncProfile(){input('speed').value=String(profile.ability.maxSpeed);input('pass-range').value=String(profile.ability.passRange);input('reliability').value=String(profile.selfEstimate.passReliability);input('preference').value=String(profile.preference.carry);input('adherence').value=String(profile.tactics.adherence);select('tactic').value=profile.tactics.preferredAction;}
-for(const id of ['speed','pass-range','reliability','preference','adherence','tactic'])input(id).onchange=()=>{pause();const next=structuredClone(profile);next.ability.maxSpeed=Number(input('speed').value);next.ability.passRange=Number(input('pass-range').value);next.selfEstimate.passReliability=Number(input('reliability').value);next.preference.carry=Number(input('preference').value);next.tactics.adherence=Number(input('adherence').value);next.tactics.preferredAction=select('tactic').value as Profile['tactics']['preferredAction'];try{think(sense(world),memory,next,rules);observe('configuration',()=>{profile=next;});}catch(e){syncProfile();say(String(e));}};
+for(const id of ['speed','pass-range','reliability','preference','adherence','tactic'])input(id).onchange=()=>{pause();const next=structuredClone(profile);next.ability.maxSpeed=Number(input('speed').value);next.ability.passRange=Number(input('pass-range').value);next.selfEstimate.passReliability=Number(input('reliability').value);next.preference.carry=Number(input('preference').value);next.tactics.adherence=Number(input('adherence').value);next.tactics.preferredAction=select('tactic').value as Profile['tactics']['preferredAction'];try{thinkWithMode(sense(world),memory,next,rules,executionMode);observe('configuration',()=>{profile=next;});}catch(e){syncProfile();say(String(e));}};
 on('propose',async()=>{pause();const saved=await api('snapshot',{snapshot:snapshot()});const c=await api('propose',{snapshotId:saved.id,feedback:area('feedback').value,window:world.dynamic?{fromTick:Number(input('from-tick').value),toTick:world.dynamic.tick,playerId:'observer-0'}:undefined,evaluationSetId:select('evaluation-sets').value||undefined});selected=c.id;await refresh(true);say(`候補保存: ${c.id}。実行ルールは未変更です。`);});
 select('candidates').onchange=()=>{selected=select('candidates').value;loadCandidate();};
-on('save-edit',async()=>{await api('edit',{id:selected,patchA:JSON.parse(area('patch').value),principle:JSON.parse(area('principle').value),expectedRevision:state.state.candidates[selected]?.revision,notes:readNotes()});await refresh(true);say('候補の編集を保存。A/Bそれぞれの本人承認を待っています。');});
+on('mode-study',async()=>{const c=state.state.candidates[selected];if(!c)throw new Error('候補を選んでください');const study=await api('mode-study',{id:selected,expectedRevision:c.revision,k:Number(input('execution-k').value)});await refresh();$('mode-study-result').textContent=JSON.stringify(study,null,2);say('3 armを保存。有限対無制限が容量対照、従来対無制限はpolicy差です。採用状態は変更しません。');});
+on('save-edit',async()=>{await api('edit',{id:selected,patchA:JSON.parse(area('patch').value),principle:JSON.parse(area('principle').value),expectedRevision:state.state.candidates[selected]?.revision,notes:readNotes(),executionMode:readMode()});await refresh(true);say('候補の編集を保存。A/Bそれぞれの本人承認を待っています。');});
 for(const target of ['A','B']){
   for(const decision of ['approve','reject','return'])on(`${decision}-${target.toLowerCase()}`,async()=>{
     if(!input('owner').checked)throw new Error('本人確認欄をチェックしてください');
@@ -200,7 +205,8 @@ for(const mode of ['preview','active'] as const)on(mode==='preview'?'preview':'c
   say(mode==='preview'?`保存済み候補 revision ${report.candidateRevision} の一時previewです。実行中のA/B版・承認状態は変えていません。層別ケースで効果と反例を確認してください。`:'保存時と現在の承認版Aを同じ入力で比較。層別ケースは合成回帰評価で、人間妥当性の証明ではありません。');
 });
 function readNotes(){return area('study-notes').value.trim()?JSON.parse(area('study-notes').value):undefined;}
-function candidateDirty(c:Candidate){return JSON.stringify(JSON.parse(area('patch').value))!==JSON.stringify(c.patchA)||JSON.stringify(JSON.parse(area('principle').value))!==JSON.stringify(c.principle)||JSON.stringify(readNotes())!==JSON.stringify(c.notes);}
+function readMode():ExecutionMode {const mode=select('execution-mode').value;return mode==='legacy'?legacyMode():mode==='unlimited'?unlimitedMode():finiteMode(Number(input('execution-k').value));}
+function candidateDirty(c:Candidate){return JSON.stringify(readMode())!==JSON.stringify(c.executionMode??c.context.executionMode??legacyMode())||JSON.stringify(JSON.parse(area('patch').value))!==JSON.stringify(c.patchA)||JSON.stringify(JSON.parse(area('principle').value))!==JSON.stringify(c.principle)||JSON.stringify(readNotes())!==JSON.stringify(c.notes);}
 function download(name:string,value:unknown){const url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);}
 on('codex-context',()=>{const c=state.state.candidates[selected];if(!c)throw new Error('候補を選んでください');download(`context-${c.id}.json`,observationContext(c));say('保存済み候補の観測contextです。Codexへ渡し、意味・例外・反例を共同編集してください。');});
 on('restore-candidate',()=>{const c=state.state.candidates[selected];if(!c)throw new Error('候補を選んでください');restoreSnapshot(c.context);say('候補の観測条件を復元。実行ルールは現在の承認版です。');});

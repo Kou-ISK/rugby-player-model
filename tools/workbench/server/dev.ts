@@ -17,7 +17,7 @@ server.on('request', async (req, res) => {
   try {
     if (req.headers.origin && !hosts.map(h => `http://${h}`).includes(req.headers.origin)) throw new Error('Invalid Origin');
     if (req.method === 'GET') {
-      if (req.url === '/api/state') { const state = store.read(); res.end(JSON.stringify({ apiVersion: 5, state:{...state,scenes:Object.fromEntries(Object.entries(state.scenes).map(([id,versions])=>[id,versions.map(({definition,trackingIds,...ref})=>({...ref,durationTicks:definition.durationTicks,actorCount:definition.actors.length}))])),evaluationSets:Object.fromEntries(Object.entries(state.evaluationSets).map(([id,set])=>[id,{id,at:set.at,digest:set.digest,caseCount:set.draft.cases.length}])),experiments:Object.fromEntries(Object.entries(state.experiments).map(([id,e])=>[id,experimentSummary(e)]))}, active: store.active(state) })); }
+      if (req.url === '/api/state') { const state = store.read(); res.end(JSON.stringify({ apiVersion: 6, state:{...state,scenes:Object.fromEntries(Object.entries(state.scenes).map(([id,versions])=>[id,versions.map(({definition,trackingIds,...ref})=>({...ref,durationTicks:definition.durationTicks,actorCount:definition.actors.length}))])),evaluationSets:Object.fromEntries(Object.entries(state.evaluationSets).map(([id,set])=>[id,{id,at:set.at,digest:set.digest,caseCount:set.draft.cases.length}])),experiments:Object.fromEntries(Object.entries(state.experiments).map(([id,e])=>[id,experimentSummary(e)]))}, active: store.active(state) })); }
       else if (req.url === '/api/export-b') res.end(JSON.stringify(store.exportBData()));
       else { res.writeHead(404).end('{}'); }
       return;
@@ -34,7 +34,7 @@ server.on('request', async (req, res) => {
       case '/api/application': result=store.recordApplication(data.point);break;
       case '/api/snapshot': result = { id: store.saveSnapshot(data.snapshot) }; break;
       case '/api/propose': result = store.propose(data.snapshotId, data.feedback,data.evaluationSetId,data.window); break;
-      case '/api/edit': result = store.edit(data.id, data.patchA, data.principle, data.expectedRevision,data.notes); break;
+      case '/api/edit': result = store.edit(data.id, data.patchA, data.principle, data.expectedRevision,data.notes,data.executionMode); break;
       case '/api/review': store.review(data.id, data.target, data.decision, data.actor, data.expectedRevision,data.reason); result = store.active(); break;
       case '/api/revise': result=store.revise(data.id,data.reason,data.expectedRevision);break;
       case '/api/run': result=store.runExperiment(data.id,data.expectedRevision,data.steps,data.mode);break;
@@ -44,6 +44,7 @@ server.on('request', async (req, res) => {
       case '/api/b-evaluator-map': result=store.bEvaluatorMap(data.id);break;
       case '/api/b-review': result=store.saveBReview(data.id,data.model,data.output,data.assessment,data.arm,data.group);break;
       case '/api/undo': store.undo(data.target, data.actor, data.expectedVersion); result = store.active(); break;
+      case '/api/mode-study': result=store.modeStudy(data.id,data.expectedRevision,data.k);break;
       case '/api/compare': result = store.comparison(data.id, { mode: data.mode || 'active', expectedRevision: data.expectedRevision }); break;
       default: res.writeHead(404).end('{}'); return;
     }

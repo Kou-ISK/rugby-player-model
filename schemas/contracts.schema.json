@@ -79,6 +79,77 @@
     },
     "ApplicationPoint": {
       "$ref": "https://rugby-player-model.local/schema/records-v1#/$defs/ApplicationPoint"
+    },
+    "ExecutionMode": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "policyVersion"
+          ],
+          "properties": {
+            "mode": {
+              "const": "legacy"
+            },
+            "policyVersion": {
+              "const": "legacy-ecc5c298-v1"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "policyVersion",
+            "capacity"
+          ],
+          "properties": {
+            "mode": {
+              "const": "h-wm-1"
+            },
+            "policyVersion": {
+              "const": "receiver-deliberation-v1"
+            },
+            "capacity": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "k"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "finite"
+                    },
+                    "k": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 128
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "unlimited"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
     }
   }
 }

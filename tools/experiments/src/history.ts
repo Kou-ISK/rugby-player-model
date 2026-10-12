@@ -1,3 +1,4 @@
+import type { ExecutionMode } from '../../../models/player/reference/src/execution-mode.js';
 import { replayObservationSequence } from '../../../models/player/reference/src/replay.js';
 import { sceneRef } from '../../simulation/src/scene';
 import type { Bundle, Memory, ObservationEvent, Profile, RulesA } from '../../../models/player/reference/src/contracts.js';
@@ -7,11 +8,11 @@ import { think } from '../../../models/player/reference/src/cognition';
 import { validate, validateEvidence, canonicalJson } from './validation';
 export const HISTORY_LIMIT=256;
 export const newHistory=(initialMemory:Memory,world?:World):ObservationHistory=>({version:world?.dynamic?2:1,mode:world?.dynamic?'fixed-step-study':'static-study',...(world?.dynamic?{sceneRef:sceneRef(world.dynamic.scene)}:{}),initialMemory:structuredClone(initialMemory),events:[]});
-export function appendObservation(history:ObservationHistory,bundle:Bundle,profile:Profile,rulesA:RulesA,trigger:ObservationEvent['trigger']){
+export function appendObservation(history:ObservationHistory,bundle:Bundle,profile:Profile,rulesA:RulesA,trigger:ObservationEvent['trigger'],executionMode?:ExecutionMode){
   if(history.events.length>=HISTORY_LIMIT)throw new Error('観測履歴は256件まで。snapshotを保存してresetしてください。履歴は切り捨てません。');
-  history.events.push({sequence:history.events.length,trigger,bundle:structuredClone(bundle),profile:structuredClone(profile),rulesA:structuredClone(rulesA)});
+  history.events.push({sequence:history.events.length,trigger,bundle:structuredClone(bundle),profile:structuredClone(profile),rulesA:structuredClone(rulesA),...(executionMode?{executionMode:structuredClone(executionMode)}:{})});
 }
-export function replayObservationHistory(history:ObservationHistory,override?:{profile:Profile;rulesA:RulesA}){
+export function replayObservationHistory(history:ObservationHistory,override?:{profile:Profile;rulesA:RulesA;executionMode?:ExecutionMode}){
   validate('ObservationHistory',history);
   if((history.version===2)!==(history.mode==='fixed-step-study')||(history.version===2)!==!!history.sceneRef)throw new Error('Observation history version/mode/ref mismatch');
   return {mode:history.mode,...replayObservationSequence({initialMemory:history.initialMemory,events:history.events},override)};

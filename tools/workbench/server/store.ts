@@ -1,3 +1,4 @@
+import { execute, finiteMode, legacyMode, unlimitedMode, validateMode, type ExecutionMode } from '../../../models/player/reference/src/index.js';
 import { engineFingerprint as fingerprint, engineFingerprintFormat, readJudgmentBaseline, repositoryRoot } from './artifact-resolver';
 import { validateSceneDefinition, sceneContent, sceneWorld, sceneRef, type SceneRevision } from '../../simulation/src/scene';
 import { mkdirSync, readFileSync, writeFileSync, renameSync, rmSync, existsSync } from 'node:fs';
@@ -26,17 +27,18 @@ function gitProvenance(){
 }
 export type Target = 'A' | 'B';
 type Event = { id: string; at: string; action: string; target?: Target; candidateId?: string; actor: string; version?: string;
-  candidateRevision?: number; reviewedContent?: { patchA: Candidate['patchA']; principle: Principle; notes?: StudyNotes }; confirmedVersion?: string; reason?: string; parentCandidateId?: string; sceneId?:string; sceneRevision?:number; application?:ApplicationPoint };
+  candidateRevision?: number; reviewedContent?: { patchA: Candidate['patchA']; principle: Principle; notes?: StudyNotes; executionMode?:ExecutionMode }; confirmedVersion?: string; reason?: string; parentCandidateId?: string; sceneId?:string; sceneRevision?:number; application?:ApplicationPoint };
 export class ConflictError extends Error { readonly statusCode = 409; }
 function checkRevision(c: Candidate, expected: number) {
   if (!Number.isInteger(expected) || expected < 1) throw new Error('expectedRevision is required');
   if (c.revision !== expected) throw new ConflictError('Candidate revision changed; reload and confirm the displayed content again');
 }
 export type SceneComparison = {id:string;at:string;kind:'changed-scene-fixed-rules';sameConditions:false;rulesA:RulesA;before:{snapshotId:string;snapshot:Snapshot;run:ReplayResult};after:{snapshotId:string;snapshot:Snapshot;run:ReplayResult}};
-export type State = { sceneComparisons:Record<string,SceneComparison>; scenes:Record<string,SceneRevision[]>; format: 1; revision: number; snapshots: Record<string, Snapshot>; candidates: Record<string, Candidate>;
+export type ModeStudy={id:string;at:string;candidateId:string;candidateRevision:number;engineFingerprint:string;inputSha256:string;arms:{name:string;result:ReturnType<typeof execute>}[]};
+export type State = { modesA:Record<string,ExecutionMode>; modeStudies:Record<string,ModeStudy>; sceneComparisons:Record<string,SceneComparison>; scenes:Record<string,SceneRevision[]>; format: 1; revision: number; snapshots: Record<string, Snapshot>; candidates: Record<string, Candidate>;
   versionsA: Record<string, RulesA>; versionsB: Record<string, RulesB>; activeA: string[]; activeB: string[]; events: Event[];
   experiments: Record<string, Experiment>; bReviews: BReview[]; evaluationSets:Record<string,FrozenEvaluation> };
-const initial = (): State => ({ sceneComparisons:{}, scenes:{}, format: 1, revision: 0, snapshots: {}, candidates: {}, versionsA: { A0: defaultRulesA() },
+const initial = (): State => ({ modesA:{},modeStudies:{},sceneComparisons:{}, scenes:{}, format: 1, revision: 0, snapshots: {}, candidates: {}, versionsA: { A0: defaultRulesA() },
   versionsB: { B0: { version: 'B0', principles: [] } }, activeA: ['A0'], activeB: ['B0'], events: [], experiments: {}, bReviews: [], evaluationSets:{} });
 export class Store {
   readonly dir: string;
@@ -47,7 +49,7 @@ export class Store {
     if (state.format !== 1 || !Number.isInteger(state.revision)) throw new Error('Unsupported/corrupt session format');
     // Legacy sessions retain their data. Historical events are not retroactively attested.
     for (const c of Object.values(state.candidates)) c.revision ??= 1;
-    state.experiments ??= {};state.bReviews ??= [];state.evaluationSets??={};state.scenes??={};state.sceneComparisons??={};
+    state.modesA??={};state.modeStudies??={};state.experiments ??= {};state.bReviews ??= [];state.evaluationSets??={};state.scenes??={};state.sceneComparisons??={};
     return state;
   }
   private transact<T>(fn: (s: State) => T): T {
@@ -60,7 +62,7 @@ export class Store {
       return result;
     } finally { rmSync(lock, { recursive: true }); }
   }
-  active(s = this.read()) { return { A: s.versionsA[s.activeA.at(-1)!], B: s.versionsB[s.activeB.at(-1)!] }; }
+  active(s = this.read()) { return { A: s.versionsA[s.activeA.at(-1)!], executionMode:s.modesA[s.activeA.at(-1)!]??legacyMode(), B: s.versionsB[s.activeB.at(-1)!] }; }
   getScene(id:string, revision:number):SceneRevision {
     const scene=this.read().scenes[id]?.find(x=>x.revision===revision);if(!scene)throw new Error('Unknown scene revision');return structuredClone(scene);
   }
@@ -106,7 +108,7 @@ export class Store {
       if(canonical(before.profile)!==canonical(after.profile))throw new Error('Scene comparison must keep the same profile');
       this.assertSceneBinding(before,s);this.assertSceneBinding(after,s);
       const result:SceneComparison={id:randomUUID(),at:new Date().toISOString(),kind:'changed-scene-fixed-rules',sameConditions:false,rulesA:structuredClone(rules),
-        before:{snapshotId:beforeId,snapshot:structuredClone(before),run:replay(before,rules,steps)},after:{snapshotId:afterId,snapshot:structuredClone(after),run:replay(after,rules,steps)}};
+        before:{snapshotId:beforeId,snapshot:structuredClone(before),run:replay(before,rules,steps,undefined,s.modesA[rules.version]??legacyMode())},after:{snapshotId:afterId,snapshot:structuredClone(after),run:replay(after,rules,steps,undefined,s.modesA[rules.version]??legacyMode())}};
       s.sceneComparisons[result.id]=result;return result;
     });
   }
@@ -144,7 +146,8 @@ export class Store {
       s.events.push({ id: randomUUID(), at: new Date().toISOString(), action: 'propose', candidateId: c.id, actor: 'local' }); return c;
     });
   }
-  edit(id: string, patchA: Candidate['patchA'], principle: Principle, expectedRevision: number, notes?: StudyNotes): Candidate {
+  edit(id: string, patchA: Candidate['patchA'], principle: Principle, expectedRevision: number, notes?: StudyNotes,executionMode?:ExecutionMode): Candidate {
+    if(executionMode!==undefined)validateMode(executionMode);
     validate('PatchA', patchA); validate('Principle', principle);
     if(notes!==undefined)validate('StudyNotes',notes);
     return this.transact(s => {
@@ -152,7 +155,7 @@ export class Store {
       checkRevision(c, expectedRevision);
       if (c.decisions.A !== 'pending' || c.decisions.B !== 'pending') throw new Error('Reviewed candidate is immutable; create another candidate');
       c.patchA = structuredClone(patchA); c.principle = structuredClone(principle); c.revision++;
-      if(notes)c.notes=structuredClone(notes);
+      if(notes)c.notes=structuredClone(notes);if(executionMode)c.executionMode=structuredClone(executionMode);
       s.events.push({ id: randomUUID(), at: new Date().toISOString(), action: 'edit', candidateId: id, candidateRevision: c.revision, actor: 'local' }); return c;
     });
   }
@@ -167,12 +170,12 @@ export class Store {
       if (c.decisions[target] !== 'pending') throw new Error('Already reviewed');
       let version: string | undefined;
       if (decision === 'approve' && target === 'A') {
-        if (!Object.keys(c.patchA).length) throw new Error('Edit explicit A patch first');
+        if (!Object.keys(c.patchA).length&&!c.executionMode) throw new Error('Edit explicit A patch first');
         if(c.patchA.contextRules?.length&&!c.notes)throw new Error('Conditional principles require rationale, expected effect and counterexample notes');
-        if (c.context.rulesA.version !== this.active(s).A.version) throw new ConflictError('Stale A base: capture a new snapshot and propose again');
+        if (c.context.rulesA.version !== this.active(s).A.version || canonical(c.context.executionMode??legacyMode())!==canonical(this.active(s).executionMode)) throw new ConflictError('Stale A base: capture a new snapshot and propose again');
         version = `A${Object.keys(s.versionsA).length}`;
         const rules = { ...this.active(s).A, ...c.patchA, version }; validate('RulesA', rules);
-        s.versionsA[version] = rules; s.activeA.push(version);
+        s.versionsA[version] = rules;s.modesA[version]=structuredClone(c.executionMode??c.context.executionMode??legacyMode()); s.activeA.push(version);
       }
       if (decision === 'approve' && target === 'B') {
         if (Object.values(c.principle).some(v => typeof v === 'string' && v.includes('TODO:'))) throw new Error('Complete B principle fields first');
@@ -182,7 +185,7 @@ export class Store {
       }
       c.decisions[target] = decision === 'approve' ? 'approved' : decision==='return'?'returned':'rejected';
       s.events.push({ id: randomUUID(), at: new Date().toISOString(), action: decision, candidateId: id, target, actor,
-        candidateRevision: expectedRevision, reviewedContent: structuredClone({ patchA: c.patchA, principle: c.principle, ...(c.notes?{notes:c.notes}:{}) }),
+        candidateRevision: expectedRevision, reviewedContent: structuredClone({ patchA: c.patchA, principle: c.principle, ...(c.notes?{notes:c.notes}:{}),...(c.executionMode?{executionMode:c.executionMode}:{}) }),
         ...(reason?{reason}:{}),
         ...(version ? { version } : {}) }); return s;
     });
@@ -192,10 +195,10 @@ export class Store {
     return this.transact(s=>{
       const parent=s.candidates[id];if(!parent)throw new Error('Unknown candidate');checkRevision(parent,expectedRevision);
       const active=this.active(s), context=structuredClone(parent.context);
-      context.rulesA=structuredClone(active.A);context.rulesBVersion=active.B.version;
+      context.rulesA=structuredClone(active.A);context.rulesBVersion=active.B.version;context.executionMode=structuredClone(active.executionMode);
       const child=candidateDraft(randomUUID(),reason,context);child.parentCandidateId=id;if(parent.coaching)child.coaching=structuredClone(parent.coaching);
       if(parent.evaluationSetId)child.evaluationSetId=parent.evaluationSetId;
-      child.patchA=structuredClone(parent.patchA);child.principle=structuredClone(parent.principle);
+      if(parent.executionMode)child.executionMode=structuredClone(parent.executionMode);child.patchA=structuredClone(parent.patchA);child.principle=structuredClone(parent.principle);
       if(parent.notes)child.notes=structuredClone(parent.notes);
       s.candidates[child.id]=child;s.events.push({id:randomUUID(),at:new Date().toISOString(),action:'revise',actor:'local',candidateId:child.id,parentCandidateId:id,reason});
       return child;
@@ -220,7 +223,7 @@ export class Store {
     const after = options.mode === 'preview' ? { ...c.context.rulesA, ...c.patchA, version: `preview:${c.id}:r${c.revision}` } : active.A;
     validate('RulesA', after);
     return { mode: options.mode, candidateRevision: c.revision, activeVersion: active.A.version,
-      staleBase: c.context.rulesA.version !== active.A.version, recorded: compare(c.context, after), regressionKind:'published-fixed-regression', regression: regressionCompare(c.context.rulesA, after,c.context.profile),
+      staleBase: c.context.rulesA.version !== active.A.version, executionModes:{before:c.context.executionMode??legacyMode(),after:options.mode==='preview'?c.executionMode??c.context.executionMode??legacyMode():active.executionMode},recorded: compare(c.context, after,options.mode==='preview'?c.executionMode??c.context.executionMode??legacyMode():active.executionMode), regressionKind:'published-fixed-regression', regression: regressionCompare(c.context.rulesA, after,c.context.profile,c.context.executionMode??legacyMode(),options.mode==='preview'?c.executionMode??c.context.executionMode??legacyMode():active.executionMode),
       B: { before: c.context.rulesBVersion, after: active.B, evaluation: 'Manual standalone-model review required; no AI service called.' } };
   }
   runExperiment(id: string, expectedRevision: number, steps: number, mode: 'preview'|'active') {
@@ -237,7 +240,7 @@ export class Store {
       if(c.evaluationSetId&&!set)throw new Error('Missing frozen evaluation set');
       if(set&&(digest(set.draft)!==set.digest||canonical(set.profile)!==canonical(c.context.profile)))throw new Error('Frozen evaluation digest/profile mismatch');
       if(set&&Object.values(s.candidates).some(candidate=>set.draft.cases.some(test=>exposureReasons(test.snapshot,candidate.context).length)))throw new Error('Frozen evaluation observations became coaching data');
-      const results=experimentRun(c.context,afterA,steps,set?.draft.cases.map((test,i)=>({id:`frozen-${i+1}`,snapshot:test.snapshot})),c.coaching);
+      const results=experimentRun(c.context,afterA,steps,set?.draft.cases.map((test,i)=>({id:`frozen-${i+1}`,snapshot:test.snapshot})),c.coaching,mode==='preview'?c.executionMode??c.context.executionMode??legacyMode():active.executionMode);
       const useIndex=set?Object.values(s.experiments).filter(e=>e.evaluation?.set.id===set.id).length+1:0;
       const exposureMatches=Object.values(s.experiments).flatMap(e=>{
         const evidence=[e.candidate.context,...(e.evaluation?.set.draft.cases.map(c=>c.snapshot)??[]),...e.results.observationCases];
@@ -257,6 +260,15 @@ export class Store {
         B,results,bInputs:anonymizeCases(results.observationCases),
         ...(set?{evaluation:{set:structuredClone(set),useIndex,exposure:{policy:EXPOSURE_POLICY,matches:exposureMatches},status:!previouslyEvaluated&&useIndex===1?'first-recorded-use-owner-declared' as const:'reused-not-unseen' as const}}:{})};
       s.experiments[e.id]=e;return e;
+    });
+  }
+  modeStudy(id:string,expectedRevision:number,k:number){
+    const finite=finiteMode(k);if(fingerprint()!==loadedFingerprint)throw new Error('Engine source changed; restart before recording');
+    return this.transact(s=>{
+      const c=s.candidates[id];if(!c)throw new Error('Unknown candidate');checkRevision(c,expectedRevision);
+      const input={bundle:c.context.bundle,memory:c.context.memoryBefore,profile:c.context.profile,rules:c.context.rulesA};
+      const study:ModeStudy={id:randomUUID(),at:new Date().toISOString(),candidateId:id,candidateRevision:c.revision,engineFingerprint:loadedFingerprint,inputSha256:digest(input),arms:[['legacy',legacyMode()],['unlimited',unlimitedMode()],['finite',finite]].map(([name,executionMode])=>({name:name as string,result:execute({...input,executionContractVersion:2,executionMode})}))};
+      s.modeStudies[study.id]=study;return study;
     });
   }
   bPacket(experimentId: string, arm:BArm, group:CaseGroup) {

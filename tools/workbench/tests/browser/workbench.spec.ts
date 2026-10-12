@@ -74,3 +74,19 @@ test('a new client refuses writes against an older still-running bridge',async({
   await page.locator('#feedback').fill('must not submit');await page.locator('#propose').click();
   await expect(page.locator('#status')).toContainText('再起動');expect(writes).toEqual([]);
 });
+
+test('research mode saves three arms, remains preview-only, adopts A separately and restores mode after reload/undo',async({page,request})=>{
+ const initial=await (await request.get('/api/state')).json(),baseA=initial.active.A.version,baseB=initial.active.B.version;
+ await page.goto('/');await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
+ await page.locator('#feedback').fill('Synthetic H-WM-1: receiver deliberation capacity test');await page.locator('#propose').click();await expect(page.locator('#candidate-context')).toContainText('revision 1');
+ await page.locator('#execution-mode').selectOption('finite');await page.locator('#execution-k').fill('1');
+ await page.locator('#save-edit').click();await expect(page.locator('#candidate-context')).toContainText('revision 2');
+ await page.locator('#mode-study').click();await expect(page.locator('#mode-study-result')).toContainText('"name": "unlimited"');
+ await expect(page.locator('#versions')).toHaveText(`${baseA} / ${baseB}`);
+ await page.locator('#preview').click();await expect(page.locator('#comparison')).toContainText('preview');
+ await page.locator('#owner').check();await page.locator('#approve-a').click();await expect(page.locator('#trace')).toContainText('cognition-h-wm-1-v1');
+ const adopted=await (await request.get('/api/state')).json();expect(adopted.active.B.version).toBe(baseB);expect(adopted.active.executionMode.capacity).toEqual({kind:'finite',k:1});
+ await page.reload();await expect(page.locator('#trace')).toContainText('cognition-h-wm-1-v1');await expect(page.locator('#mode-study-result')).toContainText('"name": "unlimited"');await expect(page.locator('#execution-mode')).toHaveValue('finite');
+ await page.locator('#owner').check();await page.locator('#undo-a').click();await expect(page.locator('#versions')).toHaveText(`${baseA} / ${baseB}`);
+ expect((await (await request.get('/api/state')).json()).active.executionMode).toEqual(initial.active.executionMode);
+});

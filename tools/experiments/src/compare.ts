@@ -1,21 +1,22 @@
+import { legacyMode, type ExecutionMode } from '../../../models/player/reference/src/execution-mode.js';
 import { canonicalJson, validate, validateSnapshot } from './validation';
 import { sceneWorld, sceneDiagnostics, updateSceneFrame, sceneRef } from '../../simulation/src/scene';
 import type { CoachingWindow, Snapshot } from './contracts';
 import type { RulesA, Profile } from '../../../models/player/reference/src/contracts.js';
-import { think } from '../../../models/player/reference/src/cognition.js';
+import { thinkWithMode } from '../../../models/player/reference/src/cognition.js';
 import { sense } from '../../simulation/src/sensing';
 import { advance } from '../../simulation/src/body';
 import { replayObservationHistory, assertSnapshotHistory } from './history';
 import type { ExperimentResults, ReplayResult } from './records';
 export type RegressionCase = {id:string;seed:number;strata:string[];snapshot:Snapshot};
-export function compare(snapshot: Snapshot, after: RulesA) {
-  const run = (rules: RulesA) => think(snapshot.bundle, snapshot.memoryBefore, snapshot.profile, rules);
+export function compare(snapshot: Snapshot, after: RulesA,afterMode:ExecutionMode=snapshot.executionMode??legacyMode()) {
+  const run = (rules: RulesA,mode:ExecutionMode) => thinkWithMode(snapshot.bundle, snapshot.memoryBefore, snapshot.profile, rules,mode);
   return { scene: snapshot.scene, seed: snapshot.seed, time: snapshot.bundle.time, playerId: snapshot.bundle.playerId,
-    before: run(snapshot.rulesA), after: run(after), sameConditions: true,comparisonKind:'fixed-observation' as const };
+    before: run(snapshot.rulesA,snapshot.executionMode??legacyMode()), after: run(after,afterMode), sameConditions: true,comparisonKind:'fixed-observation' as const };
 }
 // Published fixed cases are regression probes, never a fresh holdout claim.
-export function regressionCompare(before: RulesA, after: RulesA, profile: Profile, cases: RegressionCase[]) {
-  return cases.map(c => ({ caseId: c.id, strata: c.strata, profile:structuredClone(profile), ...compare(c.snapshot, after) }));
+export function regressionCompare(before: RulesA, after: RulesA, profile: Profile, cases: RegressionCase[],beforeMode:ExecutionMode=legacyMode(),afterMode:ExecutionMode=legacyMode()) {
+  return cases.map(c => ({ caseId: c.id, strata: c.strata, profile:structuredClone(profile), ...compare({...c.snapshot,executionMode:beforeMode}, after,afterMode) }));
 }
 export function coachingReplayInput(snapshot:Snapshot,window?:CoachingWindow){
   if(!window)return {snapshot:structuredClone(snapshot),source:'captured-snapshot' as const,sourceSequence:null,window:null};
@@ -42,32 +43,32 @@ export function coachingReplayInput(snapshot:Snapshot,window?:CoachingWindow){
   }
   const bundle=structuredClone(prefix.events[start].bundle);
   if(canonicalJson(sense(world))!==canonicalJson(bundle))throw new Error('Acquired start frame cannot be reconstructed from its frozen scene');
-  const initial:Snapshot={contractVersion:2,scene:'dynamic',seed:snapshot.seed,world,bundle,memoryBefore:structuredClone(observed.memoryBeforeLast),profile:structuredClone(snapshot.profile),rulesA:structuredClone(snapshot.rulesA),rulesBVersion:snapshot.rulesBVersion};
+  const initial:Snapshot={contractVersion:2,scene:'dynamic',seed:snapshot.seed,world,bundle,memoryBefore:structuredClone(observed.memoryBeforeLast),profile:structuredClone(snapshot.profile),rulesA:structuredClone(snapshot.rulesA),rulesBVersion:snapshot.rulesBVersion,...(snapshot.executionMode?{executionMode:structuredClone(snapshot.executionMode)}:{})};
   validateSnapshot(initial);
   return {snapshot:initial,source:'coaching-window-first-acquisition' as const,sourceSequence:start,window:structuredClone(window)};
 }
-export function replay(snapshot: Snapshot, rules: RulesA, steps: number, endTick?:number):ReplayResult {
+export function replay(snapshot: Snapshot, rules: RulesA, steps: number, endTick?:number,mode:ExecutionMode=snapshot.executionMode??legacyMode()):ReplayResult {
   if (!Number.isInteger(steps) || steps < 1 || steps > 20) throw new Error('steps must be 1–20');
   if(endTick!==undefined&&(!snapshot.world.dynamic||!Number.isInteger(endTick)||endTick<snapshot.world.dynamic.tick||endTick>snapshot.world.dynamic.scene.definition.durationTicks))throw new Error('Replay end tick is outside the captured scene interval');
   let world = structuredClone(snapshot.world), memory = structuredClone(snapshot.memoryBefore);
   const frames = [];
   for (let i = 0; i < steps; i++) {
-    const trace = think(sense(world), memory, snapshot.profile, rules);
+    const trace = thinkWithMode(sense(world), memory, snapshot.profile, rules,mode);
     frames.push({ time: world.time, body:structuredClone(world.body), diagnostics:sceneDiagnostics(world), trace });memory = trace.longTermMemory;
     if(world.dynamic&&world.dynamic.tick>=(endTick??world.dynamic.scene.definition.durationTicks))break;
     world = advance(world, trace);
   }
   return { frames, termination:world.dynamic&&world.dynamic.tick>=world.dynamic.scene.definition.durationTicks?'scene-end':endTick!==undefined&&world.dynamic!.tick>=endTick?'coaching-window-end':'step-budget', finalTime:world.time, finalTick:world.dynamic?.tick??null, finalSelf: world.body, emittedCalls: world.emittedCalls ?? [] };
 }
-export function experimentRun(snapshot: Snapshot, after: RulesA, steps: number, frozen: {id:string;snapshot:Snapshot}[], window:CoachingWindow|undefined, cases:RegressionCase[]):ExperimentResults {
-  const pair = (s: Snapshot,endTick?:number) => ({ comparisonKind:'same-scene-closed-loop' as const,sameInitialConditions: true, before: replay(s, s.rulesA, steps,endTick), after: replay(s, after, steps,endTick) });
+export function experimentRun(snapshot: Snapshot, after: RulesA, steps: number, frozen: {id:string;snapshot:Snapshot}[], window:CoachingWindow|undefined, cases:RegressionCase[],afterMode:ExecutionMode=snapshot.executionMode??legacyMode()):ExperimentResults {
+  const pair = (s: Snapshot,endTick?:number) => ({ comparisonKind:'same-scene-closed-loop' as const,sameInitialConditions: true, before: replay(s, s.rulesA, steps,endTick), after: replay(s, after, steps,endTick,afterMode) });
   const recordedInput=coachingReplayInput(snapshot,window);
-  const frozenCases=frozen.map(c=>({...c,snapshot:{...structuredClone(c.snapshot),profile:structuredClone(snapshot.profile),rulesA:structuredClone(snapshot.rulesA)}}));
-  const trials = cases.map(c => ({ caseId: c.id, seed: c.seed, strata: c.strata, ...pair(c.snapshot) }));
+  const frozenCases=frozen.map(c=>({...c,snapshot:{...structuredClone(c.snapshot),profile:structuredClone(snapshot.profile),rulesA:structuredClone(snapshot.rulesA),...(snapshot.executionMode?{executionMode:snapshot.executionMode}:{})}}));
+  const trials = cases.map(c => ({ caseId: c.id, seed: c.seed, strata: c.strata, ...pair({...c.snapshot,executionMode:snapshot.executionMode}) }));
   const frozenTrials=frozenCases.map(c=>({caseId:c.id,...pair(c.snapshot)}));
   const actions = [...new Set(trials.map(t => t.after.frames[0].trace.intention.action))];
   return { steps, dt: .2, profilePolicy:'candidate-profile-fixed' as const, regressionKind:'published-fixed-regression' as const, recordedInput, recorded: pair(recordedInput.snapshot,window?.toTick), trials, frozenTrials,
-    observedHistory:snapshot.observationHistory?{before:replayObservationHistory(snapshot.observationHistory,{profile:snapshot.profile,rulesA:snapshot.rulesA}),after:replayObservationHistory(snapshot.observationHistory,{profile:snapshot.profile,rulesA:after})}:null,
+    observedHistory:snapshot.observationHistory?{before:replayObservationHistory(snapshot.observationHistory,{profile:snapshot.profile,rulesA:snapshot.rulesA,executionMode:snapshot.executionMode??legacyMode()}),after:replayObservationHistory(snapshot.observationHistory,{profile:snapshot.profile,rulesA:after,executionMode:afterMode})}:null,
     diagnostic: { distinctFirstActions: actions, homogeneousWarning: actions.length < 2,
       interpretation: 'Synthetic counterexamples, not human validity or an automatic adoption decision. Future observations can diverge after actions.' },
     observationCases: [{ group:'recorded' as const,caseId: 'recorded', snapshot }, ...cases.map(c => ({group:'regression' as const, caseId: c.id, snapshot: c.snapshot })),...frozenCases.map(c=>({group:'frozen' as const,caseId:c.id,snapshot:c.snapshot}))].map(({group,caseId,snapshot:s}) =>
