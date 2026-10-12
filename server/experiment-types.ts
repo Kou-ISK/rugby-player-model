@@ -4,7 +4,7 @@ import type { anonymizeCases, FrozenEvaluation, BArm, CaseGroup, ExposureReason 
 export type BMaterial = { version: string; markdown: string; structuredAmendments: RulesB['principles'] };
 export type Experiment = {
   id: string; at: string; candidateId: string; candidateRevision: number; mode: 'preview' | 'active';
-  modelRevision: string; engineFingerprint: string; candidate: Candidate;
+  modelRevision: string; engineFingerprint: string; engineFingerprintFormat?: 'source-files-v2'; candidate: Candidate;
   provenance: { node: string; platform: string; arch: string; gitCommit: string | null; gitDirty: boolean | null;
     lockSha256: string; snapshotSha256: string; resultSha256: string; beforeBSha256: string; afterBSha256: string };
   beforeA: RulesA; afterA: RulesA; B: { before: BMaterial; after: BMaterial; status: 'proposed' | 'approved-version' };

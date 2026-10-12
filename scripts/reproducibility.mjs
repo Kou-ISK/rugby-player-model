@@ -24,6 +24,25 @@ const inventory = [
   'docs/EVALUATION_PROTOCOL.md', 'docs/RESEARCH_READINESS.md', 'docs/RESEARCH_LOOP.md', 'docs/MAC_RESEARCH_CYCLE.md', 'docs/LOCAL_BRIDGE.md', 'docs/MAC_ACCEPTANCE.md', 'docs/MAC_HEADLESS.md', 'docs/LIMITATIONS.md', 'docs/PROVENANCE.md', 'docs/VERIFICATION.md',
   'docs/MODEL_CARD.md', 'docs/DATA_CARD.md', 'docs/PUBLICATION_SCOPE.md', 'docs/REPRODUCTION.md', 'docs/versions/RUGBY_JUDGMENT-B0.md',
   'tests/evaluation-boundaries.test.ts', 'tests/research-readiness.test.ts', 'tests/browser/research-cycle.spec.ts', 'tests/cognition.test.ts', 'tests/p2p-adapter.test.ts', 'tests/browser/p2p-view.spec.ts', 'tests/research-loop.test.ts', 'tests/review-regressions.test.ts', 'tests/browser/workbench.spec.ts',
+  "CONTRIBUTING.md",
+  "models/player/README.md",
+  "models/player/examples/observations.json",
+  "models/player/package.json",
+  "models/player/reference/cli.ts",
+  "models/player/reference/src/cognition.ts",
+  "models/player/reference/src/contracts.ts",
+  "models/player/reference/src/defaults.ts",
+  "models/player/reference/src/index.ts",
+  "models/player/reference/src/replay.ts",
+  "models/player/reference/src/validation.ts",
+  "models/player/spec/contracts.schema.json",
+  "models/player/tests/cognition-conformance.test.ts",
+  "models/player/tests/fixtures/legacy-ecc5c298.json",
+  "models/player/tsconfig.build.json",
+  "tools/experiments/schema/records.schema.json",
+  "tools/experiments/src/contracts.ts",
+  "tools/simulation/schema/scene.schema.json",
+  "tools/simulation/src/contracts.ts",
 ].sort();
 const readJson = path => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 const digest = path => createHash('sha256').update(readFileSync(resolve(root, path))).digest('hex');
@@ -32,13 +51,13 @@ function assertInventory() {
   const walk = dir => {
     for (const entry of readdirSync(resolve(root, dir), { withFileTypes: true })) {
       const path = `${dir}/${entry.name}`;
-      if (entry.isDirectory()) walk(path);
+      if (entry.isDirectory()) { if (!['dist','node_modules'].includes(entry.name)) walk(path); }
       else if (/\.(ts|mjs|css|json|md|ya?ml)$/.test(entry.name) && !inventory.includes(path)) {
         throw new Error(`Unlisted public source: ${path}. Review its scope before adding it to the explicit inventory.`);
       }
     }
   };
-  for (const dir of ['src', 'server', 'scripts', 'schemas', 'examples', 'docs', 'tests', '.github']) walk(dir);
+  for (const dir of ['src', 'server', 'scripts', 'schemas', 'examples', 'docs', 'tests', '.github', 'models', 'tools']) walk(dir);
   for (const path of inventory) {
     if (path.startsWith('/') || path.split('/').includes('..') || relative(root, resolve(root, path)).startsWith(`..${sep}`)) throw new Error('Inventory must contain repository-relative paths');
   }

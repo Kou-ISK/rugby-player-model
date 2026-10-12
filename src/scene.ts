@@ -1,17 +1,7 @@
-import type { Vec, World } from './contracts';
-
-export type Keyframe = { tick: number; position: Vec; yaw: number };
-export type SceneDefinition = {
-  sceneSchemaVersion: 1; tickSeconds: 0.2; durationTicks: number; controlledPlayerId: string;
-  actors: { id: string; team: 'blue'|'red'; initial: {position:Vec;yaw:number};
-    motion: {kind:'controlled'} | {kind:'scripted';keyframes:Keyframe[]} }[];
-  ball: {kind:'attached';carrierId:string} | {kind:'scripted';keyframes:Keyframe[]};
-  calls: {startTick:number;endTick:number;sourceActorId:string;cue:'support-call'|'warning-call'}[];
-};
-export type SceneRef = {sceneId:string;revision:number;contentHash:string};
-export type SceneRevision = SceneRef & {definition:SceneDefinition;generationSeed:number|null;trackingIds:string[];createdAt:string};
-export type CoachingWindow = SceneRef & {playerId:string;fromTick:number;toTick:number};
-export type ApplicationPoint = SceneRef & {playerId:string;tick:number;fromA:string;toA:string;fromB:string;toB:string;receiptId:string};
+import type { Vec } from '../models/player/reference/src/contracts.js';
+import type { World, Keyframe, SceneDefinition, SceneRef, SceneRevision } from '../tools/simulation/src/contracts';
+export type { Keyframe, SceneDefinition, SceneRef, SceneRevision } from '../tools/simulation/src/contracts';
+export type { CoachingWindow, ApplicationPoint } from '../tools/experiments/src/contracts';
 export const sceneRef = (s:SceneRef):SceneRef=>({sceneId:s.sceneId,revision:s.revision,contentHash:s.contentHash});
 
 function object(v:any, keys:string[]) {

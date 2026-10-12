@@ -11,7 +11,8 @@ import { sense } from '../src/simulation';
 import { assertSnapshotHistory } from '../src/observation-history';
 import type { Experiment, BReview, BMaterial } from './experiment-types';
 import { canonical, digest, conditionDigest, stimulusDigest, exposureReasons, EXPOSURE_POLICY, checkEvaluationDraft, anonymizeCases, type FrozenEvaluation, type BArm, type CaseGroup } from './evaluation';
-const fingerprint = () => createHash('sha256').update(['src/contracts.ts','src/scene.ts','src/cognition.ts','src/simulation.ts','src/research.ts','src/observation-history.ts','src/validation.ts','server/evaluation.ts','schemas/contracts.schema.json'].map(path => readFileSync(new URL('../'+path, import.meta.url))).reduce((a,b)=>Buffer.concat([a,b]),Buffer.alloc(0))).digest('hex');
+// New records identify the extracted runtime closure. Historical fingerprints are retained verbatim.
+const fingerprint = () => createHash('sha256').update('source-files-v2\n').update(["src/contracts.ts", "src/scene.ts", "src/cognition.ts", "src/simulation.ts", "src/research.ts", "src/observation-history.ts", "src/validation.ts", "server/evaluation.ts", "schemas/contracts.schema.json", "models/player/reference/src/contracts.ts", "models/player/reference/src/defaults.ts", "models/player/reference/src/cognition.ts", "models/player/reference/src/validation.ts", "models/player/reference/src/replay.ts", "models/player/spec/contracts.schema.json", "tools/simulation/src/contracts.ts", "tools/simulation/schema/scene.schema.json", "tools/experiments/src/contracts.ts", "tools/experiments/schema/records.schema.json"].map(path => Buffer.concat([Buffer.from(path+'\0'),readFileSync(new URL('../'+path, import.meta.url))])).reduce((a,b)=>Buffer.concat([a,b]),Buffer.alloc(0))).digest('hex');
 const loadedFingerprint = fingerprint();
 // Opaque slot identities are stable across copies/renames. Never hash author text or future paths.
 // This also keeps A's existing ID tie-breaks reproducible across independent scene imports.
@@ -247,7 +248,7 @@ export class Store {
       const previouslyEvaluated=exposureMatches.length>0;
       const B:Experiment['B']={before:this.bMaterial(beforeB),after:this.bMaterial(afterB,mode==='preview'),status:mode==='preview'?'proposed':'approved-version'};
       const e:Experiment={id:randomUUID(),at:new Date().toISOString(),candidateId:id,candidateRevision:c.revision,mode,
-        modelRevision:results.recorded.after.frames[0].trace.modelRevision,engineFingerprint:loadedFingerprint,
+        modelRevision:results.recorded.after.frames[0].trace.modelRevision,engineFingerprint:loadedFingerprint,engineFingerprintFormat:'source-files-v2',
         provenance:{node:process.version,platform:process.platform,arch:process.arch,...gitProvenance(),
           lockSha256:hash(readFileSync(new URL('../package-lock.json',import.meta.url))),snapshotSha256:hash(JSON.stringify(c.context)),
           resultSha256:hash(JSON.stringify(results)),beforeBSha256:hash(B.before.markdown),afterBSha256:hash(B.after.markdown)},

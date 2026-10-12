@@ -24,7 +24,7 @@ flowchart LR
   O --> R[Player evidence panel]
 ```
 
-Only `src/simulation.ts::sense` reads simulation truth to construct observations. `src/cognition.ts` imports contracts and validation, never the world/simulation/renderer. JSON Schema rejects unknown fields; an opponent's internal state cannot enter through extra properties. Vision gives currently visible positions; audio gives a coarse body-relative bearing and a cue, not a source's exact coordinates, identity or intent. Own position, heading, head angle and ball possession are synthetic proprioceptive inputs, explicitly assumed accurate in v1.
+Only `src/simulation.ts::sense` reads simulation truth to construct observations. `src/cognition.ts` is a compatibility export. The A implementation in `models/player/reference/src/` owns observation-only contracts, validation and schema, with no transitive world/simulation/renderer dependency. JSON Schema rejects unknown fields; an opponent's internal state cannot enter through extra properties. Vision gives currently visible positions; audio gives a coarse body-relative bearing and a cue, not a source's exact coordinates, identity or intent. Own position, heading, head angle and ball possession are synthetic proprioceptive inputs, explicitly assumed accurate in v1.
 
 `Snapshot` is a **research envelope** and deliberately contains world truth for reproduction/spectator use. A receives only `snapshot.bundle`, `memoryBefore`, `profile` and `rulesA`. `bridge context` omits the world, while the private snapshot remains available for explicit experimental inspection. Do not give the full world envelope to an AI asked to reason from the player's perspective. Tests alter occluded or behind-player state and require complete A traces to remain identical.
 
@@ -34,7 +34,7 @@ Only `src/simulation.ts::sense` reads simulation truth to construct observations
 | --- | --- | --- |
 | Sensation | 90° horizontal cone, 35m range, 2D circular occlusion; calls within 20m | Engineering assumptions; no retinal/acoustic model |
 | Attention | At most 4 percepts; calls, ball, then players | Explicit heuristic, not measured human attention |
-| Working memory | At most 4 currently usable beliefs | Engineering capacity; not a universal human constant |
+| Working memory | Legacy trace displays at most 4 beliefs after judgment; other retained beliefs can influence decisions | Display-only excerpt; not a working-memory bottleneck |
 | Long-term/episodic store | Bounded 128 observation episodes, 30s simulation window; snapshot persists across process restart | Infrastructure for a later long-term model; 30s is not a biological LTM claim |
 | Semantic knowledge | Approved A rule configuration supplied separately; B is independently authored | No automatic extraction from text into A |
 | Belief | Latest per entity/modality, original `observedAt` and `confidence`; derived confidence decays by age | Exponential half-life is an experiment parameter |

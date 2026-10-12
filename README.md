@@ -3,9 +3,15 @@
 See [dynamic scene contracts, CLI and acceptance scope](docs/DYNAMIC_SCENES.md) for the new fixed-step workflow: one A-controlled player and scripted stimuli.
 選手の観測から判断する実行モデル **A** と、生成AIが単独で使える原則文書 **B** を別々に育てるローカル研究基盤です。人間再現や筋骨格技能の完成モデルではありません。
 
-## Mac quick start
+## Use or contribute
 
-設定済みの本人Macでは [開始手順](docs/MAC_START.md) に沿って `~/Documents/workSpace/rugby-player-model` をCodexで開き、`./start-rpm.command` で起動します。CLIは `./bridge-rpm.command`。ソースと私的sessionは [別の保存場所](docs/LOCAL_STORAGE.md) を使います。
+- **Use A:** [observation-only player model](models/player/README.md). Run the small reference package without a world, B, viewer or private session.
+- **Use B:** [independent judgment principles](RUGBY_JUDGMENT.md). Read or supply the document directly; no runner or A installation is required.
+- **Research and contribute:** [contribution workflow](CONTRIBUTING.md). Work with synthetic inputs, propose changes, inspect counterexamples, and review A/B separately.
+
+The reference model is an uncalibrated engineering hypothesis. Software checks do not establish human cognition or rugby performance. Attention encodes four inputs; the legacy `workingMemory` trace is a display excerpt, not a decision bottleneck. Shared research mode and proposal import are being completed on this migration branch.
+
+## Research workbench
 
 新しい開発環境ではNode.js 24 と Git を用意し、このブランチで実行します。
 
@@ -32,3 +38,7 @@ npm run --silent model -- --input examples/support-42.snapshot.json --steps 10
 - [再現manifest](research/reproducibility-manifest.json)と[再現手順](docs/REPRODUCTION.md)、[モデルカード](docs/MODEL_CARD.md)、[データカード](docs/DATA_CARD.md)、[公開範囲](docs/PUBLICATION_SCOPE.md)
 
 Cloudの検証合格と、本人Macでの共同研究loop実証は別です。検証済みP2P手続き描画と最小姿勢型を表示adapterで再利用し、これらを含むコード・合成fixture・文書の公開は本人承認済みです。私的研究sessionは公開対象外です。ライセンスはUNLICENSEDを維持しています。[公開範囲](docs/PUBLICATION_SCOPE.md)を参照してください。
+
+## Configured owner Mac
+
+The existing owner entrance remains `./start-rpm.command` and `./bridge-rpm.command`; see [Mac instructions](docs/MAC_START.md) and [private storage](docs/LOCAL_STORAGE.md). Public tutorials use a separate synthetic session.

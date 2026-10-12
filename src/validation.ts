@@ -1,9 +1,12 @@
+import playerSchema from '../models/player/spec/contracts.schema.json';
+import simulationSchema from '../tools/simulation/schema/scene.schema.json';
+import recordsSchema from '../tools/experiments/schema/records.schema.json';
 import { assertDynamicWorld } from './scene';
 import Ajv from 'ajv';
 import schema from '../schemas/contracts.schema.json';
 import type { Bundle, Snapshot, Memory } from './contracts';
 const ajv = new Ajv({ allErrors: true, strict: false });
-ajv.addSchema(schema);
+ajv.addSchema(playerSchema); ajv.addSchema(simulationSchema); ajv.addSchema(recordsSchema); ajv.addSchema(schema);
 export function canonicalJson(value:unknown):string {
   if(Array.isArray(value))return '['+value.map(canonicalJson).join(',')+']';
   if(value&&typeof value==='object')return '{'+Object.entries(value).filter(([,v])=>v!==undefined).sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>JSON.stringify(k)+':'+canonicalJson(v)).join(',')+'}';

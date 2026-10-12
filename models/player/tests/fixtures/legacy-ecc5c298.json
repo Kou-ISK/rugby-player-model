@@ -1,0 +1,3502 @@
+{
+  "originCommit": "ecc5c298b928ff860e124735decc587c0f7537af",
+  "method": "sha256-json-stringify-trace-v1",
+  "synthetic": true,
+  "cases": [
+    {
+      "id": "support-0-0",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 0,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": -2,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "5ca2d1bd0b43d141838dfb42b58171d2f546670e35bfddeb7829fa8ccd2b38df"
+    },
+    {
+      "id": "support-0-1",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 1,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 0,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2.472135945688933,
+                "z": 9.557133817113936
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 0.4
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            }
+          ],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "d8270c0ac89282e944de0656d5dabae6ee32297d3b6b1d2d007dbab873debae7"
+    },
+    {
+      "id": "support-0-3",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 3,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 1.5,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": []
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 0.4
+              }
+            },
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2.472135945688933,
+                "z": 9.557133817113936
+              }
+            }
+          ],
+          "lastTime": 1
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "ffdf9c8daa39ba680daa94f2e25c2473305847f2e7297cd565e7bb495b7004da"
+    },
+    {
+      "id": "support-42-0",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 0,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": -2,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "5ca2d1bd0b43d141838dfb42b58171d2f546670e35bfddeb7829fa8ccd2b38df"
+    },
+    {
+      "id": "support-42-1",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 1,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 0,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2.5046903495676816,
+                "z": 9.176250090822577
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 0.4
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            }
+          ],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "46780455301da1ba5472e29613a208bd8ca2075745dafe29ab09e7f2eae7ea59"
+    },
+    {
+      "id": "support-42-3",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 3,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 1.5,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": []
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 0.4
+              }
+            },
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2.5046903495676816,
+                "z": 9.176250090822577
+              }
+            }
+          ],
+          "lastTime": 1
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "1b5930990a8fd98d3090794ec3c09d765fb486844d0c7d8d9fef698d93806c2f"
+    },
+    {
+      "id": "support-901-0",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 0,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": -2,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "5ca2d1bd0b43d141838dfb42b58171d2f546670e35bfddeb7829fa8ccd2b38df"
+    },
+    {
+      "id": "support-901-1",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 1,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 0,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 3.1705054193735123,
+                "z": 9.005318641196936
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 0.4
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            }
+          ],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "4e0595b30c33f3179b8f34efd04afe60644c2ad1dfe7687e1bc4132b190f45ab"
+    },
+    {
+      "id": "support-901-3",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 3,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 1.5,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": []
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 0.4
+              }
+            },
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 3.1705054193735123,
+                "z": 9.005318641196936
+              }
+            }
+          ],
+          "lastTime": 1
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "bb28c9f6ce6c28db072059986395172e8f4b9cc5d776edd7ef38796e8fe48f64"
+    },
+    {
+      "id": "occluded-0-0",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 0,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": -2,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "5ca2d1bd0b43d141838dfb42b58171d2f546670e35bfddeb7829fa8ccd2b38df"
+    },
+    {
+      "id": "occluded-0-1",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 1,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 0,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2.472135945688933,
+                "z": 9.557133817113936
+              }
+            },
+            {
+              "id": "screen@1.000:vision",
+              "entityId": "screen",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 5
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 0.4
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            }
+          ],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "a81df6010de77d6db50cb53979dd16eb3c5ac18ec97d60f80648ea274d085549"
+    },
+    {
+      "id": "occluded-0-3",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 3,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 1.5,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": []
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 0.4
+              }
+            },
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2.472135945688933,
+                "z": 9.557133817113936
+              }
+            },
+            {
+              "id": "screen@1.000:vision",
+              "entityId": "screen",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 5
+              }
+            }
+          ],
+          "lastTime": 1
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "994e62db58e998026a3e63b73012e223f2b485513c94701c9e68aa445b67cdd1"
+    },
+    {
+      "id": "occluded-42-0",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 0,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": -2,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "5ca2d1bd0b43d141838dfb42b58171d2f546670e35bfddeb7829fa8ccd2b38df"
+    },
+    {
+      "id": "occluded-42-1",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 1,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 0,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2.5046903495676816,
+                "z": 9.176250090822577
+              }
+            },
+            {
+              "id": "screen@1.000:vision",
+              "entityId": "screen",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 5
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 0.4
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            }
+          ],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "dcbcbff895f26c48e038d99c3f8285d77f19fe19e3cf3a365b2bfdfe273dadd9"
+    },
+    {
+      "id": "occluded-42-3",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 3,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 1.5,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": []
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 0.4
+              }
+            },
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2.5046903495676816,
+                "z": 9.176250090822577
+              }
+            },
+            {
+              "id": "screen@1.000:vision",
+              "entityId": "screen",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 5
+              }
+            }
+          ],
+          "lastTime": 1
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "f9c00a5b39af7e55ff81c39e650e62fb85ee92ba6127ca2c9523fbb95d530392"
+    },
+    {
+      "id": "occluded-901-0",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 0,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": -2,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "5ca2d1bd0b43d141838dfb42b58171d2f546670e35bfddeb7829fa8ccd2b38df"
+    },
+    {
+      "id": "occluded-901-1",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 1,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 0,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 3.1705054193735123,
+                "z": 9.005318641196936
+              }
+            },
+            {
+              "id": "screen@1.000:vision",
+              "entityId": "screen",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 5
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 0.4
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            }
+          ],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "95cabdf77b0a9a7ffc3f13389931d178b52f713dacad25c9b98bb6bc1db30626"
+    },
+    {
+      "id": "occluded-901-3",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 3,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 1.5,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": []
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -5,
+                "z": -2
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 0.4
+              }
+            },
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 3.1705054193735123,
+                "z": 9.005318641196936
+              }
+            },
+            {
+              "id": "screen@1.000:vision",
+              "entityId": "screen",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 5
+              }
+            }
+          ],
+          "lastTime": 1
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "bbdab6e5c32d3630e9493ab951950c842b96a2eb401ae82a11081518c87dcd5c"
+    },
+    {
+      "id": "audio-0-0",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 0,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": -2,
+            "eyeHeight": 1.68,
+            "hasBall": false
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -8,
+                "z": -4
+              }
+            },
+            {
+              "id": "call-left@0.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 0,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "37450d2aa9c4a908d5ecde442600d1916d23ae20f16adbe052df06b5d2813e28"
+    },
+    {
+      "id": "audio-0-1",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 1,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 0,
+            "eyeHeight": 1.68,
+            "hasBall": false
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2.472135945688933,
+                "z": 9.557133817113936
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2,
+                "z": 9
+              }
+            },
+            {
+              "id": "call-left@1.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 1,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "call-left@0.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 0,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            },
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -8,
+                "z": -4
+              }
+            }
+          ],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "5ebf6076db841433c8e7fd69cfdc484add201cd87cafeabe2284045c3e061c8d"
+    },
+    {
+      "id": "audio-0-3",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 3,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 1.5,
+            "eyeHeight": 1.68,
+            "hasBall": false
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "call-left@3.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 3,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "call-left@0.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 0,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            },
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -8,
+                "z": -4
+              }
+            },
+            {
+              "id": "call-left@1.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 1,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2,
+                "z": 9
+              }
+            },
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2.472135945688933,
+                "z": 9.557133817113936
+              }
+            }
+          ],
+          "lastTime": 1
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "5c30bf1cff7361e33c17fcdad3405f4ffa096e5b611f3208e4210a2e8beacbee"
+    },
+    {
+      "id": "audio-42-0",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 0,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": -2,
+            "eyeHeight": 1.68,
+            "hasBall": false
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -8,
+                "z": -4
+              }
+            },
+            {
+              "id": "call-left@0.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 0,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "37450d2aa9c4a908d5ecde442600d1916d23ae20f16adbe052df06b5d2813e28"
+    },
+    {
+      "id": "audio-42-1",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 1,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 0,
+            "eyeHeight": 1.68,
+            "hasBall": false
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2.5046903495676816,
+                "z": 9.176250090822577
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2,
+                "z": 9
+              }
+            },
+            {
+              "id": "call-left@1.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 1,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "call-left@0.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 0,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            },
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -8,
+                "z": -4
+              }
+            }
+          ],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "3e1d970481feac05630be26f21d0796f6234f9f00058cf28187038658b6456ec"
+    },
+    {
+      "id": "audio-42-3",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 3,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 1.5,
+            "eyeHeight": 1.68,
+            "hasBall": false
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "call-left@3.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 3,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "call-left@0.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 0,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            },
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -8,
+                "z": -4
+              }
+            },
+            {
+              "id": "call-left@1.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 1,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2,
+                "z": 9
+              }
+            },
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2.5046903495676816,
+                "z": 9.176250090822577
+              }
+            }
+          ],
+          "lastTime": 1
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "343eaeffa1ab2d9e0b4d58933f6a53ef3d12740b9484146e8626f22159ab8b42"
+    },
+    {
+      "id": "audio-901-0",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 0,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": -2,
+            "eyeHeight": 1.68,
+            "hasBall": false
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -8,
+                "z": -4
+              }
+            },
+            {
+              "id": "call-left@0.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 0,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "37450d2aa9c4a908d5ecde442600d1916d23ae20f16adbe052df06b5d2813e28"
+    },
+    {
+      "id": "audio-901-1",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 1,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 0,
+            "eyeHeight": 1.68,
+            "hasBall": false
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 3.1705054193735123,
+                "z": 9.005318641196936
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2,
+                "z": 9
+              }
+            },
+            {
+              "id": "call-left@1.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 1,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "call-left@0.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 0,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            },
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -8,
+                "z": -4
+              }
+            }
+          ],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "683120fada1b91c216468b3869b3f88bc4067d0c5403dd2a31f8bb6ab120aa77"
+    },
+    {
+      "id": "audio-901-3",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 3,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0,
+            "headYaw": 1.5,
+            "eyeHeight": 1.68,
+            "hasBall": false
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "call-left@3.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 3,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "call-left@0.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 0,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            },
+            {
+              "id": "support-1@0.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -8,
+                "z": -4
+              }
+            },
+            {
+              "id": "call-left@1.000:audio",
+              "entityId": "call-left",
+              "kind": "call",
+              "relation": "neutral",
+              "modality": "audio",
+              "observedAt": 1,
+              "confidence": 0.55,
+              "bearing": -2.1,
+              "cue": "support-call",
+              "observerYaw": 0
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2,
+                "z": 9
+              }
+            },
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 3.1705054193735123,
+                "z": 9.005318641196936
+              }
+            }
+          ],
+          "lastTime": 1
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "0fc93770a1c2342d0c8575fbaf86b00824318f3ba0ce2502aa7121778abf95b9"
+    },
+    {
+      "id": "heldout-0-0",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 0,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0.6,
+            "headYaw": -2,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "wide-threat@0.000:vision",
+              "entityId": "wide-threat",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -9.231845258269459,
+                "z": 7.2436149744316936
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "942c530891979ce64987f9b91629192c8f132463d424c540e49e08e97981d73f"
+    },
+    {
+      "id": "heldout-0-1",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 1,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0.6,
+            "headYaw": 0,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2.472135945688933,
+                "z": 9.557133817113936
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 0.4
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "wide-threat@0.000:vision",
+              "entityId": "wide-threat",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -9.231845258269459,
+                "z": 7.2436149744316936
+              }
+            }
+          ],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "47a95dc0c65cab6923c27393d115e181f2cce1cf8f3e6402b7c891e4ae12e7f9"
+    },
+    {
+      "id": "heldout-0-3",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 3,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0.6,
+            "headYaw": 1.5,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "support-1@3.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 3,
+              "confidence": 0.9,
+              "position": {
+                "x": 5.639067519921809,
+                "z": -2.6642662044614553
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "wide-threat@0.000:vision",
+              "entityId": "wide-threat",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -9.231845258269459,
+                "z": 7.2436149744316936
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 0.4
+              }
+            },
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2.472135945688933,
+                "z": 9.557133817113936
+              }
+            }
+          ],
+          "lastTime": 1
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "6712af09e0c9e2907590944fdcfe97ed1df2955dd88639f3cb281563103244cc"
+    },
+    {
+      "id": "heldout-42-0",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 0,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0.6,
+            "headYaw": -2,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "wide-threat@0.000:vision",
+              "entityId": "wide-threat",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -9.248679605778307,
+                "z": 6.051327809691429
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "4f48e3b162ac1fc1d10d2784688013fabe3a9bd2f6046b2bfa0caed629aac001"
+    },
+    {
+      "id": "heldout-42-1",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 1,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0.6,
+            "headYaw": 0,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2.5046903495676816,
+                "z": 9.176250090822577
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 0.4
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "wide-threat@0.000:vision",
+              "entityId": "wide-threat",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -9.248679605778307,
+                "z": 6.051327809691429
+              }
+            }
+          ],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "efc25157fcd40525e49a2f0a84b3e8de6e821baadf244817ddc75628f1bbd2a9"
+    },
+    {
+      "id": "heldout-42-3",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 3,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0.6,
+            "headYaw": 1.5,
+            "eyeHeight": 1.68,
+            "hasBall": true
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "support-1@3.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 3,
+              "confidence": 0.9,
+              "position": {
+                "x": 5.154562396463007,
+                "z": -3.554891468025744
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "wide-threat@0.000:vision",
+              "entityId": "wide-threat",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -9.248679605778307,
+                "z": 6.051327809691429
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 0,
+                "z": 0.4
+              }
+            },
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2.5046903495676816,
+                "z": 9.176250090822577
+              }
+            }
+          ],
+          "lastTime": 1
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "ed526da6a810d7b122b978b802670e2c64092b2e962be8c47694a80c104cb974"
+    },
+    {
+      "id": "heldout-901-0",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 0,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0.6,
+            "headYaw": -2,
+            "eyeHeight": 1.68,
+            "hasBall": false
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "wide-threat@0.000:vision",
+              "entityId": "wide-threat",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -8.259648760780692,
+                "z": 6.618597464170307
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "87934324db0c492d56ffc73a1298c31f197bd4f5175cda188dad334cbc3a12ff"
+    },
+    {
+      "id": "heldout-901-1",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 1,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0.6,
+            "headYaw": 0,
+            "eyeHeight": 1.68,
+            "hasBall": false
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 3.1705054193735123,
+                "z": 9.005318641196936
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2,
+                "z": 9
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "wide-threat@0.000:vision",
+              "entityId": "wide-threat",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -8.259648760780692,
+                "z": 6.618597464170307
+              }
+            }
+          ],
+          "lastTime": 0
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "0607d1921c629d245113530f12ea1244d30c074039fd123cb7debb907b3a1b54"
+    },
+    {
+      "id": "heldout-901-3",
+      "input": {
+        "bundle": {
+          "contractVersion": 1,
+          "playerId": "self",
+          "time": 3,
+          "self": {
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "yaw": 0.6,
+            "headYaw": 1.5,
+            "eyeHeight": 1.68,
+            "hasBall": false
+          },
+          "vision": {
+            "horizontalFov": 1.5707963267948966,
+            "range": 35
+          },
+          "percepts": [
+            {
+              "id": "support-1@3.000:vision",
+              "entityId": "support-1",
+              "kind": "player",
+              "relation": "teammate",
+              "modality": "vision",
+              "observedAt": 3,
+              "confidence": 0.9,
+              "position": {
+                "x": 5.483374276198447,
+                "z": -3.9607748347334564
+              }
+            }
+          ]
+        },
+        "memory": {
+          "episodes": [
+            {
+              "id": "wide-threat@0.000:vision",
+              "entityId": "wide-threat",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 0,
+              "confidence": 0.9,
+              "position": {
+                "x": -8.259648760780692,
+                "z": 6.618597464170307
+              }
+            },
+            {
+              "id": "ball@1.000:vision",
+              "entityId": "ball",
+              "kind": "ball",
+              "relation": "neutral",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 2,
+                "z": 9
+              }
+            },
+            {
+              "id": "defender-1@1.000:vision",
+              "entityId": "defender-1",
+              "kind": "player",
+              "relation": "opponent",
+              "modality": "vision",
+              "observedAt": 1,
+              "confidence": 0.9,
+              "position": {
+                "x": 3.1705054193735123,
+                "z": 9.005318641196936
+              }
+            }
+          ],
+          "lastTime": 1
+        },
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        },
+        "rules": {
+          "version": "A0",
+          "scanBias": 0,
+          "carryBias": 0,
+          "passBias": 0,
+          "memoryHalfLife": 4,
+          "minimumConfidence": 0.35
+        }
+      },
+      "expectedTraceSha256": "5e4c409818e7956585d37b4422c3c208b2fa65800e6e995288eeda1cd6cb1d64"
+    }
+  ]
+}

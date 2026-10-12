@@ -1,0 +1,966 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rugby-player-model.local/schema/player-v1",
+  "$defs": {
+    "Vec": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "z"
+      ]
+    },
+    "Body": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "position": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "z": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "z"
+          ]
+        },
+        "yaw": {
+          "type": "number"
+        },
+        "headYaw": {
+          "type": "number",
+          "minimum": -2.4,
+          "maximum": 2.4
+        },
+        "eyeHeight": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2.5
+        },
+        "hasBall": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "position",
+        "yaw",
+        "headYaw",
+        "eyeHeight",
+        "hasBall"
+      ]
+    },
+    "Percept": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "entityId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "kind": {
+          "enum": [
+            "player",
+            "ball",
+            "call"
+          ]
+        },
+        "relation": {
+          "enum": [
+            "teammate",
+            "opponent",
+            "neutral"
+          ]
+        },
+        "modality": {
+          "enum": [
+            "vision",
+            "audio"
+          ]
+        },
+        "observedAt": {
+          "type": "number",
+          "minimum": 0
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "position": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "z": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "z"
+          ]
+        },
+        "bearing": {
+          "type": "number"
+        },
+        "cue": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "observerYaw": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "entityId",
+        "kind",
+        "relation",
+        "modality",
+        "observedAt",
+        "confidence"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "modality": {
+                "const": "vision"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "position"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "player",
+                  "ball"
+                ]
+              }
+            },
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "bearing"
+                  ]
+                },
+                {
+                  "required": [
+                    "cue"
+                  ]
+                },
+                {
+                  "required": [
+                    "observerYaw"
+                  ]
+                }
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "bearing",
+              "cue"
+            ],
+            "properties": {
+              "kind": {
+                "const": "call"
+              }
+            },
+            "not": {
+              "required": [
+                "position"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ability": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "maxSpeed": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 12
+            },
+            "passRange": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 50
+            }
+          },
+          "required": [
+            "maxSpeed",
+            "passRange"
+          ]
+        },
+        "selfEstimate": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "passReliability": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "passReliability"
+          ]
+        },
+        "preference": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "carry": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "pass": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "support": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "carry",
+            "pass",
+            "support"
+          ]
+        },
+        "tactics": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preferredAction": {
+              "enum": [
+                "scan",
+                "hold",
+                "carry",
+                "pass",
+                "support"
+              ]
+            },
+            "adherence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "preferredAction",
+            "adherence"
+          ]
+        }
+      },
+      "required": [
+        "ability",
+        "selfEstimate",
+        "preference",
+        "tactics"
+      ]
+    },
+    "RulesA": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "scanBias": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "carryBias": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "passBias": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "memoryHalfLife": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 60
+        },
+        "minimumConfidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "contextRules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContextRule"
+          },
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "version",
+        "scanBias",
+        "carryBias",
+        "passBias",
+        "memoryHalfLife",
+        "minimumConfidence"
+      ]
+    },
+    "PatchA": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scanBias": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "carryBias": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "passBias": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "memoryHalfLife": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 60
+        },
+        "minimumConfidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "contextRules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContextRule"
+          },
+          "maxItems": 32
+        }
+      },
+      "required": []
+    },
+    "Memory": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "episodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Percept"
+          },
+          "maxItems": 128
+        },
+        "lastTime": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "episodes",
+        "lastTime"
+      ]
+    },
+    "Bundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contractVersion": {
+          "const": 1
+        },
+        "playerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "time": {
+          "type": "number",
+          "minimum": 0
+        },
+        "self": {
+          "$ref": "#/$defs/Body"
+        },
+        "vision": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "horizontalFov": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 6.284
+            },
+            "range": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "horizontalFov",
+            "range"
+          ]
+        },
+        "percepts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Percept"
+          },
+          "maxItems": 128
+        }
+      },
+      "required": [
+        "contractVersion",
+        "playerId",
+        "time",
+        "self",
+        "vision",
+        "percepts"
+      ]
+    },
+    "BodyCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "channel": {
+          "enum": [
+            "locomotion",
+            "headYaw",
+            "gaze",
+            "voice",
+            "pass",
+            "jointPose",
+            "muscleEffort",
+            "posture",
+            "call"
+          ]
+        },
+        "status": {
+          "enum": [
+            "supported",
+            "unsupported"
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            }
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "channel",
+        "status",
+        "value"
+      ]
+    },
+    "Belief": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "entityId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "kind": {
+          "enum": [
+            "player",
+            "ball",
+            "call"
+          ]
+        },
+        "relation": {
+          "enum": [
+            "teammate",
+            "opponent",
+            "neutral"
+          ]
+        },
+        "modality": {
+          "enum": [
+            "vision",
+            "audio"
+          ]
+        },
+        "observedAt": {
+          "type": "number",
+          "minimum": 0
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "position": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "z": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "z"
+          ]
+        },
+        "bearing": {
+          "type": "number"
+        },
+        "cue": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "currentConfidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "age": {
+          "type": "number",
+          "minimum": 0
+        },
+        "uncertaintyRadius": {
+          "type": "number",
+          "minimum": 0
+        },
+        "observerYaw": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "entityId",
+        "kind",
+        "relation",
+        "modality",
+        "observedAt",
+        "confidence",
+        "currentConfidence",
+        "age",
+        "uncertaintyRadius"
+      ]
+    },
+    "Evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": [
+            "scan",
+            "hold",
+            "carry",
+            "pass",
+            "support"
+          ]
+        },
+        "score": {
+          "type": "number"
+        },
+        "allowed": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "action",
+        "score",
+        "allowed",
+        "reason"
+      ]
+    },
+    "Trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sensation": {
+          "$ref": "#/$defs/Bundle"
+        },
+        "attention": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "workingMemory": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Belief"
+          }
+        },
+        "longTermMemory": {
+          "$ref": "#/$defs/Memory"
+        },
+        "beliefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Belief"
+          }
+        },
+        "predictions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "entityId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "basisObservedAt": {
+                "type": "number",
+                "minimum": 0
+              },
+              "position": {
+                "$ref": "#/$defs/Vec"
+              },
+              "uncertaintyRadius": {
+                "type": "number",
+                "minimum": 0
+              },
+              "method": {
+                "const": "last-observation"
+              }
+            },
+            "required": [
+              "entityId",
+              "basisObservedAt",
+              "uncertaintyRadius",
+              "method"
+            ]
+          }
+        },
+        "evaluation": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evaluation"
+          }
+        },
+        "intention": {
+          "$ref": "#/$defs/Evaluation"
+        },
+        "output": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BodyCommand"
+          }
+        },
+        "rulesVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "modelRevision": {
+          "enum": [
+            "cognition-0.2",
+            "cognition-0.3"
+          ]
+        },
+        "assessment": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "uncertainThreat": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "informationValue": {
+              "type": "number",
+              "minimum": 0
+            },
+            "scanTarget": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "sourceId": {
+                  "type": "string"
+                },
+                "headYaw": {
+                  "type": "number",
+                  "minimum": -2.4,
+                  "maximum": 2.4
+                },
+                "observedAt": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "modality": {
+                  "enum": [
+                    "vision",
+                    "audio"
+                  ]
+                }
+              },
+              "required": [
+                "sourceId",
+                "headYaw",
+                "observedAt",
+                "modality"
+              ]
+            }
+          },
+          "required": [
+            "uncertainThreat",
+            "informationValue"
+          ]
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "action": {
+                "enum": [
+                  "scan",
+                  "hold",
+                  "carry",
+                  "pass",
+                  "support"
+                ]
+              },
+              "weight": {
+                "type": "number"
+              },
+              "call": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            },
+            "required": [
+              "id",
+              "action",
+              "weight"
+            ]
+          }
+        }
+      },
+      "required": [
+        "sensation",
+        "attention",
+        "workingMemory",
+        "longTermMemory",
+        "beliefs",
+        "predictions",
+        "evaluation",
+        "intention",
+        "output",
+        "rulesVersion",
+        "modelRevision",
+        "assessment"
+      ]
+    },
+    "ContextRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "when": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "possession": {
+              "enum": [
+                "any",
+                "has-ball",
+                "no-ball"
+              ]
+            },
+            "evidence": {
+              "enum": [
+                "no-fresh-receiver",
+                "fresh-receiver",
+                "stale-player",
+                "heard-call",
+                "missing-player-vision",
+                "observed-ball"
+              ]
+            },
+            "unlessCloseThreat": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "possession",
+            "evidence",
+            "unlessCloseThreat"
+          ]
+        },
+        "action": {
+          "enum": [
+            "scan",
+            "hold",
+            "carry",
+            "pass",
+            "support"
+          ]
+        },
+        "weight": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "call": {
+          "enum": [
+            "support-call",
+            "warning-call"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "when",
+        "action",
+        "weight"
+      ]
+    },
+    "ObservationEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "trigger": {
+          "enum": [
+            "initial",
+            "head-turn",
+            "body-turn",
+            "step",
+            "configuration",
+            "restore"
+          ]
+        },
+        "bundle": {
+          "$ref": "#/$defs/Bundle"
+        },
+        "profile": {
+          "$ref": "#/$defs/Profile"
+        },
+        "rulesA": {
+          "$ref": "#/$defs/RulesA"
+        }
+      },
+      "required": [
+        "sequence",
+        "trigger",
+        "bundle",
+        "profile",
+        "rulesA"
+      ]
+    },
+    "ObservationSequence": {
+      "type": "object",
+      "required": [
+        "initialMemory",
+        "events"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "initialMemory": {
+          "$ref": "#/$defs/Memory"
+        },
+        "events": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/ObservationEvent"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # Model card — provisional research foundation
 
-This card covers executable **A** and distinguishes it from the independently reviewed principle document **B**. Status: **uncalibrated, provisional, not a validated human or rugby-performance model**. Model revision is `cognition-0.3`; package version is `0.3.0`. The exact implementation is identified by the Git commit containing the [reproduction manifest](../research/reproducibility-manifest.json) and its source-file hashes. Rule version A0 alone does not identify an executable.
+This card covers executable **A** and distinguishes it from the independently reviewed principle document **B**. Status: **uncalibrated, provisional, not a validated human or rugby-performance model**. Model revision is `cognition-0.3`; package version is `0.4.0`. The exact implementation is identified by the Git commit containing the [reproduction manifest](../research/reproducibility-manifest.json) and its source-file hashes. Rule version A0 alone does not identify an executable.
 
 ## Purpose and method
 
@@ -22,7 +22,7 @@ Snapshots contain world truth for reproducibility and spectator inspection, but 
 
 ## Assumptions and calibration
 
-The 90° horizontal view, 35m visual range, circular occlusion, coarse audio bearing, 4-item attention/working store, 128-episode bound, 30s episode lifetime, exponential decay, uncertainty growth and all scoring weights are **engineering hypotheses**. They have not been fit to human gaze, behavior, biomechanical measurements or match outcomes. Scores and confidence values are not calibrated probabilities of correct play.
+The 90° horizontal view, 35m visual range, circular occlusion, coarse audio bearing, 4-input attention encoding, legacy 4-belief display excerpt (not a judgment capacity limit), 128-episode bound, 30s episode lifetime, exponential decay, uncertainty growth and all scoring weights are **engineering hypotheses**. They have not been fit to human gaze, behavior, biomechanical measurements or match outcomes. Scores and confidence values are not calibrated probabilities of correct play.
 
 Remembered uncertainty can penalize approach and suggest re-observation; audio meaning/direction can guide a head turn. Neither mechanism proves a hidden entity is present. Stale memory does not become fresh pass eligibility. Negative observation does not yet clear a remembered entity, and a coarse remembered sound cannot be repositioned precisely after translation without distance information.
 
