@@ -8,7 +8,7 @@ const manifestPath = resolve(root, 'research/reproducibility-manifest.json');
 // Explicit local-review inventory: never scan private sessions, env vars or downloaded plans/ZIPs.
 // Included P2P procedural source is pending a separate public-release decision.
 const inventory = [
-  'src/scene.ts', 'tests/dynamic-scenes.test.ts', 'tests/browser/dynamic-scenes.spec.ts', 'examples/dynamic-support.scene.json', 'docs/DYNAMIC_SCENES.md',
+  'src/playback.ts', 'tests/dynamic-review-regressions.test.ts', 'src/scene.ts', 'tests/dynamic-scenes.test.ts', 'tests/browser/dynamic-scenes.spec.ts', 'examples/dynamic-support.scene.json', 'docs/DYNAMIC_SCENES.md',
   '.gitignore', '.nvmrc', '.github/workflows/ci.yml', 'AGENTS.md', 'README.md', 'index.html',
   'package.json', 'package-lock.json', 'tsconfig.json', 'playwright.config.ts', 'RUGBY_JUDGMENT.md',
   'research/b-evaluation-baseline.json',

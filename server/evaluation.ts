@@ -22,6 +22,27 @@ export function conditionDigest(s:Pick<Snapshot,'bundle'|'memoryBefore'|'profile
   return digest(value);
 }
 export const stimulusDigest=(s:Snapshot)=>s.world.dynamic?digest({scene:sceneContent(s.world.dynamic.scene.definition),fromTick:s.world.dynamic.tick,toTick:s.world.dynamic.scene.definition.durationTicks,profile:s.profile}):null;
+export type ExposureEvidence=Pick<Snapshot,'bundle'|'memoryBefore'|'profile'> & Partial<Pick<Snapshot,'world'|'observationHistory'>> & {observations?:Bundle[]};
+export const EXPOSURE_POLICY='dynamic-lineage-and-acquired-observations-v1' as const;
+export type ExposureReason='same-input'|'same-scene-lineage'|'same-dynamic-stimulus'|'shared-acquired-observation';
+export const stimulusFamilyDigest=(s:ExposureEvidence)=>s.world?.dynamic?digest(sceneContent(s.world.dynamic.scene.definition)):null;
+function acquiredEvidence(s:ExposureEvidence){
+  // IDs and percept order are transport details, not independent evidence of novelty.
+  const bundles=s.observationHistory?.events.map(e=>e.bundle)??s.observations??[s.bundle];
+  return new Set(bundles.map(({playerId,percepts,...bundle})=>digest({...bundle,percepts:percepts.map(({id,entityId,...p})=>p).sort((a,b)=>canonical(a).localeCompare(canonical(b)))})));
+}
+export function exposureReasons(a:ExposureEvidence,b:ExposureEvidence):ExposureReason[]{
+  const reasons:ExposureReason[]=[];
+  if(conditionDigest(a)===conditionDigest(b))reasons.push('same-input');
+  if(a.bundle.playerId!=='observer-0'||b.bundle.playerId!=='observer-0')return reasons;
+  const left=a.world?.dynamic?.scene,right=b.world?.dynamic?.scene;
+  if(left&&right&&left.sceneId===right.sceneId)reasons.push('same-scene-lineage');
+  const family=stimulusFamilyDigest(a);
+  if(family&&family===stimulusFamilyDigest(b))reasons.push('same-dynamic-stimulus');
+  const acquired=acquiredEvidence(a);
+  if([...acquiredEvidence(b)].some(key=>acquired.has(key)))reasons.push('shared-acquired-observation');
+  return reasons;
+}
 export type EvaluationDraft={criteria:string;noveltyAttestation:'not-used-for-coaching';cases:{label:string;snapshot:Snapshot}[]};
 export type FrozenEvaluation={id:string;at:string;frozenAtRevision:number;digest:string;profile:Profile;draft:EvaluationDraft;
   novelty:'owner-declared-not-independently-verified';stimuli?:{stimulusDigest:string|null;observationDigest:string}[]};

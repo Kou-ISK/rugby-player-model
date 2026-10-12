@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 import './style.css';
+import { recordedWorld } from '../playback';
 import { sceneWorld, sceneRef, sceneDiagnostics, type SceneRef, type ApplicationPoint } from '../scene';
 import { defaultProfile, defaultRulesA, emptyMemory, type Candidate, type Memory, type Profile, type RulesA, type SceneId, type Snapshot, type Trace } from '../contracts';
 import { think } from '../cognition';
@@ -17,7 +18,7 @@ app.innerHTML=`
 <label>場面<select id="scene"><option value="support">01 支援と選択</option><option value="occluded">02 遮蔽</option><option value="audio">03 背後の声</option><option value="heldout">04 未見パラメータ</option></select></label>
 <label>seed<input id="seed" type="number" value="42" min="0" max="4294967295"></label><button id="reset">再現 / reset</button>
 <button id="play" class="primary">再生</button><button id="step">1 step</button><button id="snapshot">snapshot保存</button><button id="restore">最新を復元</button>
-</div><div id="viewport"><div id="view-tag">選手一人称 · 観測可能な範囲</div><div id="clock">0.0s</div><div class="crosshair">＋</div></div>
+</div><div id="comparison-controls" class="toolbar" hidden><strong>保存実験の比較再生</strong><button id="comparison-before">before</button><button id="comparison-after">after</button><button id="comparison-play">比較を再生</button><button id="comparison-step">比較1 frame</button><label>frame<input id="comparison-frame" type="range" min="0" value="0" step="1"></label><button id="comparison-exit">研究へ戻る</button><p id="comparison-status" role="status"></p></div><div id="viewport"><div id="view-tag">選手一人称 · 観測可能な範囲</div><div id="clock">0.0s</div><div class="crosshair">＋</div></div>
 <div class="view-controls"><button id="view">spectatorへ</button><label>首振り <input id="head" type="range" min="-137" max="137" value="0"><output id="head-value">0°</output></label><label>身体の向き <input id="body" type="range" min="-180" max="180" value="0"></label></div>
 <p id="history-status" class="hint"></p><button id="replay-history">現在の観測履歴を再生</button><pre id="history-report"></pre><p class="hint">動的場面では他選手が定義済み経路を移動し、対象選手だけをAが操作します。他選手の学習や自律判断は未実装。停止中の首・身体の回転は同じシミュレーション時刻で取得順を記録。再生は0.2秒刻みで、実時間の反応速度測定ではありません。</p><p class="hint">一人称は身体位置＋目の高さ＋身体/頭部の向きに接続。spectatorの世界情報は認知入力に入りません。視野90°・遮蔽は簡略モデル。P2P手続き描画を再利用（表示用mock・実身体技能ではありません）。一人称では自分の模型を非表示。</p>
 <div class="metrics"><div><small>現在の意図</small><strong id="intention">—</strong></div><div><small>観測 / 記憶</small><strong id="counts">—</strong></div><div><small>独立した版</small><strong id="versions">A0 / B0</strong></div></div>
@@ -30,7 +31,7 @@ app.innerHTML=`
 <button id="codex-context">Codex用の観測contextを保存</button><button id="restore-candidate">候補の場面を復元</button><label>差戻し・再提案の理由<textarea id="review-reason"></textarea></label><button id="revise">同場面で新候補（現承認版基準）</button><label class="confirm"><input type="checkbox" id="owner">本人としてこの内容を確認しました</label>
 <div class="review"><button id="approve-a">A 採用</button><button id="reject-a">A 却下</button><button id="return-a">A 差戻し</button><button id="undo-a">A undo</button><button id="approve-b">B 採用</button><button id="reject-b">B 却下</button><button id="return-b">B 差戻し</button><button id="undo-b">B undo</button></div>
 <button id="preview">保存済み候補をpreview＋固定回帰</button><button id="compare">現在の承認版と比較＋固定回帰</button><button id="export-b">B文書をダウンロード</button><pre id="comparison"></pre>
-<details open><summary>実験記録とBの独立評価</summary><label>再実行step数<input id="experiment-steps" type="number" min="1" max="20" value="5"></label><button id="run-preview">未採用候補で再実行・記録</button><button id="run-active">現在の承認版で再実行・記録</button><label>保存実験<select id="experiments"></select></label><button id="load-experiment">保存結果を表示</button><button id="download-experiment">結果JSON</button><label>B比較群<select id="b-arm"><option value="none">原則なし</option><option value="before">before B</option><option value="after">after B</option></select></label><label>B評価ケース<select id="b-cases"><option value="frozen">事前凍結</option><option value="regression">固定回帰（未見ではない）</option></select></label><button id="b-packet">匿名B入力</button><button id="b-evaluator-map">評価側だけの対応表</button><pre id="experiment-report"></pre><label>Bに使った生成AI／設定<input id="b-model" placeholder="モデル名・設定・実行日"></label><label>Bの回答<textarea id="b-output"></textarea></label><label>採点・未確認事項<textarea id="b-assessment"></textarea></label><button id="save-b-review">B回答を実験に記録</button><p id="b-review-status" class="hint"></p><p class="hint">Bはpacketを既存のAIチャットに渡して独立に評価。保存は正しさの承認ではありません。外部APIは呼びません。</p></details>
+<details open><summary>実験記録とBの独立評価</summary><label>再実行step数<input id="experiment-steps" type="number" min="1" max="20" value="5"></label><button id="run-preview">未採用候補で再実行・記録</button><button id="run-active">現在の承認版で再実行・記録</button><label>保存実験<select id="experiments"></select></label><button id="load-experiment">保存結果を表示</button><button id="download-experiment">結果JSON</button><button id="show-comparison-before">beforeを3Dで見る</button><button id="show-comparison-after">afterを3Dで見る</button><label>B比較群<select id="b-arm"><option value="none">原則なし</option><option value="before">before B</option><option value="after">after B</option></select></label><label>B評価ケース<select id="b-cases"><option value="frozen">事前凍結</option><option value="regression">固定回帰（未見ではない）</option></select></label><button id="b-packet">匿名B入力</button><button id="b-evaluator-map">評価側だけの対応表</button><pre id="experiment-report"></pre><label>Bに使った生成AI／設定<input id="b-model" placeholder="モデル名・設定・実行日"></label><label>Bの回答<textarea id="b-output"></textarea></label><label>採点・未確認事項<textarea id="b-assessment"></textarea></label><button id="save-b-review">B回答を実験に記録</button><p id="b-review-status" class="hint"></p><p class="hint">Bはpacketを既存のAIチャットに渡して独立に評価。保存は正しさの承認ではありません。外部APIは呼びません。</p></details>
 <div id="status" role="status">ローカルbridge接続中…</div><p class="hint">私的session: .rpm/（gitignore）。外部送信・有料API不要。筋骨格技能・人間再現・ラグビー全規則の完成モデルではありません。</p></aside></main>`;
 const $ = <T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
 const input=(id:string)=>$<HTMLInputElement>(id);
@@ -50,8 +51,38 @@ let state:ServerState, rules=defaultRulesA(), bVersion='B0', world=makeWorld('su
 let trace:Trace, playing=false, selected='', renderedRevision=-1, displayedCandidate='';
 let history=newHistory(memory);
 const view=new View($('viewport'));
+let comparisonPlayback:{experiment:Experiment;arm:'before'|'after';index:number;playing:boolean;previousSpectator:boolean;disabled:Map<HTMLInputElement|HTMLButtonElement|HTMLSelectElement|HTMLTextAreaElement,boolean>}|null=null;
+function comparisonRun(){return comparisonPlayback!.experiment.results.recorded[comparisonPlayback!.arm];}
+function renderComparison(){
+  const c=comparisonPlayback!,run=comparisonRun(),frame=run.frames[c.index];
+  const source=c.experiment.results.recordedInput?.snapshot??c.experiment.candidate.context;
+  const display=recordedWorld(source,frame,run.emittedCalls),t=frame.trace;
+  view.draw(display);$('view-tag').textContent=`比較 ${c.experiment.mode} / ${c.arm} · 選手一人称`;
+  $('clock').textContent=`${frame.time.toFixed(1)}s · ${display.dynamic?`tick ${display.dynamic.tick} · r${display.dynamic.scene.revision}`:`seed ${display.seed}`}`;
+  $('intention').textContent=t.intention.action;$('counts').textContent=`${t.sensation.percepts.length} / ${t.beliefs.length}`;
+  $('versions').textContent=`比較 ${t.rulesVersion} / 実行中 ${rules.version}・${bVersion}`;
+  $('history-status').textContent='保存された身体・観測・判断を表示中。研究の時計・記憶・A/B版は停止して保持しています。';
+  $('beliefs').textContent=t.beliefs.map(b=>`${b.entityId} ${b.modality} · 観測 ${b.observedAt.toFixed(1)}s / 現在確信 ${b.currentConfidence.toFixed(2)}`).join('\n')||'未観測';
+  $('trace').textContent=JSON.stringify({recordedExperiment:c.experiment.id,arm:c.arm,time:frame.time,body:display.body,intention:t.intention,bodyOutput:t.output,assessment:t.assessment},null,2);
+  input('head').value=String(display.body.headYaw*180/Math.PI);input('body').value=String(display.body.yaw*180/Math.PI);$('head-value').textContent=`${Math.round(display.body.headYaw*180/Math.PI)}°`;
+  input('comparison-frame').max=String(run.frames.length-1);input('comparison-frame').value=String(c.index);
+  $('comparison-play').textContent=c.playing?'比較を停止':'比較を再生';
+  $('comparison-status').textContent=`${c.arm} · ${c.index+1}/${run.frames.length} frame · ${frame.time.toFixed(1)}秒 · ${display.playerId}${display.dynamic?` · scene ${display.dynamic.scene.sceneId.slice(0,8)} / r${display.dynamic.scene.revision}`:""} · ${c.experiment.results.recordedInput?.window?`指導tick ${c.experiment.results.recordedInput.window.fromTick}–${c.experiment.results.recordedInput.window.toTick}`:'保存snapshotから'}。再計算・採用はしません。`;
+}
+async function startComparison(arm:'before'|'after'){
+  pause();await refresh(true);
+  const e:Experiment=await api('experiment',{id:select('experiments').value});
+  recordedWorld(e.results.recordedInput?.snapshot??e.candidate.context,e.results.recorded[arm].frames[0]);
+  const disabled=new Map<HTMLInputElement|HTMLButtonElement|HTMLSelectElement|HTMLTextAreaElement,boolean>();
+  for(const control of Array.from(app.querySelectorAll<HTMLInputElement|HTMLButtonElement|HTMLSelectElement|HTMLTextAreaElement>('button,input,select,textarea')))if(!control.closest('#comparison-controls')){disabled.set(control,control.disabled);control.disabled=true;}
+  comparisonPlayback={experiment:e,arm,index:0,playing:false,previousSpectator:view.spectator,disabled};view.spectator=false;
+  $('comparison-controls').hidden=false;renderComparison();$('comparison-controls').scrollIntoView({block:'start'});say('保存実験の比較表示です。before/afterを同じ時刻で切り替え、研究へ戻ると元の停止状態を復元します。');
+}
+function comparisonStep(){const c=comparisonPlayback!;if(c.index<comparisonRun().frames.length-1)c.index++;else c.playing=false;renderComparison();}
+
 function pause(){playing=false;$('play').textContent='再生';}
 function render(){
+  if(comparisonPlayback){renderComparison();return;}
   if(!history.events.length)appendObservation(history,sense(world),profile,rules,'initial');
   $('history-status').textContent=`観測履歴 ${history.events.length}/256件 · ${history.mode} · 頭向き（眼球の独立計測なし）`;
   trace=think(sense(world),memory,profile,rules); view.draw(world);
@@ -90,8 +121,10 @@ function loadCandidate(){
 let refreshQueue:Promise<void>=Promise.resolve(),pendingApplication:ApplicationPoint|undefined;
 function refresh(force=false):Promise<void>{const run=refreshQueue.then(()=>refreshState(force));refreshQueue=run.catch(()=>{});return run;}
 async function refreshState(force=false){
+  if(comparisonPlayback)return;
   if(pendingApplication){await api('application',{point:pendingApplication});pendingApplication=undefined;}
   const data:ServerState=await api('state');
+  if(comparisonPlayback)return;
   bridgeReady=data.apiVersion===5;
   if(!bridgeReady){pause();input('owner').checked=false;throw new Error('古いbridgeです。dev serverを停止して再起動してください。');}
   if(!force&&data.state.revision===renderedRevision)return;
@@ -118,7 +151,7 @@ async function refreshState(force=false){
     if(world.dynamic){pendingApplication={...sceneRef(world.dynamic.scene),playerId:'observer-0',tick:world.dynamic.tick,fromA:oldA,toA:rules.version,fromB:oldB,toB:bVersion,receiptId:crypto.randomUUID()};await api('application',{point:pendingApplication});pendingApplication=undefined;}
   }else render();
 }
-function on(id:string,fn:()=>unknown){$(id).addEventListener('click',()=>{Promise.resolve().then(fn).catch(e=>say(`エラー: ${e.message}`));});}
+function on(id:string,fn:()=>unknown){$(id).addEventListener('click',()=>{Promise.resolve().then(()=>{if(comparisonPlayback&&!id.startsWith('comparison-'))throw new Error('比較表示中です。研究へ戻ってから操作してください。');return fn();}).catch(e=>say(`エラー: ${e.message}`));});}
 on('replay-history',()=>{pause();const replay=replayObservationHistory(history);$('history-report').textContent=JSON.stringify({mode:replay.mode,timing:replay.timing,frames:replay.frames.map(f=>({sequence:f.sequence,time:f.time,trigger:f.trigger,bodyYaw:f.trace.sensation.self.yaw,headYaw:f.trace.sensation.self.headYaw,action:f.trace.intention.action,beliefs:f.trace.beliefs.map(b=>({id:b.entityId,observedAt:b.observedAt,age:b.age}))}))},null,2);say('記録した観測順序で判断を再生。世界や時計を進めず、当時のprofile・A設定を使います。');});
 on('play',()=>{playing=!playing;$('play').textContent=playing?'停止':'再生';});
 on('step',()=>{pause();step();});
@@ -171,17 +204,29 @@ on('restore-candidate',()=>{const c=state.state.candidates[selected];if(!c)throw
 on('revise',async()=>{const c=state.state.candidates[selected];if(!c)throw new Error('候補を選んでください');if(candidateDirty(c))throw new Error('編集を先に保存してください');const child=await api('revise',{id:selected,reason:area('review-reason').value,expectedRevision:c.revision});selected=child.id;await refresh(true);say('観測を保ち、現承認版を基準に新候補を作成。元の履歴・承認は維持し、新候補は未採用です。');});
 function showExperiment(e:Experiment){
   const sequence=(run:Experiment['results']['recorded']['after'])=>run.frames.map(f=>f.trace.intention.action);
-  $('experiment-report').textContent=JSON.stringify({id:e.id,at:e.at,candidateRevision:e.candidateRevision,modelRevision:e.modelRevision,engineFingerprint:e.engineFingerprint,provenance:e.provenance,notes:e.candidate.notes,A:[e.beforeA.version,e.afterA.version],B:[e.B.before.version,e.B.after.version],mode:e.mode,observedHistory:e.results.observedHistory?{mode:e.results.observedHistory.before.mode,before:e.results.observedHistory.before.frames.map(f=>({sequence:f.sequence,time:f.time,action:f.trace.intention.action})),after:e.results.observedHistory.after.frames.map(f=>({sequence:f.sequence,time:f.time,action:f.trace.intention.action}))}:null,evaluation:e.evaluation?{setId:e.evaluation.set.id,digest:e.evaluation.set.digest,useIndex:e.evaluation.useIndex,status:e.evaluation.status}:'fixed-regression-only',frozenTrials:e.results.frozenTrials?.map(t=>({caseId:t.caseId,before:sequence(t.before),after:sequence(t.after)})),diagnostic:e.results.diagnostic,recorded:{comparison:'same-scene-closed-loop; future observations may diverge',before:sequence(e.results.recorded.before),after:sequence(e.results.recorded.after),bodyPaths:{before:e.results.recorded.before.frames.map(f=>({time:f.time,body:f.body})),after:e.results.recorded.after.frames.map(f=>({time:f.time,body:f.body}))}},trials:e.results.trials.map(t=>({caseId:t.caseId,seed:t.seed,before:sequence(t.before),after:sequence(t.after)}))},null,2);
+  $('experiment-report').textContent=JSON.stringify({id:e.id,at:e.at,candidateRevision:e.candidateRevision,modelRevision:e.modelRevision,engineFingerprint:e.engineFingerprint,provenance:e.provenance,notes:e.candidate.notes,A:[e.beforeA.version,e.afterA.version],B:[e.B.before.version,e.B.after.version],mode:e.mode,replayInput:e.results.recordedInput?{source:e.results.recordedInput.source,sourceSequence:e.results.recordedInput.sourceSequence,window:e.results.recordedInput.window}:null,observedHistory:e.results.observedHistory?{mode:e.results.observedHistory.before.mode,before:e.results.observedHistory.before.frames.map(f=>({sequence:f.sequence,time:f.time,action:f.trace.intention.action})),after:e.results.observedHistory.after.frames.map(f=>({sequence:f.sequence,time:f.time,action:f.trace.intention.action}))}:null,evaluation:e.evaluation?{setId:e.evaluation.set.id,digest:e.evaluation.set.digest,useIndex:e.evaluation.useIndex,status:e.evaluation.status}:'fixed-regression-only',frozenTrials:e.results.frozenTrials?.map(t=>({caseId:t.caseId,before:sequence(t.before),after:sequence(t.after)})),diagnostic:e.results.diagnostic,recorded:{comparison:'same-scene-closed-loop; future observations may diverge',before:sequence(e.results.recorded.before),after:sequence(e.results.recorded.after),bodyPaths:{before:e.results.recorded.before.frames.map(f=>({time:f.time,body:f.body})),after:e.results.recorded.after.frames.map(f=>({time:f.time,body:f.body}))}},trials:e.results.trials.map(t=>({caseId:t.caseId,seed:t.seed,before:sequence(t.before),after:sequence(t.after)}))},null,2);
 }
 for(const mode of ['preview','active'] as const)on(`run-${mode}`,async()=>{pause();const c=state.state.candidates[selected];if(!c)throw new Error('候補を選んでください');if(candidateDirty(c))throw new Error('理由・予測・反例を含む編集を先に保存してください');const e=await api('run',{id:selected,expectedRevision:c.revision,steps:Number(input('experiment-steps').value),mode});await refresh(true);select('experiments').value=e.id;showExperiment(e);say('複数step・対照場面の実験記録を保存。採用状態は変更していません。');});
 on('load-experiment',async()=>{showExperiment(await api('experiment',{id:select('experiments').value}));say('保存時の版・理由・結果を表示。再計算していません。');});
+for(const arm of ['before','after'] as const){
+  on(`show-comparison-${arm}`,()=>startComparison(arm));
+  on(`comparison-${arm}`,()=>{comparisonPlayback!.arm=arm;comparisonPlayback!.index=Math.min(comparisonPlayback!.index,comparisonRun().frames.length-1);renderComparison();});
+}
+on('comparison-play',()=>{const c=comparisonPlayback!;if(!c.playing&&c.index===comparisonRun().frames.length-1)c.index=0;c.playing=!c.playing;renderComparison();});
+on('comparison-step',()=>{comparisonPlayback!.playing=false;comparisonStep();});
+input('comparison-frame').oninput=()=>{if(!comparisonPlayback)return;comparisonPlayback.playing=false;comparisonPlayback.index=Number(input('comparison-frame').value);renderComparison();};
+on('comparison-exit',async()=>{
+  const c=comparisonPlayback!;comparisonPlayback=null;for(const [control,disabled] of c.disabled)control.disabled=disabled;
+  view.spectator=c.previousSpectator;$('comparison-controls').hidden=true;$('view').textContent=view.spectator?'一人称へ':'spectatorへ';$('view-tag').textContent=view.spectator?'SPECTATOR · 世界真値 / 認知入力とは別':'選手一人称 · 観測可能な範囲';
+  render();await refresh();say('比較表示を終了。元の場面・時計・記憶へ戻りました。研究は停止したままです。');
+});
 on('download-experiment',async()=>download('experiment.json',await api('experiment',{id:select('experiments').value})));
 on('b-packet',async()=>{download('B-anonymous-input.json',await api('b-packet',{id:select('experiments').value,arm:select('b-arm').value,group:select('b-cases').value}));say('この群だけの匿名入力です。原則なし／before／afterを別々の新しい会話に渡してください。対応表は渡しません。');});
 on('b-evaluator-map',async()=>download('B-evaluator-only.json',await api('b-evaluator-map',{id:select('experiments').value})));
 on('save-b-review',async()=>{await api('b-review',{id:select('experiments').value,model:input('b-model').value,output:area('b-output').value,assessment:area('b-assessment').value,arm:select('b-arm').value,group:select('b-cases').value});await refresh(true);say('B回答と採点メモを保存しました。未検証の外部回答として記録し、原則採用には使いません。');});
 on('export-b',async()=>{const {markdown}=await api('export-b');const url=URL.createObjectURL(new Blob([markdown],{type:'text/markdown'}));const a=document.createElement('a');a.href=url;a.download=`RUGBY_JUDGMENT-${bVersion}.md`;a.click();URL.revokeObjectURL(url);say('現在の承認済みB文書を出力しました。');});
 // Draw on interaction/steps/resize/orbit changes; a paused tab need not use a GPU frame loop.
-const stepTimer=setInterval(()=>{if(playing)try{step();}catch(e){pause();say(String(e));}},200);
+const stepTimer=setInterval(()=>{try{if(comparisonPlayback?.playing)comparisonStep();else if(playing)step();}catch(e){pause();if(comparisonPlayback)comparisonPlayback.playing=false;say(String(e));}},200);
 const refreshTimer=setInterval(()=>refresh().catch(e=>say(`bridge: ${e.message}`)),2500);
 function dispose(){clearInterval(stepTimer);clearInterval(refreshTimer);view.dispose();}
 window.addEventListener('pagehide',event=>{if(!event.persisted)dispose();});

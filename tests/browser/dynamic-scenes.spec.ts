@@ -75,3 +75,33 @@ test('T01–T11: synthetic dynamic scene → coaching → preview paths → UI a
  await info.attach('synthetic-evidence',{body:JSON.stringify({scope:'Mac headless synthetic; not owner acceptance or real B evaluation',sceneId:scene.sceneId,coaching:context.coaching,application:receipt,experimentId,processRestart:true,errors},null,2),contentType:'application/json'});
  expect(errors).toEqual([]);
 });
+
+test('R1/R4: terminal coaching replays saved before/after in 3D at the same tick, then returns without research-state writes',async({page},info)=>{
+ test.setTimeout(90000);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ const scene=cli('scene-create','--file',join(repo,'examples/dynamic-support.scene.json'));
+ const captured=cli('scene-snapshot',scene.sceneId,'--revision','1','--tick','30');
+ const c=cli('propose',captured.snapshotId,'--feedback','SYNTHETIC: stop and scan over the interval','--from-tick','0','--to-tick','30');
+ const edit=JSON.parse(readFileSync(join(repo,'examples/conditional-coaching-edit.json'),'utf8'));edit.patchA={scanBias:2};const path=join(session,'terminal-edit.json');writeFileSync(path,JSON.stringify(edit));cli('edit',c.id,'--file',path,'--revision','1');
+ await page.goto(base);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');await page.locator('#candidates').selectOption(c.id);await page.locator('#restore-candidate').click();await expect(page.locator('#clock')).toContainText('tick 30/30');
+ await page.locator('#experiment-steps').fill('20');await page.locator('#run-preview').click();await expect(page.locator('#status')).toContainText('実験記録を保存');
+ const id=await page.locator('#experiments').inputValue(),experiment=cli('experiment',id);
+ expect(experiment.results.recordedInput.snapshot.world.dynamic.tick).toBe(0);expect(experiment.results.recordedInput.snapshot.memoryBefore.episodes).toEqual([]);
+ expect(experiment.results.recorded.before.frames).toHaveLength(20);expect(experiment.results.recorded.before.finalSelf.position).not.toEqual(experiment.results.recorded.after.finalSelf.position);
+ const originalClock=await page.locator('#clock').textContent(),originalTrace=await page.locator('#trace').textContent(),originalHistory=await page.locator('#history-status').textContent(),stateBytes=readFileSync(join(session,'state.json'),'utf8');
+ const writes:string[]=[];page.on('request',r=>{if(r.method()==='POST'&&!r.url().endsWith('/api/experiment'))writes.push(r.url());});
+ await page.locator('#show-comparison-before').click();await expect(page.locator('#view-tag')).toContainText('比較 preview / before');await expect(page.locator('#clock')).toContainText('tick 0');
+ await expect(page.locator('#step')).toBeDisabled();await expect(page.locator('#snapshot')).toBeDisabled();await expect(page.locator('#approve-a')).toBeDisabled();await expect(page.locator('#owner')).toBeDisabled();
+ await page.locator('#comparison-frame').fill('9');const time=await page.locator('#clock').textContent(),beforePixels=await page.locator('canvas').screenshot();
+ const beforeBody=JSON.parse((await page.locator('#trace').textContent())!).body;
+ await page.locator('#comparison-after').click();await expect(page.locator('#clock')).toHaveText(time!);const afterBody=JSON.parse((await page.locator('#trace').textContent())!).body;
+ expect(afterBody.position).not.toEqual(beforeBody.position);expect(await page.locator('canvas').screenshot()).not.toEqual(beforePixels);
+ await page.locator('#comparison-play').click();await expect(page.locator('#comparison-frame')).not.toHaveValue('9');await page.locator('#comparison-play').click();
+ await page.locator('#comparison-exit').click();await expect(page.locator('#status')).toContainText('元の場面');await expect(page.locator('#clock')).toHaveText(originalClock!);await expect(page.locator('#trace')).toHaveText(originalTrace!);await expect(page.locator('#history-status')).toHaveText(originalHistory!);
+ expect(readFileSync(join(session,'state.json'),'utf8')).toBe(stateBytes);expect(writes).toEqual([]);await expect(page.locator('#versions')).toHaveText('A0 / B0');await expect(page.locator('#play')).toHaveText('再生');
+ const response=page.waitForResponse(r=>r.url().endsWith('/api/snapshot'));await page.locator('#snapshot').click();const restoredId=(await (await response).json()).id;
+ expect(cli('snapshot-export',restoredId)).toEqual(cli('snapshot-export',captured.snapshotId));
+ // The saved experiment remains viewable after a browser reload; no A approval is required.
+ await page.reload();await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');await page.locator('#experiments').selectOption(id);await page.locator('#show-comparison-after').click();await expect(page.locator('#clock')).toContainText('tick 0');await page.locator('#comparison-exit').click();
+ await info.attach('review-fix-evidence',{body:JSON.stringify({scope:'synthetic Mac headless; not owner acceptance',experimentId:id,fromTick:0,savedAtTick:30,frames:20,sameTickSwitch:true,differentBodyAndPixels:true,returnStateUnchanged:true,restoredSnapshotEqual:true,comparisonMutationRequests:writes.filter(url=>!url.endsWith('/api/snapshot')),errors}),contentType:'application/json'});
+ expect(errors).toEqual([]);
+});

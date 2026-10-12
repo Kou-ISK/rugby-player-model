@@ -77,3 +77,15 @@ npm run bridge -- scene-comparisons
 | P2P | 原本の手続き描画と来歴を維持。新しいengine/camera/型/GLBは導入しない |
 
 `tests/dynamic-scenes.test.ts` はT01–T10の契約・境界・比較、`tests/browser/dynamic-scenes.spec.ts` はT01–T11の合成CLI/UI/実プロセス再起動を検査します。既存のmemory/audio paired tests、revision競合、独立A/B、旧snapshot検査も維持します。T12（本人が実際に画面と会話で研究する受入）と実AIでのB採点は別工程で、headless成功では完了扱いにしません。
+
+## 独立レビュー後の修正仕様
+
+指導区間の再走行は、保存した終端snapshotからではなく **fromTickの最初の取得frame** から始めます。開始前の観測prefixを当時のprofile/Aで順に再生し、開始直前の記憶と、実際にstepで適用されたcall履歴を復元します。同じtick内でも開始取得より後の首振りや、その後の記憶を開始入力へ入れません。開始world・bundle・memory・sourceSequenceを実験の `recordedInput` に固定保存し、before/afterへ同じものを渡します。比較profileとAの基準版は候補の保存時に固定したものです。開始後の手動首振りを両枝に強制する処理はありません。固定観測系列の再推論は別のobservedHistory比較です。
+
+指定frame予算（1–20）または指導区間の終了tickで停止します。20frame未満で区間が終われば終端で止まり、予算を使い切った場合は `step-budget` と記録します。区間開始が失われた旧履歴から過去状態を推測して生成せず、再構築できない場合はエラーにします。履歴なしで保存した現在時点だけの候補は、その時点からの比較として扱います。
+
+凍結条件の未使用性は、末尾のbundle/memoryだけでは判定しません。動的場面では同じscene系譜、作者IDを除いた同じ刺激定義、IDや順序を除いて一致する取得済み観測の共有も照合します。tick追加、首振り、profile変更、別UUID・改名、未来部分の改訂で既知の情報を未使用へ戻せません。共有した条件を指導用に使った場合は凍結評価の実行を拒否します。過去の評価で共有した場合は `reused-not-unseen` とし、参照したexperiment IDと理由を `evaluation.exposure` に保存します。この判定は保守的で、一部でも共有する観測は完全な未使用条件とは呼びません。共有条件の研究は、未使用評価を主張しない通常比較で続けられます。
+
+保存実験を選び「beforeを3Dで見る」「afterを3Dで見る」を押すと、既存ビューが保存結果の比較表示になります。同じframe時刻でbefore/afterを切り替え、再生・1frame・スライダーで身体位置と選手視点を確認できます。比較中は研究の操作とbridge同期を止め、A/Bや観測履歴へ書き込みません。「研究へ戻る」で元の場面・時計・記憶・視点設定へ戻ります。戻った後に別CLIで変更された承認版がある場合は通常の同期で適用します。比較で見せるのは記録済みframeで、新しいA判断や採用を行いません。身体frameを持たない古い実験は再記録が必要です。
+
+描画cacheはactor IDだけでなくkind/team/appearanceを照合します。条件が変われば旧meshをdisposeして再作成し、同じIDの青→赤→青や場面切替でもsensorの関係と表示を一致させます。P2P原本のbytesは変更しません。

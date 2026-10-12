@@ -10,7 +10,7 @@ import { candidateDraft, compare, regressionCompare, experimentRun, replay } fro
 import { sense } from '../src/simulation';
 import { assertSnapshotHistory } from '../src/observation-history';
 import type { Experiment, BReview, BMaterial } from './experiment-types';
-import { canonical, digest, conditionDigest, stimulusDigest, checkEvaluationDraft, anonymizeCases, type FrozenEvaluation, type BArm, type CaseGroup } from './evaluation';
+import { canonical, digest, conditionDigest, stimulusDigest, exposureReasons, EXPOSURE_POLICY, checkEvaluationDraft, anonymizeCases, type FrozenEvaluation, type BArm, type CaseGroup } from './evaluation';
 const fingerprint = () => createHash('sha256').update(['src/contracts.ts','src/scene.ts','src/cognition.ts','src/simulation.ts','src/research.ts','src/observation-history.ts','src/validation.ts','server/evaluation.ts','schemas/contracts.schema.json'].map(path => readFileSync(new URL('../'+path, import.meta.url))).reduce((a,b)=>Buffer.concat([a,b]),Buffer.alloc(0))).digest('hex');
 const loadedFingerprint = fingerprint();
 // Opaque slot identities are stable across copies/renames. Never hash author text or future paths.
@@ -117,8 +117,7 @@ export class Store {
   freezeEvaluation(draft:unknown):FrozenEvaluation {
     checkEvaluationDraft(draft);for(const c of draft.cases)this.assertSceneBinding(c.snapshot);
     return this.transact(s=>{
-      const known=new Set(Object.values(s.candidates).map(c=>conditionDigest(c.context)));
-      if(draft.cases.some(c=>known.has(conditionDigest(c.snapshot))))throw new Error('Evaluation observations were already used for coaching in this session');
+      if(draft.cases.some(c=>Object.values(s.candidates).some(candidate=>exposureReasons(c.snapshot,candidate.context).length)))throw new Error('Evaluation observations were already used for coaching in this session');
       const set:FrozenEvaluation={id:randomUUID(),at:new Date().toISOString(),frozenAtRevision:s.revision,
         digest:digest(draft),profile:structuredClone(draft.cases[0].snapshot.profile),draft:structuredClone(draft),novelty:'owner-declared-not-independently-verified',stimuli:draft.cases.map(c=>({stimulusDigest:stimulusDigest(c.snapshot),observationDigest:conditionDigest(c.snapshot)}))};
       s.evaluationSets[set.id]=set;return set;
@@ -131,7 +130,7 @@ export class Store {
       if(evaluationSetId){
         const set=s.evaluationSets[evaluationSetId];if(!set)throw new Error('Freeze evaluation conditions before proposing feedback');
         if(canonical(set.profile)!==canonical(context.profile))throw new Error('Candidate profile differs from the frozen evaluation profile');
-        if(set.draft.cases.some(c=>conditionDigest(c.snapshot)===conditionDigest(context)))throw new Error('Frozen evaluation evidence cannot be used as the coaching scene');
+        if(set.draft.cases.some(c=>exposureReasons(c.snapshot,context).length))throw new Error('Frozen evaluation evidence cannot be used as the coaching scene');
       }
       const c = candidateDraft(randomUUID(), feedback, context);
       if(context.world.dynamic){
@@ -235,13 +234,17 @@ export class Store {
       const set=c.evaluationSetId?s.evaluationSets[c.evaluationSetId]:undefined;
       if(c.evaluationSetId&&!set)throw new Error('Missing frozen evaluation set');
       if(set&&(digest(set.draft)!==set.digest||canonical(set.profile)!==canonical(c.context.profile)))throw new Error('Frozen evaluation digest/profile mismatch');
-      const frozenEvidence=new Set(set?.draft.cases.map(test=>conditionDigest(test.snapshot))??[]);
-      if(set&&Object.values(s.candidates).some(candidate=>frozenEvidence.has(conditionDigest(candidate.context))))throw new Error('Frozen evaluation observations became coaching data');
-      const results=experimentRun(c.context,afterA,steps,set?.draft.cases.map((test,i)=>({id:`frozen-${i+1}`,snapshot:test.snapshot})));
+      if(set&&Object.values(s.candidates).some(candidate=>set.draft.cases.some(test=>exposureReasons(test.snapshot,candidate.context).length)))throw new Error('Frozen evaluation observations became coaching data');
+      const results=experimentRun(c.context,afterA,steps,set?.draft.cases.map((test,i)=>({id:`frozen-${i+1}`,snapshot:test.snapshot})),c.coaching);
       const useIndex=set?Object.values(s.experiments).filter(e=>e.evaluation?.set.id===set.id).length+1:0;
-      const frozenStimuli=new Set(set?.draft.cases.map(test=>stimulusDigest(test.snapshot)).filter((x):x is string=>x!==null)??[]);
-      const previouslyEvaluated=Object.values(s.experiments).some(e=>e.results.observationCases.some(test=>frozenEvidence.has(conditionDigest(test)))||
-        [e.candidate.context,...(e.evaluation?.set.draft.cases.map(c=>c.snapshot)??[])].some(snapshot=>{const id=stimulusDigest(snapshot);return id!==null&&frozenStimuli.has(id);}));
+      const exposureMatches=Object.values(s.experiments).flatMap(e=>{
+        const evidence=[e.candidate.context,...(e.evaluation?.set.draft.cases.map(c=>c.snapshot)??[]),...e.results.observationCases];
+        return (set?.draft.cases??[]).flatMap((test,index)=>{
+          const reasons=[...new Set(evidence.flatMap(known=>exposureReasons(test.snapshot,known)))];
+          return reasons.length?[{experimentId:e.id,frozenCaseIndex:index,reasons}]:[];
+        });
+      });
+      const previouslyEvaluated=exposureMatches.length>0;
       const B:Experiment['B']={before:this.bMaterial(beforeB),after:this.bMaterial(afterB,mode==='preview'),status:mode==='preview'?'proposed':'approved-version'};
       const e:Experiment={id:randomUUID(),at:new Date().toISOString(),candidateId:id,candidateRevision:c.revision,mode,
         modelRevision:results.recorded.after.frames[0].trace.modelRevision,engineFingerprint:loadedFingerprint,
@@ -250,7 +253,7 @@ export class Store {
           resultSha256:hash(JSON.stringify(results)),beforeBSha256:hash(B.before.markdown),afterBSha256:hash(B.after.markdown)},
         candidate:structuredClone(c),beforeA:structuredClone(beforeA),afterA:structuredClone(afterA),
         B,results,bInputs:anonymizeCases(results.observationCases),
-        ...(set?{evaluation:{set:structuredClone(set),useIndex,status:!previouslyEvaluated&&useIndex===1?'first-recorded-use-owner-declared' as const:'reused-not-unseen' as const}}:{})};
+        ...(set?{evaluation:{set:structuredClone(set),useIndex,exposure:{policy:EXPOSURE_POLICY,matches:exposureMatches},status:!previouslyEvaluated&&useIndex===1?'first-recorded-use-owner-declared' as const:'reused-not-unseen' as const}}:{})};
       s.experiments[e.id]=e;return e;
     });
   }

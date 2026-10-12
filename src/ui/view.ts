@@ -10,6 +10,7 @@ export class View {
   private spectatorCamera = new THREE.PerspectiveCamera(55,1,.1,250);
   private controls: OrbitControls;
   private actors = new Map<string, THREE.Object3D>();
+  private appearances = new Map<string,string>();
   private selfTeam='blue';
   private self = playerModel('self', 0x4bc5ee);
   private resizeObserver: ResizeObserver;
@@ -38,10 +39,12 @@ export class View {
     if(this.disposed)return;
     this.controls.enabled=this.spectator;
     const ids = new Set(world.entities.map(e=>e.id));
-    for(const [id,obj] of this.actors) if(!ids.has(id)) { this.scene.remove(obj);disposeObjectResources(obj);this.actors.delete(id); }
+    for(const [id,obj] of this.actors) if(!ids.has(id)) { this.scene.remove(obj);disposeObjectResources(obj);this.actors.delete(id);this.appearances.delete(id); }
     for(const e of world.entities) {
       const appearanceId=world.dynamic?`actor-${world.dynamic.scene.definition.actors.findIndex(a=>a.id===e.id)}`:e.id;
-      if(!this.actors.has(e.id)){const obj=e.kind==='ball'?ballModel():playerModel(appearanceId,e.team==='blue'?0x4bc5ee:0xf17b68).group;this.actors.set(e.id,obj);this.scene.add(obj);}
+      const appearanceKey=`${e.kind}:${e.team}:${appearanceId}`;
+      if(this.actors.has(e.id)&&this.appearances.get(e.id)!==appearanceKey){const old=this.actors.get(e.id)!;this.scene.remove(old);disposeObjectResources(old);this.actors.delete(e.id);}
+      if(!this.actors.has(e.id)){const obj=e.kind==='ball'?ballModel():playerModel(appearanceId,e.team==='blue'?0x4bc5ee:0xf17b68).group;this.actors.set(e.id,obj);this.appearances.set(e.id,appearanceKey);this.scene.add(obj);}
       const obj=this.actors.get(e.id)!;obj.position.set(e.position.x,e.kind==='ball'?.22:0,e.position.z);obj.rotation.y=e.yaw??0;obj.visible=this.spectator||visible(world,e);
     }
     const team=world.dynamic?.scene.definition.actors.find(a=>a.id===world.dynamic!.scene.definition.controlledPlayerId)?.team??'blue';
@@ -64,7 +67,7 @@ export class View {
   dispose() {
     if(this.disposed)return;this.disposed=true;
     this.resizeObserver.disconnect();this.controls.dispose();
-    disposeObjectResources(this.scene);this.scene.clear();this.actors.clear();
+    disposeObjectResources(this.scene);this.scene.clear();this.actors.clear();this.appearances.clear();
     this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();
   }
 }
