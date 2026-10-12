@@ -14,6 +14,7 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run spike
+      - run: npm run test:first-run
   browser:
     runs-on: ubuntu-latest
     steps:

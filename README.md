@@ -9,7 +9,11 @@ See [dynamic scene contracts, CLI and acceptance scope](./tools/workbench/docs/D
 - **Use B:** [independent judgment principles](./models/judgment/RUGBY_JUDGMENT.md). Read or supply the document directly; no runner or A installation is required.
 - **Research and contribute:** [contribution workflow](./CONTRIBUTING.md). Work with synthetic inputs, propose changes, inspect counterexamples, and review A/B separately.
 
-The reference model is an uncalibrated engineering hypothesis. Software checks do not establish human cognition or rugby performance. Attention encodes four inputs; the legacy `workingMemory` trace is a display excerpt, not a decision bottleneck. Shared research mode and proposal import are being completed on this migration branch.
+The reference model is an uncalibrated engineering hypothesis. Software checks do not establish human cognition or rugby performance. Attention encodes four inputs; the legacy `workingMemory` trace is a display excerpt, not a decision bottleneck. The selectable [H-WM-1 mode](./models/player/spec/H-WM-1.md) and strict proposal import/reproduction are available as unvalidated research tools.
+
+## Start a synthetic research session
+
+Follow the [complete first-time manual UI/CLI tutorial](./tools/workbench/docs/FIRST_RUN.md): new session, observations, candidate, preview, independent A/B adoption, undo, export, inert import and reproduction in a second session. No owner-specific setup or paid API is required.
 
 ## Research workbench
 
@@ -42,3 +46,5 @@ Cloudの検証合格と、本人Macでの共同研究loop実証は別です。�
 ## Configured owner Mac
 
 The existing owner entrance remains `./start-rpm.command` and `./bridge-rpm.command`; see [Mac instructions](./tools/workbench/docs/MAC_START.md) and [private storage](./tools/workbench/docs/LOCAL_STORAGE.md). Public tutorials use a separate synthetic session.
+
+Those wrappers follow the configured stable source directory. To test a separate checkout before its reviewed installation, use the explicit `RPM_SESSION_DIR` and `npm run dev` commands in the first-run guide; copying the wrapper does not select this checkout.

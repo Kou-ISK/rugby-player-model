@@ -71,6 +71,38 @@
           }
         }
       ]
+    },
+    "ExecutionInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "executionContractVersion",
+        "executionMode",
+        "bundle",
+        "memory",
+        "profile",
+        "rules"
+      ],
+      "properties": {
+        "executionContractVersion": {
+          "const": 2
+        },
+        "executionMode": {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        "bundle": {
+          "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Bundle"
+        },
+        "memory": {
+          "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Memory"
+        },
+        "profile": {
+          "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Profile"
+        },
+        "rules": {
+          "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/RulesA"
+        }
+      }
     }
   }
 }

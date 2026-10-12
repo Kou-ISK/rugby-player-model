@@ -113,7 +113,7 @@ test('synthetic coaching → return/revise → conditional transfer → independ
  expect(cli('experiment',experimentId)).toEqual(active);expect(cli('context',parent).decisions.A).toBe('returned');
  expect(errors).toEqual([]);
  await info.attach('synthetic-research-cycle.json',{body:JSON.stringify({syntheticOnly:true,ownerAcceptance:false,node:process.version,
-  bridgeApiVersion:4,modelRevision:active.modelRevision,engineFingerprint:active.engineFingerprint,processRestarts:2,
+  bridgeApiVersion:(await (await request.get(base+'/api/state')).json()).apiVersion,modelRevision:active.modelRevision,engineFingerprint:active.engineFingerprint,processRestarts:2,
   context:{scene:context.scene,seed:context.seed,time:context.bundle.time,playerId:context.bundle.playerId,worldOmitted:true},
   conditionalActions:actions,previewAdopted:false,independentApprovals:true,revisionConflict:409,
   returnedParentRetained:true,headHistoryEvents:saved.observationHistory.events.length,historyMode:saved.observationHistory.mode,frozenEvaluationCount:active.results.frozenTrials.length,repeatMarkedAsReused:active.evaluation.status==='reused-not-unseen',BPacketLabelsOmitted:true,BPacketCases:packet.cases.length,BResponse:'synthetic-mock-unverified',

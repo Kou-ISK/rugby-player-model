@@ -61,6 +61,7 @@ test('W9 sufficiently large K/unlimited have identical selection/judgment; ranke
  const b=bundle([call('a'),ball,player('receiver')]),a=run(b,emptyMemory(),finiteMode(128)),c=run(b,emptyMemory(),unlimitedMode());pairInvariant(a,c);
  for(const key of ['evaluation','intention','output','assessment'] as const)assert.deepEqual(a.trace[key],c.trace[key]);assert.deepEqual(a.trace.deliberation!.selected,c.trace.deliberation!.selected);
  const pool=a.trace.deliberation!.retrieved;assert.deepEqual(rankRetrieved(pool),rankRetrieved([...pool].reverse()));
+ const retained=[player('receiver-z',1,.8),player('receiver-a',1,.9),ball];const ordered=run(bundle(),mem(retained),finiteMode(2)),permuted=run(bundle(),mem([...retained].reverse()),finiteMode(2));assert.deepEqual(ordered.trace.deliberation!.ranked,permuted.trace.deliberation!.ranked);assert.deepEqual(ordered.trace.deliberation!.selected,permuted.trace.deliberation!.selected);for(const key of ['evaluation','intention','output'] as const)assert.deepEqual(ordered.trace[key],permuted.trace[key]);
 });
 test('W10 observation-only execution rejects world/future/render fields; external changes cannot affect output',()=>{
  const input={executionContractVersion:2,executionMode:finiteMode(1),bundle:bundle([ball]),memory:mem([player('receiver')]),profile,rules};const first=execute(input);

@@ -9,3 +9,5 @@ Encoding still takes four current percepts by legacy salience. Retention still k
 保持観測による危険／定位 uses the full retrieved pool, as do existing fresh/no-fresh predicates. Those predicates do not become capacity predicates. Trace v2 includes encoded, retrieved, ranked and selected evidence and inclusion reasons. Legacy Trace v1's workingMemory remains a display excerpt and is never reinterpreted as a bottleneck.
 
 Compare legacy / research unlimited / research finite separately. Unlimited versus finite isolates capacity when all other inputs agree. Legacy versus research unlimited includes the new ranking policy. W0 pins 36 legacy results; W1–W10 exercise mechanism effects, evidence preservation, excluded threat behavior and observation-only boundaries. W4b's cross-pool comparison also changes orienting and is explicitly a mixed intervention. Passing tests does not establish rugby benefit, biological validity or owner adoption.
+
+For compatibility, Trace v2 also retains the old `workingMemory` display excerpt. The capacity-constrained receiver set is `deliberation.selected`; the legacy-named display field never defines K.

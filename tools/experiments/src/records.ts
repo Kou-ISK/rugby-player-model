@@ -24,7 +24,7 @@ export type ExperimentResults = {steps:number;dt:number;profilePolicy:'candidate
   diagnostic:{distinctFirstActions:Trace['intention']['action'][];homogeneousWarning:boolean;interpretation:string};
   observationCases:ObservationCase[]};
 export type BInputSet = {modelCases:AnonymousCase[];evaluatorMap:BCaseMap[]};
-export type BMaterial = { version: string; markdown: string; structuredAmendments: RulesB['principles'] };
+export type BMaterial = { version: string; markdown: string; structuredAmendments: RulesB['principles']; baseline?:RulesB['baseline']; outputFormat?:2 };
 export type Experiment = {
   id: string; at: string; candidateId: string; candidateRevision: number; mode: 'preview' | 'active';
   modelRevision: string; engineFingerprint: string; engineFingerprintFormat?: 'source-files-v2' | 'source-manifest-v1'; candidate: Candidate;

@@ -20,12 +20,11 @@
   },
   "files": [
     "dist",
-    "spec/contracts.schema.json",
     "examples",
     "README.md",
     "MODEL_CARD.md",
     "LICENSE",
-    "spec/execution.schema.json"
+    "spec"
   ],
   "dependencies": {
     "ajv": "8.17.1"

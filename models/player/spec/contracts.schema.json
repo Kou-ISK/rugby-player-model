@@ -733,7 +733,8 @@
         "modelRevision": {
           "enum": [
             "cognition-0.2",
-            "cognition-0.3"
+            "cognition-0.3",
+            "cognition-h-wm-1-v1"
           ]
         },
         "assessment": {
@@ -820,6 +821,126 @@
               "weight"
             ]
           }
+        },
+        "traceVersion": {
+          "const": 2
+        },
+        "deliberation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "executionMode": {
+              "$ref": "#/$defs/ExecutionMode"
+            },
+            "encodingPolicy": {
+              "const": "salience-top-4-legacy-v1"
+            },
+            "retentionPolicy": {
+              "const": "30s-last128-legacy-v1"
+            },
+            "retrievalPolicy": {
+              "const": "latest-entity-modality-decay-legacy-v1"
+            },
+            "encoded": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Percept"
+              },
+              "minItems": 0,
+              "maxItems": 4
+            },
+            "retrieved": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Belief"
+              },
+              "minItems": 0,
+              "maxItems": 128
+            },
+            "ranked": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Belief"
+              },
+              "minItems": 0,
+              "maxItems": 128
+            },
+            "selected": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Belief"
+              },
+              "minItems": 0,
+              "maxItems": 128
+            },
+            "selection": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "sourceId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  },
+                  "observedAt": {
+                    "type": "number"
+                  },
+                  "rank": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 128
+                  },
+                  "included": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "enum": [
+                      "within-capacity",
+                      "capacity-exceeded"
+                    ]
+                  }
+                },
+                "required": [
+                  "sourceId",
+                  "observedAt",
+                  "rank",
+                  "included",
+                  "reason"
+                ]
+              },
+              "minItems": 0,
+              "maxItems": 128
+            },
+            "consumers": {
+              "const": [
+                "receiver-comparison",
+                "receiver-selection",
+                "pass-eligibility",
+                "pass-explanation"
+              ]
+            },
+            "unconstrained": {
+              "const": [
+                "retained-evidence-risk-orienting",
+                "fresh-no-fresh-predicates"
+              ]
+            }
+          },
+          "required": [
+            "executionMode",
+            "encodingPolicy",
+            "retentionPolicy",
+            "retrievalPolicy",
+            "encoded",
+            "retrieved",
+            "ranked",
+            "selected",
+            "selection",
+            "consumers",
+            "unconstrained"
+          ]
         }
       },
       "required": [
@@ -835,6 +956,43 @@
         "rulesVersion",
         "modelRevision",
         "assessment"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "modelRevision": {
+                "const": "cognition-h-wm-1-v1"
+              }
+            },
+            "required": [
+              "modelRevision"
+            ]
+          },
+          "then": {
+            "required": [
+              "traceVersion",
+              "deliberation",
+              "appliedRules"
+            ]
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "traceVersion"
+                  ]
+                },
+                {
+                  "required": [
+                    "deliberation"
+                  ]
+                }
+              ]
+            }
+          }
+        }
       ]
     },
     "ContextRule": {

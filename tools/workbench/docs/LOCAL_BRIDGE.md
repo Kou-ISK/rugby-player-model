@@ -59,7 +59,7 @@ npm run bridge -- undo B --by owner --version B1
 
 snapshotのA/B基準版が変わった候補は採用できません。previewでは古い基準版での試算であることを表示します。採用するには新しいsnapshot、または理由を付けた `revise` で現承認版を基準に新候補を作ります。後者は観測を保持し、親候補IDを記録します。コピーした差分は現承認版に対して再点検し、既存のcontextRulesを誤って消さないでください。いずれかの対象を採用/却下/差戻しした候補は編集不可です。両方の内容を先に仕上げるか、新しい候補を作ります。
 
-`models/judgment/RUGBY_JUDGMENT.md` はB0.1-draftの提案文書です。bridgeのB出力は凍結B0＋本人承認済み原則を使い、リポジトリ文書の編集で私的sessionのBを変更しません。新しい原則はB候補として個別に承認できます。全文baselineの置換は別の本人判断であり、この更新では実施していません。
+`models/judgment/RUGBY_JUDGMENT.md` はB0.1-draftの提案文書です。bridgeの既定B出力は凍結B0＋本人承認済み原則を使い、リポジトリ文書の編集で私的sessionのBを変更しません。新しい原則はB候補として個別に承認できます。全文baselineの置換も別の本人判断として利用でき、旧baselineと原則順序を保持します。合成の手動操作・共有提案・B単独評価は [FIRST_RUN.md](./FIRST_RUN.md) を参照してください。本人sessionの全文置換は実施していません。
 
 `npm run --silent` はJSONをファイルに保存する場合に必要です（npmの見出しを混ぜないため）。状態は `.rpm/state.json`、通常はUI/CLI経由で扱い、手で内部状態を書き換えません。`RPM_SESSION_DIR` で別ディレクトリを指定する場合は、誤ってGit追跡される場所を選ばないでください。
 
@@ -77,4 +77,4 @@ snapshotのA/B基準版が変わった候補は採用できません。preview�
 
 `mode-edit CANDIDATE --revision N --mode finite --k 4`、`--mode unlimited`、`--mode legacy`で候補に保存します。UIの研究モード欄も同じ編集を使います。変更だけではactiveは変わりません。`mode-study CANDIDATE --revision N --k 4`は同一観測で従来・新policy無制限・新policy有限を別armとして保存します。`mode-studies`で再起動後も取得できます。有限対無制限が容量対照、従来対無制限はpolicy差です。A専用採用後に実行へ適用し、A undoで以前のmodeへ戻ります。Bは変わりません。
 
-旧記録でmodeがない場合は記録当時のlegacyを意味します。readerは旧記録へ新fieldやhashを書き足しません。新しい観測履歴には各eventのmodeを保存します。古いバイナリへのrollback前には非legacy activeを戻すか、新版sessionを読み取り専用に保持してください。新版の記録を削除して旧版互換にしないでください。
+旧記録でmodeがない場合は記録当時のlegacyを意味します。readerは旧記録へ新fieldやhashを書き足しません。新しい観測履歴には各eventのmodeを保存します。新規sessionと新しい書込みは外側のstate format 2を使い、旧バイナリはこれを拒否します。rollback時もformat 2対応readerを使い、新版sessionを保全してください。非legacy activeをundoするだけでは旧reader互換には戻りません。新版の記録を削除して旧版互換にしないでください。

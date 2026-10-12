@@ -2,8 +2,7 @@
 
 Use public synthetic inputs in a new session. The workbench and CLI are local tools;
 neither Codex nor a paid AI account is required. Begin with the README and the
-[research loop](./tools/workbench/docs/RESEARCH_LOOP.md). The migration branch is completing a fully
-manual tutorial and a versioned proposal import/reproduction path.
+[manual tutorial](./tools/workbench/docs/FIRST_RUN.md). Its versioned proposal transport is inert data, with explicit local preview/reproduction and independent A/B decisions.
 
 Keep A (executable cognition) and B (independent principles) separate. A proposal
 states its target, fixed base, conditions, predicted effect, counterexample,

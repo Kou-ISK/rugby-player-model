@@ -6,6 +6,16 @@ Two independent deliverables share research context, not an approval switch:
 - **A** is a deterministic executable prototype. The `think(Bundle, Memory, Profile, RulesA)` function accepts a validated observation boundary and returns an inspectable trace and capability-labelled body requests.
 - **B** is [RUGBY_JUDGMENT.md](../models/judgment/RUGBY_JUDGMENT.md), a standalone principle system with conditions, criteria, priorities, exceptions, uncertainty and evidence. Any general-purpose AI can use it without A. Its local approved amendments are exported into a complete Markdown document.
 
+## Current package and exchange boundaries
+
+`models/player` owns A's observation contracts, schemas, validator, execution modes and pure API. `models/judgment` owns the independent B documents. `tools/simulation` converts synthetic world state into observations and applies supported body requests; `tools/experiments` owns snapshots, cases, comparison records and proposal transport; `tools/workbench` owns UI, renderer, CLI and private persistence. Root compatibility exports remain for existing callers. The emitted A API and the semantic engine source closure are checked by `npm run check:boundaries`.
+
+Legacy `think` is unchanged. Execution contract v2 selects legacy or the optional [H-WM-1 receiver-deliberation hypothesis](../models/player/spec/H-WM-1.md). The legacy trace's `workingMemory` remains a display excerpt. H-WM-1 separately records encoding, retrieval, ranking, selected receiver evidence and exclusion reasons; full retained evidence still supplies risk, orienting and freshness predicates. Finite versus unlimited capacity is a paired intervention; legacy versus unlimited is a policy comparison.
+
+The [first-run guide](../tools/workbench/docs/FIRST_RUN.md) documents the versioned, inert proposal transport. Its manifest lists permitted synthetic entries and complete immutable references; strict raw JSON validation rejects duplicate decoded keys before parsing. Import does not inherit approval. Reproduction executes a new local run with a semantic digest, and presents independent A/B before/after material for explicit review. An unavailable exact A engine blocks A execution while leaving B's text rendering independent. New B baselines and ordered amendments remain independently versioned through undo and restart. The small evidence graph retains hypotheses, counterexamples, runs, reviews, artifact links and withdrawal events.
+
+New sessions use outer format 2. Format 1 reads do not rewrite old records or hashes; the first successful write in a copied/authorized session upgrades only the outer format and adds the requested changes. See the [genuine synthetic legacy fixture](../evaluation/baselines/LEGACY_SESSION.md). Old readers reject format 2 rather than silently misinterpreting it. New engine records use `source-manifest-v1` over the explicitly listed semantic files and dependency lock; historical unversioned digests keep their original meaning. The sections below describe the legacy behavior and shared research principles, not a claim that historical binaries implement the new wire format.
+
 ## Data boundaries
 
 ```mermaid

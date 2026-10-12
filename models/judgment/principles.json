@@ -1,0 +1,24 @@
+[
+  {
+    "id": "urn:uuid:09041f87-f8c9-487d-90c6-b0ac6d860a52",
+    "alias": "B0-principle-system",
+    "version": 1,
+    "hashFormat": "rpm-canonical-json-v1",
+    "sha256": "94e65e8b252001422d75be78eaf4af58957fdceaf9262a2236fbcc3e1e96d20a",
+    "content": {
+      "id": "urn:uuid:09041f87-f8c9-487d-90c6-b0ac6d860a52",
+      "version": 1,
+      "kind": "principle",
+      "statement": "B0 independent judgment principle system",
+      "status": "unvalidated",
+      "scope": "Frozen B0 text can be used without the A runner.",
+      "limits": "No empirical or owner screen acceptance is implied.",
+      "refs": []
+    },
+    "source": {
+      "path": "models/judgment/docs/versions/RUGBY_JUDGMENT-B0.md",
+      "section": "whole frozen principle system",
+      "sha256": "9786c4db20ceebf8a295a0a57378142274bbcfef61b0f5dee6bd03202344ad80"
+    }
+  }
+]

@@ -22,10 +22,12 @@ contract for implementations in other languages.
 original observation times and confidence. The current `workingMemory` field is a
 display excerpt; it is not a capacity constraint on the decision. Attention encodes
 at most four inputs, while the store retains up to 128 observations for 30 seconds.
-The separately versioned H-WM-1 research mode is being added during this migration.
+H-WM-1 is an explicitly selectable research mode; see [its contract and limits](./spec/H-WM-1.md). It constrains receiver deliberation only, not all judgments or complete human working memory.
 
 Pass is an intention with unsupported execution. Software conformance does not
 establish human validity, optimal rugby decisions or performance improvement.
 
 The core has no filesystem or network adapter. The CLI performs only the explicit
 input/output file operations above and rejects a full-world Snapshot as its input.
+
+For execution contract v2, use `execute({executionContractVersion:2, executionMode, bundle, memory, profile, rules})`. Choose `legacyMode()`, `finiteMode(4)` or `unlimitedMode()`. The input contains no world or B. `node models/player/dist/reference/cli.js --input models/player/examples/observations-v2.json` runs the provided v2 example. Legacy `think` and old inputs retain their original behavior.

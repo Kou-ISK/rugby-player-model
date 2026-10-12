@@ -1,0 +1,23 @@
+[
+  {
+    "id": "urn:uuid:c4147d02-ce6f-46ef-a6c9-3c95298c6637",
+    "alias": "H-WM-1",
+    "version": 1,
+    "hashFormat": "rpm-canonical-json-v1",
+    "sha256": "45896fee54e9b1f0685ebc52dde1fa6fb6fde6faf75f0a8dbd11250d0eb74a3b",
+    "content": {
+      "id": "urn:uuid:c4147d02-ce6f-46ef-a6c9-3c95298c6637",
+      "version": 1,
+      "kind": "mechanism",
+      "statement": "H-WM-1: receiver deliberation capacity",
+      "status": "unvalidated",
+      "scope": "Receiver comparison and selection; retained-evidence risk/orienting and existing predicates are outside the capacity constraint.",
+      "limits": "Not complete human working memory; no pass body implementation.",
+      "refs": []
+    },
+    "source": {
+      "path": "models/player/spec/H-WM-1.md",
+      "sha256": "32f9d82c760df74636e55a1cdf651874e46dbf66b457beade18c4bc6272b8c36"
+    }
+  }
+]
