@@ -1,0 +1,61 @@
+[
+  {
+    "id": "case-1",
+    "bundle": {
+      "contractVersion": 1,
+      "playerId": "self",
+      "time": 0,
+      "self": {
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "yaw": 0,
+        "headYaw": -2,
+        "eyeHeight": 1.68,
+        "hasBall": true
+      },
+      "vision": {
+        "horizontalFov": 1.5707963267948966,
+        "range": 35
+      },
+      "percepts": [
+        {
+          "id": "support-1@0.000:vision",
+          "entityId": "support-1",
+          "kind": "player",
+          "relation": "teammate",
+          "modality": "vision",
+          "observedAt": 0,
+          "confidence": 0.9,
+          "position": {
+            "x": -5,
+            "z": -2
+          }
+        }
+      ]
+    },
+    "memory": {
+      "episodes": [],
+      "lastTime": 0
+    },
+    "profile": {
+      "ability": {
+        "maxSpeed": 5,
+        "passRange": 15
+      },
+      "selfEstimate": {
+        "passReliability": 0.7
+      },
+      "preference": {
+        "carry": 0.5,
+        "pass": 0.5,
+        "support": 0.7
+      },
+      "tactics": {
+        "preferredAction": "pass",
+        "adherence": 0.3
+      }
+    }
+  }
+]

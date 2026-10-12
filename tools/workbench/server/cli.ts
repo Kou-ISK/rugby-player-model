@@ -1,3 +1,4 @@
+import {fixedBDocument} from '../../experiments/src/b-standalone';
 import { isAbsolute,join } from 'node:path';
 import { canonicalWire,parseStrict } from '../../experiments/src/strict-json';
 import { statSync } from 'node:fs';
@@ -42,8 +43,12 @@ try {
     case 'research-review': result=store.researchReview(id,flag('--run'),flag('--status') as 'support'|'restrict'|'reject',flag('--scope'),flag('--limits'),flag('--reason'),args.includes('--synthetic'));break;
     case 'research-withdraw': result=store.withdrawEvidence(id,Number(flag('--version')),flag('--reason'));break;
     case 'research-evidence': result=store.evidence();break;
-    case 'b-standalone-packet': result=store.standaloneBPacket(parseStrict(readFileSync(flag('--file'))),flag('--version')||undefined);break;
-    case 'b-standalone-review': {const v=parseStrict(readFileSync(flag('--file'))) as {cases:unknown;bVersion:string;model:string;output:string;assessment:string};result=store.saveStandaloneBReview(v.cases,v.bVersion,v.model,v.output,v.assessment);break;}
+    case 'b-standalone-packet': {
+      const sources=['--version','--document','--text-file'].filter(f=>args.includes(f));if(sources.length>1)throw new Error('Choose one B version or fixed document');
+      const selection={arm:flag('--arm'),...(flag('--version')?{bVersion:flag('--version')}:{ }),...(flag('--document')?{document:parseStrict(readFileSync(flag('--document')))}:{}),...(flag('--text-file')?{document:fixedBDocument(new TextDecoder('utf-8',{fatal:true}).decode(readFileSync(flag('--text-file'))))}:{})};
+      result=store.standaloneBPacket(parseStrict(readFileSync(flag('--file'))),selection);break;
+    }
+    case 'b-standalone-review': {const v=parseStrict(readFileSync(flag('--file'))) as {packet:unknown;model:string;output:string;assessment:unknown};result=store.saveStandaloneBReview(v.packet,v.model,v.output,v.assessment);break;}
     case 'scene-create': result=store.createScene(JSON.parse(readFileSync(flag('--file'),'utf8')),args.includes('--seed')?Number(flag('--seed')):null);break;
     case 'scene-revise': result=store.reviseScene(id,Number(flag('--revision')),JSON.parse(readFileSync(flag('--file'),'utf8')));break;
     case 'scene-compare': result=store.compareScenes(id,flag('--after'),flag('--rules'),Number(flag('--steps','5')));break;
@@ -93,7 +98,7 @@ try {
       const path = flag('--out'); if (!path) throw new Error('--out required, e.g. .rpm/RUGBY_JUDGMENT.local.md');
       writeFileSync(path, store.exportB(), { mode: 0o600 }); result = { path, version: store.active().B.version }; break;
     }
-    default: result = { usage: ['scene-create --file .rpm/scene.json [--seed N]', 'scene-revise SCENE_ID --revision N --file .rpm/scene.json', 'scenes', 'scene-compare SNAPSHOT --after SNAPSHOT --rules A0 --steps 5', 'scene-comparisons', 'scene-authoring SCENE_ID --revision N', 'scene-snapshot SCENE_ID --revision N --tick 10', 'propose SNAPSHOT --feedback text --from-tick 3 --to-tick 10 --player observer-0','status', 'snapshot --scene support --seed 42 --head -2',
+    default: result = { usage: ['b-standalone-packet --file CASES.json --arm none|old|new [--version B0 | --text-file PRINCIPLES.md | --document FIXED_DOCUMENT.json]', 'b-standalone-review --file REVIEW.json (packet, model, output, separate assessment scores)', 'scene-create --file .rpm/scene.json [--seed N]', 'scene-revise SCENE_ID --revision N --file .rpm/scene.json', 'scenes', 'scene-compare SNAPSHOT --after SNAPSHOT --rules A0 --steps 5', 'scene-comparisons', 'scene-authoring SCENE_ID --revision N', 'scene-snapshot SCENE_ID --revision N --tick 10', 'propose SNAPSHOT --feedback text --from-tick 3 --to-tick 10 --player observer-0','status', 'snapshot --scene support --seed 42 --head -2',
       'propose SNAPSHOT --feedback "your correction"', 'context CANDIDATE', 'edit CANDIDATE --file .rpm/edit.json --revision N',
       'approve|reject CANDIDATE --target A|B --by owner --revision N', 'preview CANDIDATE --revision N', 'compare CANDIDATE', 'undo A|B --by owner --version A1|B1',
       'return CANDIDATE --target A|B --by owner --revision N --reason "why"',

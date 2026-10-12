@@ -32,7 +32,7 @@ test('proposal import is inert/idempotent, reproduction is independent, approval
 test('B standalone packet/review requires observations but no A experiment or AI connection',()=>{
  const dir=mkdtempSync(join(tmpdir(),'rpm-b-only-'));try{
   const store=new Store(dir),snapshot=capture('support',42,defaultRulesA(),'B0'),cases=[{id:'anonymous-case',bundle:snapshot.bundle,memory:snapshot.memoryBefore,profile:snapshot.profile}];
-  const packet=store.standaloneBPacket(cases);assert(!('rulesA' in packet));assert(!('world' in packet));const record=store.saveStandaloneBReview(cases,'B0','manual synthetic test','Hypothetical response','Not validated');assert.equal(record.humanValidated,false);assert.equal(Object.keys(store.read().experiments).length,0);assert.equal(store.read().standaloneBReviews.length,1);assert.throws(()=>store.standaloneBPacket([{...cases[0],world:snapshot.world}]));
+  const packet=store.standaloneBPacket(cases,{arm:'old',bVersion:'B0'});assert(!('rulesA' in packet.modelInput));assert(!('world' in packet.modelInput));const record=store.saveStandaloneBReview(packet,'manual synthetic test','Hypothetical response',{principleConformance:{result:'insufficient-evidence',reason:'Synthetic transport check'},rugbyValidity:{result:'insufficient-evidence',reason:'Not validated'}});assert.equal(record.humanValidated,false);assert.equal(Object.keys(store.read().experiments).length,0);assert.equal(store.read().standaloneBReviews.length,1);assert.throws(()=>store.standaloneBPacket([{...cases[0],world:snapshot.world}],{arm:'none'}));
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
 test('stale imported base is 409 and explicit rebase creates a new pending revision without replacing history',()=>{

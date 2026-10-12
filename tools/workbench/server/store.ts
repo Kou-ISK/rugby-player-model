@@ -1,3 +1,4 @@
+import {validateBSelection,makeStandaloneBPacket,fixedBDocument,validateStandaloneBPacket,validateBAssessment,standaloneInputHash} from '../../experiments/src/b-standalone';
 import type {World} from '../../simulation/src/contracts';
 import {emptyGraph,indexProposal,indexRun,addReview,withdraw,validateGraph,type EvidenceGraph} from '../../experiments/src/lineage';
 import { buildProposal,type ExportScope,type ProposalCandidate } from '../../experiments/src/proposal-export';
@@ -393,16 +394,19 @@ export class Store {
   }
   withdrawEvidence(id:string,version:number,reason:string){return this.transact(s=>{const event=withdraw(s.evidenceGraph,id,version,reason);validateGraph(s.evidenceGraph);return event;});}
   evidence(){const graph=this.read().evidenceGraph;validateGraph(graph);return graph;}
-  standaloneBPacket(cases:unknown,bVersion=this.active().B.version){
-    if(!Array.isArray(cases)||!cases.length||cases.length>32)throw new Error('Provide 1–32 observation-only B cases');
-    for(const c of cases){if(!c||typeof c!=='object'||Object.keys(c).sort().join(',')!=='bundle,id,memory,profile'||typeof c.id!=='string'||!c.id||c.id.length>200)throw new Error('B case requires only id/bundle/memory/profile');validateEvidence(c.bundle,c.memory);validate('Profile',c.profile);}
-    if(new Set(cases.map(c=>c.id)).size!==cases.length)throw new Error('Duplicate B case ID');
-    const B=this.read().versionsB[bVersion];if(!B)throw new Error('Unknown B version');return {instructions:'Judge only supplied observations and memory. Retain uncertainty. No A-run, world, scoring criteria or external API is supplied.',principles:this.bMarkdown(B),cases:structuredClone(cases).map((c,i)=>({...c,id:`case-${i+1}`}))};
+  standaloneBPacket(cases:unknown,selection:unknown){
+    validateBSelection(selection);
+    if(selection.arm==='none')return makeStandaloneBPacket(cases,'none',null,null);
+    if(selection.document)return makeStandaloneBPacket(cases,selection.arm,selection.document,null);
+    const B=this.read().versionsB[selection.bVersion!];if(!B)throw new Error('Unknown B version');
+    return makeStandaloneBPacket(cases,selection.arm,fixedBDocument(this.bMarkdown(B)),B.version);
   }
-  saveStandaloneBReview(cases:unknown,bVersion:string,model:string,output:string,assessment:string){
-    const packet=this.standaloneBPacket(cases,bVersion);
-    for(const value of [model,output,assessment])if(typeof value!=='string'||!value.trim()||value.length>40000)throw new Error('Nonempty bounded model/output/assessment required');
-    return this.transact(s=>{const record:StandaloneBReview={id:freshId(),at:new Date().toISOString(),kind:'b-standalone-review',bVersion,inputSha256:wireHash(packet),packet,model,output,assessment,status:'unverified-external-or-manual-response',humanValidated:false};s.standaloneBReviews.push(record);return record;});
+  saveStandaloneBReview(packet:unknown,model:string,output:string,assessment:unknown){
+    validateStandaloneBPacket(packet);validateBAssessment(assessment);
+    for(const value of [model,output])if(typeof value!=='string'||!value.trim()||value.length>40000)throw new Error('Nonempty bounded model/output required');
+    // Preserve the actual subject input, even after active B changes. Never regenerate it here.
+    const captured=structuredClone(packet),scores=structuredClone(assessment);
+    return this.transact(s=>{const record:StandaloneBReview={id:freshId(),at:new Date().toISOString(),kind:'b-standalone-review',formatVersion:2,arm:captured.arm,bVersion:captured.bVersion,documentRef:captured.documentRef,inputSha256:captured.inputSha256,packetSha256:standaloneInputHash(captured),packet:captured,model,output,assessment:scores,status:'unverified-external-or-manual-response',humanValidated:false};s.standaloneBReviews.push(record);return record;});
   }
   exportBData(){return this.bMaterial(this.active().B);}
   private bMaterial(B:RulesB,proposed=false):BMaterial{return {version:B.version,markdown:this.bMarkdown(B,proposed),structuredAmendments:structuredClone(B.principles),...(B.baseline?{baseline:structuredClone(B.baseline),outputFormat:B.outputFormat}:{})};}
