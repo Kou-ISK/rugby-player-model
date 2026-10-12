@@ -1,3 +1,4 @@
+import type { Deliberation, ExecutionMode } from './execution-mode.js';
 // Observation-only A contract v1. Units: meters, radians, seconds.
 export type Vec = { x: number; z: number };
 export type Action = 'scan' | 'hold' | 'carry' | 'pass' | 'support';
@@ -40,9 +41,10 @@ export type Trace = {
   beliefs: Belief[]; predictions: { entityId: string; basisObservedAt: number; position?: Vec; uncertaintyRadius: number; method: 'last-observation' }[];
   evaluation: Evaluation[]; intention: Evaluation; output: BodyCommand[]; rulesVersion: string;
   assessment: { uncertainThreat: number; informationValue: number; scanTarget?: { sourceId: string; headYaw: number; observedAt: number; modality: 'vision' | 'audio' } };
-  modelRevision: 'cognition-0.3';
+  modelRevision: 'cognition-0.3' | 'cognition-h-wm-1-v1';
+  traceVersion?:2; deliberation?:Deliberation;
   appliedRules: { id: string; action: Action; weight: number; call?: string }[];
 };
 export type ObservationEvent = { sequence:number; trigger:'initial'|'head-turn'|'body-turn'|'step'|'configuration'|'restore';
-  bundle:Bundle; profile:Profile; rulesA:RulesA };
+  bundle:Bundle; profile:Profile; rulesA:RulesA; executionMode?:ExecutionMode };
 export type ObservationSequence = { initialMemory: Memory; events: ObservationEvent[] };

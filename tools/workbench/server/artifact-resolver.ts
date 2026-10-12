@@ -18,7 +18,10 @@ export function resolveJudgmentLink(href: string): string {
   return resolveLegacyArtifact('docs/B_REVIEW.md');
 }
 export const engineSourceFiles = [
-  'models/player/reference/src/cognition.ts', 'models/player/reference/src/contracts.ts',
+  'models/player/reference/src/cognition.ts',
+  'models/player/reference/src/execution-mode.ts',
+  'models/player/reference/src/execution.ts',
+  'models/player/spec/execution.schema.json', 'models/player/reference/src/contracts.ts',
   'models/player/reference/src/defaults.ts', 'models/player/reference/src/replay.ts',
   'models/player/reference/src/validation.ts', 'models/player/spec/contracts.schema.json',
   'tools/simulation/src/world.ts', 'tools/simulation/src/sensing.ts', 'tools/simulation/src/body.ts',

@@ -1,3 +1,4 @@
+import { validateMode, selectDeliberation, type ExecutionMode } from './execution-mode.js';
 import type { Action, Belief, BodyCommand, Bundle, Evaluation, Memory, Profile, RulesA, Trace } from './contracts.js';
 import { validate, validateEvidence } from './validation.js';
 // No world, renderer or simulator import is permitted in this module.
@@ -5,6 +6,12 @@ const dist = (a: { x: number; z: number }, b: { x: number; z: number }) => Math.
 const clamp = (v: number, min = 0, max = 1) => Math.max(min, Math.min(max, v));
 const angle = (v: number) => Math.atan2(Math.sin(v), Math.cos(v));
 export function think(bundle: Bundle, memory: Memory, profile: Profile, rules: RulesA): Trace {
+  return evaluate(bundle,memory,profile,rules);
+}
+export function thinkWithMode(bundle:Bundle,memory:Memory,profile:Profile,rules:RulesA,mode:ExecutionMode):Trace {
+  validateMode(mode);return evaluate(bundle,memory,profile,rules,mode.mode==='legacy'?undefined:mode);
+}
+function evaluate(bundle:Bundle,memory:Memory,profile:Profile,rules:RulesA,mode?:Extract<ExecutionMode,{mode:'h-wm-1'}>):Trace {
   validateEvidence(bundle, memory); validate('Profile', profile); validate('RulesA', rules);
   if (bundle.time < memory.lastTime) throw new Error('Clock moved backwards; restore snapshot memory');
   const salience = (p: Bundle['percepts'][number]) => p.kind === 'call' ? 3 : p.kind === 'ball' ? 2 : 1;
@@ -20,6 +27,7 @@ export function think(bundle: Bundle, memory: Memory, profile: Profile, rules: R
     if (!latest.has(key) || latest.get(key)!.observedAt < p.observedAt) latest.set(key, belief);
   }
   const beliefs = [...latest.values()].filter(b => b.currentConfidence >= rules.minimumConfidence);
+  const deliberation=mode?selectDeliberation(beliefs,attended,mode):undefined;
   const predictions: Trace['predictions'] = beliefs.map(b => ({ entityId: b.entityId, basisObservedAt: b.observedAt,
     ...(b.position ? { position: { ...b.position } } : {}), uncertaintyRadius: b.uncertaintyRadius, method: 'last-observation' }));
   // Engineering hypothesis: old evidence changes risk/information value, never current fact or pass eligibility.
@@ -51,12 +59,13 @@ export function think(bundle: Bundle, memory: Memory, profile: Profile, rules: R
   const assessment: Trace['assessment'] = { uncertainThreat, informationValue: selectedScan?.value ?? 0,
     ...(selectedScan ? { scanTarget: selectedScan.target } : {}) };
   const fresh = beliefs.filter(b => b.modality === 'vision' && b.age <= .5 && b.position);
-  const receiver = fresh.filter(b => b.relation === 'teammate' && b.position!.z < bundle.self.position.z - .5 &&
+  const legacyReceiver = fresh.filter(b => b.relation === 'teammate' && b.position!.z < bundle.self.position.z - .5 &&
     dist(b.position!, bundle.self.position) <= profile.ability.passRange).sort((a, b) => a.entityId.localeCompare(b.entityId))[0];
+  const receiver=deliberation?deliberation.selected.find(b=>b.modality==='vision'&&b.age<=.5&&b.position&&b.relation==='teammate'&&b.position.z<bundle.self.position.z-.5&&dist(b.position,bundle.self.position)<=profile.ability.passRange):legacyReceiver;
   const threat = fresh.some(b => b.relation === 'opponent' && dist(b.position!, bundle.self.position) < 4);
   const unknown = fresh.filter(b => b.kind === 'player').length === 0;
   const signals = {
-    'no-fresh-receiver': !receiver, 'fresh-receiver': !!receiver,
+    'no-fresh-receiver': !legacyReceiver, 'fresh-receiver': !!legacyReceiver,
     'stale-player': beliefs.some(b => b.kind === 'player' && b.age > .5),
     'heard-call': beliefs.some(b => b.modality === 'audio'),
     'missing-player-vision': unknown, 'observed-ball': fresh.some(b => b.kind === 'ball'),
@@ -79,7 +88,7 @@ export function think(bundle: Bundle, memory: Memory, profile: Profile, rules: R
     scan: selectedScan ? `Seek new evidence toward ${selectedScan.target.modality} cue ${selectedScan.target.sourceId} observed at ${selectedScan.target.observedAt}s; location remains uncertain.` : 'Reduce uncertainty by changing head direction; do not assume unseen space is clear.',
     hold: 'Preserve current body state while obtaining evidence.',
     carry: threat ? 'Close observed opponent: contact skill unsupported.' : `Proprioceptive possession; remembered uncertainty risk ${uncertainThreat.toFixed(3)} penalizes progress. Unseen threats remain possible.`,
-    pass: receiver ? 'Fresh observed backward receiver within ability range; pass execution unsupported.' : 'No fresh observed backward receiver within range.',
+    pass: deliberation ? (receiver ? 'Selected fresh backward receiver within ability range; receiver deliberation only, pass execution unsupported.' : 'No eligible receiver in the deliberation set; retained evidence may exist outside capacity.') : receiver ? 'Fresh observed backward receiver within ability range; pass execution unsupported.' : 'No fresh observed backward receiver within range.',
     support: 'No proprioceptive possession; move slowly along own heading, not toward hidden ball.',
   };
   const evaluation: Evaluation[] = (['scan', 'hold', 'carry', 'pass', 'support'] as Action[]).map(action => ({
@@ -99,7 +108,7 @@ export function think(bundle: Bundle, memory: Memory, profile: Profile, rules: R
   if (call) output.push({ channel: 'call', status: 'supported', value: call.call!, reason: `Semantic simulated event from ${call.id}; no acoustic voice or teammate response is implemented.` });
   return { sensation: structuredClone(bundle), attention: attended.map(p => p.id),
     workingMemory: beliefs.slice(-4), longTermMemory: { episodes, lastTime: bundle.time }, beliefs,
-    predictions, assessment, modelRevision: 'cognition-0.3', appliedRules: appliedRules.map(({id,action,weight,call})=>({id,action,weight,...(call?{call}:{})})), evaluation, intention, output, rulesVersion: rules.version };
+    predictions, assessment, modelRevision: mode?'cognition-h-wm-1-v1':'cognition-0.3', ...(deliberation?{traceVersion:2 as const,deliberation}:{}), appliedRules: appliedRules.map(({id,action,weight,call})=>({id,action,weight,...(call?{call}:{})})), evaluation, intention, output, rulesVersion: rules.version };
 }
 export const capabilities = {
   locomotion: 'supported', headYaw: 'supported', call: 'supported', gaze: 'unsupported', voice: 'unsupported',

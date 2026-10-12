@@ -12,7 +12,8 @@
       "types": "./dist/reference/src/index.d.ts",
       "import": "./dist/reference/src/index.js"
     },
-    "./schema": "./spec/contracts.schema.json"
+    "./schema": "./spec/contracts.schema.json",
+    "./execution-schema": "./spec/execution.schema.json"
   },
   "bin": {
     "rpm-player": "./dist/reference/cli.js"
@@ -23,7 +24,8 @@
     "examples",
     "README.md",
     "MODEL_CARD.md",
-    "LICENSE"
+    "LICENSE",
+    "spec/execution.schema.json"
   ],
   "dependencies": {
     "ajv": "8.17.1"
