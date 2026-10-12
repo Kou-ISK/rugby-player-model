@@ -3,13 +3,29 @@
   "version": "0.4.0",
   "private": true,
   "type": "module",
-  "license": "UNLICENSED",
-  "engines": { "node": ">=24 <25" },
+  "license": "MIT",
+  "engines": {
+    "node": ">=24 <25"
+  },
   "exports": {
-    ".": { "types": "./dist/reference/src/index.d.ts", "import": "./dist/reference/src/index.js" },
+    ".": {
+      "types": "./dist/reference/src/index.d.ts",
+      "import": "./dist/reference/src/index.js"
+    },
     "./schema": "./spec/contracts.schema.json"
   },
-  "bin": { "rpm-player": "./dist/reference/cli.js" },
-  "files": ["dist", "spec/contracts.schema.json", "examples", "README.md", "MODEL_CARD.md", "LICENSE"],
-  "dependencies": { "ajv": "8.17.1" }
+  "bin": {
+    "rpm-player": "./dist/reference/cli.js"
+  },
+  "files": [
+    "dist",
+    "spec/contracts.schema.json",
+    "examples",
+    "README.md",
+    "MODEL_CARD.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "ajv": "8.17.1"
+  }
 }

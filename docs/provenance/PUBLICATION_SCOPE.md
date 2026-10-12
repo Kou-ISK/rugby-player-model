@@ -1,3 +1,5 @@
+> Historical publication-scope record. Current limited MIT permission was subsequently applied on 2026-10-12; see [LICENSE-SCOPE.md](../../LICENSE-SCOPE.md). The historical license-status text below records the earlier publication decision.
+
 # Authorized publication scope
 
 On 2026-10-12 the owner explicitly authorized public release of the reviewed RPM implementation, authored synthetic fixtures and documentation, including the P2P-derived procedural drawing source and minimal posture type named below. Independent implementation and stable-setup reviews passed. This scope excludes private owner research sessions, personal information, secrets and private conversation transcripts. It does not establish human validity, owner screen acceptance or open-source licensing. `package.json` stays `private: true` (no npm publication) and `license: UNLICENSED`; no new code/document/data license is selected. See [PROVENANCE.md](./PROVENANCE.md).

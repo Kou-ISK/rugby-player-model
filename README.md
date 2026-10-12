@@ -37,7 +37,7 @@ npm run --silent model -- --input evaluation/fixtures/support-42.snapshot.json -
 - [制約・再現性](./docs/LIMITATIONS.md)、[権利と来歴](./docs/provenance/PROVENANCE.md)
 - [再現manifest](./reproducibility.json)と[再現手順](./docs/REPRODUCTION.md)、[モデルカード](./models/player/MODEL_CARD.md)、[データカード](./evaluation/DATA_CARD.md)、[公開範囲](./docs/provenance/PUBLICATION_SCOPE.md)
 
-Cloudの検証合格と、本人Macでの共同研究loop実証は別です。検証済みP2P手続き描画と最小姿勢型を表示adapterで再利用し、これらを含むコード・合成fixture・文書の公開は本人承認済みです。私的研究sessionは公開対象外です。ライセンスはUNLICENSEDを維持しています。[公開範囲](./docs/provenance/PUBLICATION_SCOPE.md)を参照してください。
+Cloudの検証合格と、本人Macでの共同研究loop実証は別です。検証済みP2P手続き描画と最小姿勢型を表示adapterで再利用し、これらを含むコード・合成fixture・文書の公開は本人承認済みです。私的研究sessionは公開対象外です。列挙した自作範囲へMITを適用しました。[ライセンス範囲](./LICENSE-SCOPE.md)を参照してください。[公開範囲](./docs/provenance/PUBLICATION_SCOPE.md)を参照してください。
 
 ## Configured owner Mac
 

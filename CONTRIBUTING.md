@@ -21,3 +21,7 @@ information boundary, independent A/B meaning, negative cases, frozen references
 reproducibility and rights. There is no automatic publication or adoption from a
 local session. Retain failed experiments and counterexamples when a hypothesis is
 withdrawn. Record unperformed human or AI evaluations as unperformed.
+
+## Licensing contributions
+
+Submit only material you can license under the applicable scope in LICENSE-SCOPE.md. Authored contributions use MIT; retain provenance and third-party notices. Do not submit private sessions or real match/player data. No additional CLA or DCO is introduced.
