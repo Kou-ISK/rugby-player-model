@@ -11,6 +11,7 @@ export type ProposalManifest={format:'rpm.proposal';formatVersion:1;proposalId:s
 export type ProposalPackage={format:'rpm.proposal.transport';version:1;manifest:ProposalManifest;files:{path:string;utf8:string}[]};
 export type ProposalCase={id:string;version:number;synthetic:true;input:ExecutionInput;evaluatorOnly:string|null};
 export type EngineDescriptor={kind:'engine';engineVersion:1;sha256:string;fingerprintFormat:'source-manifest-v1';executionContractVersion:2;sourceFiles:{path:string;sha256:string}[]};
+export type ContractDescriptor={kind:'observation-only-execution';version:2;schemaSha256:string};
 export type Config={executionContractVersion:2;executionMode:ExecutionMode};
 export type BOutput={format:'rpm-b-output';version:1;localVersion:string;outputFormat:1|2;proposed:boolean;markdown:string};
 export type SemanticResult={format:'rpm-semantic-result-v1';cases:{caseId:string;before:ReturnType<typeof execute>;after:ReturnType<typeof execute>}[];B:{before:{baseline:ContentRef;amendments:ContentRef[];outputSha256:string};after:{baseline:ContentRef;amendments:ContentRef[];outputSha256:string}}|null};

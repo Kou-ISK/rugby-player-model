@@ -6,7 +6,7 @@ import {execute,validate as validateA,validateEvidence,type RulesA,type Profile}
 import {validate} from './validation';
 import {judgmentMarkdown,textHash} from './judgment';
 import type {Principle} from './contracts';
-import type {ATarget,AArtifact,BArtifact,BOutput,Config,ContentRef,EngineDescriptor,ProposalCase,ProposalManifest,ProposalPackage,ProposalRun,SemanticResult} from './proposal-types';
+import type {ATarget,AArtifact,BArtifact,BOutput,Config,ContentRef,ContractDescriptor,EngineDescriptor,ProposalCase,ProposalManifest,ProposalPackage,ProposalRun,SemanticResult} from './proposal-types';
 export * from './proposal-types';
 export const MAX_PAYLOAD=16*1024*1024,MAX_TRANSPORT=100*1024*1024;
 const ajv=new Ajv({allErrors:true,strict:false});ajv.addSchema(schema);
@@ -63,6 +63,14 @@ export function validateProposal(raw:string|Uint8Array,currentEngine:EngineDescr
    if(target.kind==='A'){
     const base=read<AArtifact>(target.base.artifact,'artifact'),proposed=read<AArtifact>(target.proposedArtifact,'artifact');
     for(const key of ['contract','engine','config','profile','rules'] as const)if(canonicalWire(base[key])!==canonicalWire(target.base[key]))throw new Error('A base closure mismatch');
+    // Bind each arm's contract to its exact engine, including inert code-review proposals.
+    // A locally available engine has the same validated source manifest as currentEngine.
+    // An unavailable engine may import inertly, but its own schema binding must still be complete.
+    for(const artifact of [base,proposed]){
+     const contract=read<ContractDescriptor>(artifact.contract,'contract'),engine=read<EngineDescriptor>(artifact.engine,'engine');
+     const executionSchema=engine.sourceFiles.find(file=>file.path==='models/player/spec/execution.schema.json');
+     if(!executionSchema||contract.version!==engine.executionContractVersion||contract.schemaSha256!==executionSchema.sha256)throw new Error('unsupported-contract: A contract descriptor does not match the referenced engine execution schema');
+    }
     const config=read<Config>(base.config,'config'),rules=read<RulesA>(base.rules,'rules'),afterConfig=read<Config>(proposed.config,'config'),afterRules=read<RulesA>(proposed.rules,'rules');
     if(wireHash({config,rules})!==target.change.beforeSha256||wireHash({config:afterConfig,rules:afterRules})!==target.change.afterSha256)throw new Error('A before/after hash mismatch');
     if(target.change.kind==='code-review-ref'){const u=new URL(target.change.reviewUrl);if(u.protocol!=='https:'||u.username||u.password)throw new Error('Invalid review URL');if(target.change.engineSha256!==read<EngineDescriptor>(proposed.engine,'engine').sha256)throw new Error('Code review engine reference mismatch');ready=false;}
