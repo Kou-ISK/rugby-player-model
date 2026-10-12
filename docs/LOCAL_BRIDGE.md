@@ -1,5 +1,7 @@
 # Codexと使うローカルfile/CLI bridge
 
+設定済みの本人Macは [MAC_START.md](MAC_START.md) と [保存場所](LOCAL_STORAGE.md) を使います。以下の `npm run bridge --` は `./bridge-rpm.command`、`.rpm/` の作業ファイルはsession内の `work/` / `exports/` の絶対パスへ読み替えます。UIとCLIの通常起動を同じ設定に揃えてください。
+
 See [dynamic scene contracts, CLI and acceptance scope](DYNAMIC_SCENES.md) for the new fixed-step workflow: one A-controlled player and scripted stimuli.
 通常のCodexでこのリポジトリを開き、ローカルファイルを一緒に編集します。新たな有料API・鍵・AI自動送信は不要です。自然言語を自動で実行規則に変換する機能はありません。`propose` は場面付きの原則**候補**を保存するだけです。
 

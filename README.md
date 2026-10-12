@@ -5,14 +5,16 @@ See [dynamic scene contracts, CLI and acceptance scope](docs/DYNAMIC_SCENES.md) 
 
 ## Mac quick start
 
-Node.js 24 と Git を用意し、このブランチで実行します。
+設定済みの本人Macでは [開始手順](docs/MAC_START.md) に沿って `~/Documents/workSpace/rugby-player-model` をCodexで開き、`./start-rpm.command` で起動します。CLIは `./bridge-rpm.command`。ソースと私的sessionは [別の保存場所](docs/LOCAL_STORAGE.md) を使います。
+
+新しい開発環境ではNode.js 24 と Git を用意し、このブランチで実行します。
 
 ```sh
 npm ci
 npm run dev
 ```
 
-表示された `http://127.0.0.1:5173` を開く。首振り → フィードバック → 候補保存 → Codexと条件・例外・反例を編集 → 未採用の複数step実験 → 本人の差戻し／A/B別採用 → 同場面＋対照比較 → undo。sessionは `.rpm/` に私的保存され、gitignore対象です。APIキーもクラウド契約も不要です。
+表示された `http://127.0.0.1:5173` を開く。首振り → フィードバック → 候補保存 → Codexと条件・例外・反例を編集 → 未採用の複数step実験と保存3D比較 → 本人の差戻し／A/B別採用 → 同場面＋対照比較 → undo。開発起動は `.rpm/`、本人の共通launcherはrepo外の私的sessionへ保存します。APIキーもクラウド契約も不要です。
 
 ```sh
 npm run bridge -- status

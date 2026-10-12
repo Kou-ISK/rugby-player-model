@@ -13,7 +13,7 @@
     "samples": "tsx scripts/make-samples.ts",
     "manifest:check": "node scripts/reproducibility.mjs",
     "manifest:write": "node scripts/reproducibility.mjs --write",
-    "test": "node --import tsx --test --test-concurrency=1 tests/*.test.ts",
+    "test": "node --import tsx --test --test-concurrency=1 tests/*.test.ts tests/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "build": "vite build",
     "test:browser": "playwright test",
