@@ -62,6 +62,12 @@ export function advance(world: World, trace: Trace, dt = .2): World {
       next.body.position.z = Math.max(-48, Math.min(48, next.body.position.z + command.value.z * dt));
     }
     if (command.channel === 'headYaw' && typeof command.value === 'number') next.body.headYaw = command.value;
+    if (command.channel === 'call' && typeof command.value === 'string') {
+      const previous = next.emittedCalls?.at(-1);
+      // A bounded, rate-limited semantic log; not fed back as fresh self-hearing.
+      if (!previous || previous.cue !== command.value || world.time - previous.at >= 1)
+        next.emittedCalls = [...(next.emittedCalls ?? []), { at: world.time, playerId: world.playerId, cue: command.value }].slice(-32);
+    }
   }
   const ball = next.entities.find(e => e.id === 'ball')!;
   if (next.body.hasBall) ball.position = { x: next.body.position.x, z: next.body.position.z + .4 };

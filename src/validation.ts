@@ -6,6 +6,10 @@ ajv.addSchema(schema);
 export function validate<T>(kind: keyof typeof schema.$defs, value: unknown): asserts value is T {
   const check = ajv.getSchema(`${schema.$id}#/$defs/${kind}`)!;
   if (!check(value)) throw new Error(`${kind}: ${ajv.errorsText(check.errors)}`);
+  if (kind === 'RulesA' || kind === 'PatchA') {
+    const rules = (value as { contextRules?: { id: string }[] }).contextRules ?? [];
+    if (new Set(rules.map(r => r.id)).size !== rules.length) throw new Error('Duplicate context rule id');
+  }
 }
 export function validateEvidence(bundle: Bundle, memory: Memory): void {
   validate('Bundle', bundle); validate('Memory', memory);

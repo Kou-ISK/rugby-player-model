@@ -39,9 +39,9 @@ Only `src/simulation.ts::sense` reads simulation truth to construct observations
 | Belief | Latest per entity/modality, original `observedAt` and `confidence`; derived confidence decays by age | Exponential half-life is an experiment parameter |
 | Prediction | Last observed position with growing uncertainty; no velocity inference; uncertainty overlap contributes to risk | Conservative engineering hypothesis; no hidden future state |
 | Evaluation | Hard eligibility, risk/information assessment, then weighted preference/self-estimate and team adherence; heard direction can select head yaw | Inspectable heuristic; not fitted behavior |
-| Intention/body | Scan, hold, carry, pass, support; supported kinematic translation and head yaw | Pass remains intention-only; joints/muscles/posture/voice/gaze unsupported |
+| Intention/body | Scan, hold, carry, pass, support; supported kinematic translation and head yaw | Pass remains intention-only; semantic call events supported; acoustic voice, joints/muscles/posture/gaze unsupported |
 
-[Baddeley 2012](https://pubmed.ncbi.nlm.nih.gov/21961947/) motivates separating working-memory functions at a conceptual level. It does not establish the numeric capacities, decay constants, ranking function, body model, rugby outcomes or brain equivalence used here. Those choices must be revised through research and evidence.
+[Baddeley 2012](https://www.annualreviews.org/content/journals/10.1146/annurev-psych-120710-100422) motivates separating working-memory functions at a conceptual level. It does not establish the numeric capacities, decay constants, ranking function, body model, rugby outcomes or brain equivalence used here. Those choices must be revised through research and evidence.
 
 `Profile.ability` limits physical speed/range; `selfEstimate` is the player's belief about passing reliability; `preference` weights individual choices; `tactics.adherence` mixes individual score with the preferred team action. A team score cannot enable a forbidden pass or unsupported skill. New channels should extend `BodyCommand` and capability reporting, not force cognition into a renderer or legacy P2P type.
 
@@ -51,14 +51,22 @@ In `cognition-0.2`, a stale opponent's uncertainty disk can overlap a 4m near re
 
 1. Capture immutable scene/seed/time/player/body/observation/memory/profile and A/B versions.
 2. Store feedback as a candidate with empty A patch and unfinished B principle fields. This does not change rules.
-3. Human and Codex edit the A numeric patch and B structured principle. Editing never approves. Once either target is reviewed the candidate is immutable; fork a new candidate to revise it.
+3. Human and Codex edit the A numeric/observation-conditional patch and independent B structured principle, with rationale, predicted effect and counterexample. Editing never approves. Once either target is reviewed the candidate is immutable; reasoned `revise` creates a linked pending child with the same observations and current approved bases.
 4. Before adoption, preview the candidate patch over its captured base without mutating any state. Explicit active comparison remains separate. Run the stratified suite; B gets an independent document review.
-5. Owner explicitly approves/rejects **A** and **B** independently. Edit/review must supply the revision actually displayed/confirmed, compared inside the writer lock; conflicts return 409 and require refresh/reconfirmation. The receipt freezes that revision and the reviewed content. A refuses empty patches; B refuses TODO fields. A/B reject stale base versions. Approval is a local self-attestation, not cryptographic identity proof.
+5. Owner explicitly approves/rejects/returns **A** and **B** independently. A return requires a reason. Edit/review must supply the revision actually displayed/confirmed, compared inside the writer lock; conflicts return 409 and require refresh/reconfirmation. The receipt freezes that revision and the reviewed content. A refuses empty patches; B refuses TODO fields. A/B reject stale base versions. Approval is a local self-attestation, not cryptographic identity proof.
 6. Undo supplies and checks the confirmed active version inside the same lock, then pops only that target. Historical versions and decision events remain. Candidate `approved` means historically approved, not currently active after undo.
 
 The new B0.1-draft adds full-interval trajectory, arrival order, user-intent and separate data/rendering review. Existing local B exports are pinned to the archived B0 text plus owner-approved amendments; changing the repository draft never silently changes them. A code revision is identified by `modelRevision` and the Git commit; comparing stored parameter versions uses the current engine on both sides, not an old binary.
 
 The JSON session is written atomically under a single-writer directory lock. Failed validation leaves active rules untouched. CLI and UI share the same store. No hosted AI or hidden network submission is involved. API binds to loopback and rejects invalid Host, foreign Origin and missing local JSON header. This protects against casual browser cross-site writes; it is not a multi-user service or a defense against code already running as the local user.
+
+## Recorded conditional experiments
+
+`cognition-0.3` adds a bounded declarative `contextRules` list (at most 32 unique IDs). Possession and evidence predicates are derived only from bundle/beliefs; optional close-threat exceptions use the existing observed-threat predicate. Matching rules adjust an action score before tactical blending, and cannot override hard eligibility. No scene, seed or hidden entity selector is accepted. A matching chosen-action rule can emit a semantic support/warning call; the simulation keeps a bounded log with a same-cue cooldown. It produces no actual voice or teammate reaction and is not fed back as new self-hearing.
+
+`run` persists 1–20 closed-loop steps from identical initial conditions for the recorded scene and eight synthetic strata. Later observations can diverge because actions differ. Every record freezes candidate/revision/notes, initial snapshot, before/after A, before/after B Markdown and structured amendments, trace results and the SHA256 of the six core source/schema files. Runtime, Git commit/dirty status and lock/snapshot/result/B-document hashes are also retained; unavailable Git metadata is null. Source changes require server restart before a new record. Loading a saved result does not recompute it; reproducing an old engine still requires its Git revision.
+
+B packets omit world truth and A outputs, and contain nine observation/profile/memory cases plus pinned B materials. External responses and assessment notes are tied to an experiment and explicitly remain unverified. No model is called by the bridge. Preview B amendments are marked NOT approved. See [complete local loop](RESEARCH_LOOP.md).
 
 ## Scope of extensibility
 

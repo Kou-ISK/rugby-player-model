@@ -55,6 +55,15 @@ export function think(bundle: Bundle, memory: Memory, profile: Profile, rules: R
     dist(b.position!, bundle.self.position) <= profile.ability.passRange).sort((a, b) => a.entityId.localeCompare(b.entityId))[0];
   const threat = fresh.some(b => b.relation === 'opponent' && dist(b.position!, bundle.self.position) < 4);
   const unknown = fresh.filter(b => b.kind === 'player').length === 0;
+  const signals = {
+    'no-fresh-receiver': !receiver, 'fresh-receiver': !!receiver,
+    'stale-player': beliefs.some(b => b.kind === 'player' && b.age > .5),
+    'heard-call': beliefs.some(b => b.modality === 'audio'),
+    'missing-player-vision': unknown, 'observed-ball': fresh.some(b => b.kind === 'ball'),
+  };
+  const appliedRules = (rules.contextRules ?? []).filter(rule =>
+    (rule.when.possession === 'any' || (rule.when.possession === 'has-ball') === bundle.self.hasBall) &&
+    signals[rule.when.evidence] && !(rule.when.unlessCloseThreat && threat));
   const personal: Record<Action, number> = {
     scan: (unknown ? .85 : .25) + rules.scanBias + assessment.informationValue - (threat ? .8 : 0),
     hold: threat ? .9 : .1 + uncertainThreat * .6,
@@ -62,6 +71,8 @@ export function think(bundle: Bundle, memory: Memory, profile: Profile, rules: R
     pass: profile.preference.pass * profile.selfEstimate.passReliability + rules.passBias,
     support: profile.preference.support - uncertainThreat * .8,
   };
+  // Declared conditional preferences cannot change evidence or bypass hard eligibility.
+  for (const rule of appliedRules) personal[rule.action] += rule.weight;
   const allowed: Record<Action, boolean> = { scan: true, hold: true, carry: bundle.self.hasBall && !threat,
     pass: bundle.self.hasBall && !!receiver, support: !bundle.self.hasBall };
   const reason: Record<Action, string> = {
@@ -72,7 +83,7 @@ export function think(bundle: Bundle, memory: Memory, profile: Profile, rules: R
     support: 'No proprioceptive possession; move slowly along own heading, not toward hidden ball.',
   };
   const evaluation: Evaluation[] = (['scan', 'hold', 'carry', 'pass', 'support'] as Action[]).map(action => ({
-    action, allowed: allowed[action], reason: reason[action],
+    action, allowed: allowed[action], reason: reason[action] + appliedRules.filter(r => r.action === action).map(r => ` Conditional principle ${r.id}: ${r.weight}.`).join(''),
     score: (1 - profile.tactics.adherence) * personal[action] + profile.tactics.adherence * (profile.tactics.preferredAction === action ? 1 : 0),
     ...(action === 'pass' && receiver ? { targetId: receiver.entityId } : {}),
   }));
@@ -84,11 +95,13 @@ export function think(bundle: Bundle, memory: Memory, profile: Profile, rules: R
     value: selectedScan?.target.headYaw ?? Math.sin(bundle.time * 1.5 + .5) * 2.1,
     reason: selectedScan ? 'Orient toward an uncertain remembered/called direction; obtain a new observation before asserting location.' : 'Exploratory scan without a located cue.' });
   if (intention.action === 'pass') output.push({ channel: 'pass', status: 'unsupported', value: intention.targetId!, reason: 'Ball release/catch mechanics not implemented; intention only.' });
+  const call = [...appliedRules].filter(r => r.action === intention.action && r.call).sort((a,b) => b.weight-a.weight || a.id.localeCompare(b.id))[0];
+  if (call) output.push({ channel: 'call', status: 'supported', value: call.call!, reason: `Semantic simulated event from ${call.id}; no acoustic voice or teammate response is implemented.` });
   return { sensation: structuredClone(bundle), attention: attended.map(p => p.id),
     workingMemory: beliefs.slice(-4), longTermMemory: { episodes, lastTime: bundle.time }, beliefs,
-    predictions, assessment, modelRevision: 'cognition-0.2', evaluation, intention, output, rulesVersion: rules.version };
+    predictions, assessment, modelRevision: 'cognition-0.3', appliedRules: appliedRules.map(({id,action,weight,call})=>({id,action,weight,...(call?{call}:{})})), evaluation, intention, output, rulesVersion: rules.version };
 }
 export const capabilities = {
-  locomotion: 'supported', headYaw: 'supported', gaze: 'unsupported', voice: 'unsupported',
+  locomotion: 'supported', headYaw: 'supported', call: 'supported', gaze: 'unsupported', voice: 'unsupported',
   pass: 'unsupported', jointPose: 'unsupported', muscleEffort: 'unsupported', posture: 'unsupported',
 } as const;

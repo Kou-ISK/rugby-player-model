@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import { createServer as createViteServer } from 'vite';
 import { Store, ConflictError } from './store';
+import { experimentSummary } from './experiment-types';
 const port = Number(process.env.PORT || 5173);
 const store = new Store();
 const server = createServer();
@@ -15,8 +16,8 @@ server.on('request', async (req, res) => {
   try {
     if (req.headers.origin && !hosts.map(h => `http://${h}`).includes(req.headers.origin)) throw new Error('Invalid Origin');
     if (req.method === 'GET') {
-      if (req.url === '/api/state') { const state = store.read(); res.end(JSON.stringify({ apiVersion: 2, state, active: store.active(state) })); }
-      else if (req.url === '/api/export-b') res.end(JSON.stringify({ markdown: store.exportB() }));
+      if (req.url === '/api/state') { const state = store.read(); res.end(JSON.stringify({ apiVersion: 3, state:{...state,experiments:Object.fromEntries(Object.entries(state.experiments).map(([id,e])=>[id,experimentSummary(e)]))}, active: store.active(state) })); }
+      else if (req.url === '/api/export-b') res.end(JSON.stringify(store.exportBData()));
       else { res.writeHead(404).end('{}'); }
       return;
     }
@@ -27,8 +28,13 @@ server.on('request', async (req, res) => {
     switch (req.url) {
       case '/api/snapshot': result = { id: store.saveSnapshot(data.snapshot) }; break;
       case '/api/propose': result = store.propose(data.snapshotId, data.feedback); break;
-      case '/api/edit': result = store.edit(data.id, data.patchA, data.principle, data.expectedRevision); break;
-      case '/api/review': store.review(data.id, data.target, data.decision, data.actor, data.expectedRevision); result = store.active(); break;
+      case '/api/edit': result = store.edit(data.id, data.patchA, data.principle, data.expectedRevision,data.notes); break;
+      case '/api/review': store.review(data.id, data.target, data.decision, data.actor, data.expectedRevision,data.reason); result = store.active(); break;
+      case '/api/revise': result=store.revise(data.id,data.reason,data.expectedRevision);break;
+      case '/api/run': result=store.runExperiment(data.id,data.expectedRevision,data.steps,data.mode);break;
+      case '/api/experiment': result=store.read().experiments[data.id];if(!result)throw new Error('Unknown experiment');break;
+      case '/api/b-packet': result=store.bPacket(data.id);break;
+      case '/api/b-review': result=store.saveBReview(data.id,data.model,data.output,data.assessment);break;
       case '/api/undo': store.undo(data.target, data.actor, data.expectedVersion); result = store.active(); break;
       case '/api/compare': result = store.comparison(data.id, { mode: data.mode || 'active', expectedRevision: data.expectedRevision }); break;
       default: res.writeHead(404).end('{}'); return;

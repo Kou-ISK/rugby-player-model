@@ -6,13 +6,7 @@
 
 Node.js 24、Git、WebGL対応ブラウザを用意します。初回依存インストールにはネットワークが必要です。
 
-```sh
-git clone https://github.com/Kou-ISK/rugby-player-model.git
-cd rugby-player-model
-git switch codex/research-foundation
-npm ci
-npm run dev
-```
+本人Macには専用Node24と新しいcheckoutが準備済みです。作業フォルダの `MAC-START-HERE.md` と `start-rpm.command` を使います。検証対象はローカル `codex/research-loop-acceptance` です。公開PRにはまだこの差分はありません。別環境でのcloneは親review後に指定されるexact commitを使い、既存ユーザー変更を上書きしないでください。
 
 既存cloneならdev serverをCtrl-Cで停止してから `git fetch origin` → 対象ブランチへ切替 → `git pull --ff-only` → `npm run dev`。serverコードは画面の更新だけでは入れ替わりません。古いserverが残る場合、新しい画面はbridgeのversion不一致で書き込みを拒否し、再起動を案内します。表示された `http://127.0.0.1:5173` を開きます。ポート使用中なら `PORT=5175 npm run dev`。公開deploy、認証設定、外部鍵は不要です。
 
@@ -22,10 +16,10 @@ npm run dev
 2. **視点を区別**：spectatorで全体を見る。一人称に戻す。切替だけでは時間・観測bundle・判断が変わらない。遮蔽場面では隠れた選手が観測欄に入らない。音場面では背後の声は方向cueで、正確な位置ではない。
 3. **再現**：同じ場面・seedでreset。再生→停止→snapshot保存。首と身体の向きがcameraに反映され、ballを自動追尾しない。
 4. **候補保存**：resetして「情報が不確かなときに首振りを増やす仮説」と入力。保存後も版はA0/B0のまま（既存sessionなら現在の版のまま）。候補にはscene/seed/time/player/観測が紐付く。
-5. **Codex共同編集**：[local bridge](LOCAL_BRIDGE.md)で `context` を渡し、A差分とB原則を編集。簡単な動作実証ならAに `{"scanBias":2}` を設定。Bは条件・基準・例外・不明時・根拠を埋める。これは実験用の大きな摂動で、妥当な完成ルールではない。
+5. **Codex共同編集**：[local bridge](LOCAL_BRIDGE.md)で `context` を渡し、A差分とB原則を編集。[条件付き合成例](../examples/conditional-coaching-edit.json)を参考に、観測から判断できる条件、圧力などの例外、変更理由・予測・反例を埋める。例を本人の研究原則として自動採用しない。
 6. **採用前previewと本人承認**：先にpreviewし、A0/B0とpendingを維持したまま効果を見られることを確認。内容と候補revisionを確認してAのみ採用し、A版だけ変わることを確認。その後Bを別に採用。別CLIが候補を書き換えた場合は競合で拒否・最新内容を再表示・本人チェック解除となることも確認する。
-7. **承認版との同条件比較**：保存時の観測/記憶/個人条件でbefore/afterを比較。初期支援場面の大きなscanBias変更では carry→scan。異なる状態では別結果でもよい。保持/非保持・圧力・欠測・記憶・左右音の層別8ケースを確認し、改善と主張する前に反例を探す。
-8. **B単独利用**：Bを出力し、runnerを渡さず一般生成AIに未知場面を判断・生成・自己レビューさせる。[B評価](B_REVIEW.md)を使って本人が採点。未実行なら未評価のまま記録。
+7. **承認版との同条件比較**：保存時の観測/記憶/個人条件でbefore/afterを比較。「未採用候補で再実行・記録」と採用後の記録を保存する。条件付き合成例なら支援場面carry→scanに対し、圧力下hold・新鮮な受け手pass・非保持supportを維持。一律scanではこの試験は失敗。差戻し理由→同場面の新候補も確認する。保持/非保持・圧力・欠測・記憶・左右音の層別8ケースを確認し、改善と主張する前に反例を探す。
+8. **B単独利用**：Bを出力し、runnerを渡さず一般生成AIに未知場面を判断・生成・自己レビューさせる。保存実験の「B評価packet」を使い、[B評価](B_REVIEW.md)で本人が採点。モデル名／設定・回答・採点メモを同実験に保存。未実行なら未評価のまま記録。
 9. **undoと再起動**：A undoでAのみ戻る、B undoでBが戻る。serverを再起動し、候補/承認/undo履歴とsnapshot復元を確認。採用されていない候補や却下した候補が実行に影響しない。
 
 `.rpm/mac-acceptance.md` に以下を私的に記録してください。

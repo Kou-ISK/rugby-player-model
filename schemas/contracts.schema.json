@@ -332,6 +332,13 @@
           "type": "number",
           "minimum": 0,
           "maximum": 1
+        },
+        "contextRules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContextRule"
+          },
+          "maxItems": 32
         }
       },
       "required": [
@@ -371,6 +378,13 @@
           "type": "number",
           "minimum": 0,
           "maximum": 1
+        },
+        "contextRules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContextRule"
+          },
+          "maxItems": 32
         }
       },
       "required": []
@@ -627,6 +641,36 @@
             ]
           },
           "maxItems": 128
+        },
+        "emittedCalls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "at": {
+                "type": "number",
+                "minimum": 0
+              },
+              "playerId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "cue": {
+                "enum": [
+                  "support-call",
+                  "warning-call"
+                ]
+              }
+            },
+            "required": [
+              "at",
+              "playerId",
+              "cue"
+            ]
+          },
+          "maxItems": 32
         }
       },
       "required": [
@@ -728,14 +772,16 @@
               "enum": [
                 "pending",
                 "approved",
-                "rejected"
+                "rejected",
+                "returned"
               ]
             },
             "B": {
               "enum": [
                 "pending",
                 "approved",
-                "rejected"
+                "rejected",
+                "returned"
               ]
             }
           },
@@ -747,6 +793,14 @@
         "revision": {
           "type": "integer",
           "minimum": 1
+        },
+        "notes": {
+          "$ref": "#/$defs/StudyNotes"
+        },
+        "parentCandidateId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
         }
       },
       "required": [
@@ -793,7 +847,8 @@
             "pass",
             "jointPose",
             "muscleEffort",
-            "posture"
+            "posture",
+            "call"
           ]
         },
         "status": {
@@ -1044,7 +1099,10 @@
           "minLength": 1
         },
         "modelRevision": {
-          "const": "cognition-0.2"
+          "enum": [
+            "cognition-0.2",
+            "cognition-0.3"
+          ]
         },
         "assessment": {
           "type": "object",
@@ -1094,6 +1152,42 @@
             "uncertainThreat",
             "informationValue"
           ]
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "action": {
+                "enum": [
+                  "scan",
+                  "hold",
+                  "carry",
+                  "pass",
+                  "support"
+                ]
+              },
+              "weight": {
+                "type": "number"
+              },
+              "call": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            },
+            "required": [
+              "id",
+              "action",
+              "weight"
+            ]
+          }
         }
       },
       "required": [
@@ -1109,6 +1203,100 @@
         "rulesVersion",
         "modelRevision",
         "assessment"
+      ]
+    },
+    "ContextRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "when": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "possession": {
+              "enum": [
+                "any",
+                "has-ball",
+                "no-ball"
+              ]
+            },
+            "evidence": {
+              "enum": [
+                "no-fresh-receiver",
+                "fresh-receiver",
+                "stale-player",
+                "heard-call",
+                "missing-player-vision",
+                "observed-ball"
+              ]
+            },
+            "unlessCloseThreat": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "possession",
+            "evidence",
+            "unlessCloseThreat"
+          ]
+        },
+        "action": {
+          "enum": [
+            "scan",
+            "hold",
+            "carry",
+            "pass",
+            "support"
+          ]
+        },
+        "weight": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        },
+        "call": {
+          "enum": [
+            "support-call",
+            "warning-call"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "when",
+        "action",
+        "weight"
+      ]
+    },
+    "StudyNotes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "expectedEffect": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "counterexample": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      },
+      "required": [
+        "rationale",
+        "expectedEffect",
+        "counterexample"
       ]
     }
   }

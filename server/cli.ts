@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { Store, type Target } from './store';
-import { capture } from '../src/research';
+import { capture, observationContext } from '../src/research';
 import type { SceneId } from '../src/contracts';
 import { sense } from '../src/simulation';
 const [command = 'help', id, ...rest] = process.argv.slice(2);
@@ -21,15 +21,20 @@ try {
     case 'propose': result = store.propose(id, flag('--feedback')); break;
     case 'context': {
       const c = store.read().candidates[id]; if (!c) throw new Error('Unknown candidate');
-      const { scene, seed, bundle, memoryBefore, profile, rulesA, rulesBVersion } = c.context;
-      result = { id, revision: c.revision, feedback: c.feedback, scene, seed, bundle, memoryBefore, profile, rulesA, rulesBVersion,
-        editable: { patchA: c.patchA, principle: c.principle }, decisions: c.decisions }; break;
+      result = observationContext(c); break;
     }
-    case 'edit': { const edit = JSON.parse(readFileSync(flag('--file'), 'utf8')); result = store.edit(id, edit.patchA, edit.principle, Number(flag('--revision'))); break; }
-    case 'approve': case 'reject': store.review(id, flag('--target') as Target, command, flag('--by'), Number(flag('--revision'))); result = store.active(); break;
+    case 'edit': { const edit = JSON.parse(readFileSync(flag('--file'), 'utf8')); result = store.edit(id, edit.patchA, edit.principle, Number(flag('--revision')),edit.notes); break; }
+    case 'approve': case 'reject': case 'return': store.review(id, flag('--target') as Target, command, flag('--by'), Number(flag('--revision')),flag('--reason')); result = store.active(); break;
+    case 'revise': result=store.revise(id,flag('--reason'),Number(flag('--revision')));break;
     case 'undo': store.undo(id as Target, flag('--by'), flag('--version')); result = store.active(); break;
     case 'compare': result = store.comparison(id); break;
     case 'preview': result = store.comparison(id, { mode: 'preview', expectedRevision: Number(flag('--revision')) }); break;
+    case 'run': result=store.runExperiment(id,Number(flag('--revision')),Number(flag('--steps','5')),flag('--mode','preview') as 'preview'|'active');break;
+    case 'experiments': result=Object.values(store.read().experiments).map(e=>({id:e.id,at:e.at,candidateId:e.candidateId,mode:e.mode,candidateRevision:e.candidateRevision}));break;
+    case 'experiment': result=store.read().experiments[id];if(!result)throw new Error('Unknown experiment');break;
+    case 'b-packet': result=store.bPacket(id);break;
+    case 'b-review': {const input=JSON.parse(readFileSync(flag('--file'),'utf8'));result=store.saveBReview(id,input.model,input.output,input.assessment);break;}
+    case 'export-b-json': result=store.exportBData();break;
     case 'export-b': {
       const path = flag('--out'); if (!path) throw new Error('--out required, e.g. .rpm/RUGBY_JUDGMENT.local.md');
       writeFileSync(path, store.exportB(), { mode: 0o600 }); result = { path, version: store.active().B.version }; break;
@@ -37,7 +42,11 @@ try {
     default: result = { usage: ['status', 'snapshot --scene support --seed 42 --head -2',
       'propose SNAPSHOT --feedback "your correction"', 'context CANDIDATE', 'edit CANDIDATE --file .rpm/edit.json --revision N',
       'approve|reject CANDIDATE --target A|B --by owner --revision N', 'preview CANDIDATE --revision N', 'compare CANDIDATE', 'undo A|B --by owner --version A1|B1',
-      'export-b --out .rpm/RUGBY_JUDGMENT.local.md'] };
+      'return CANDIDATE --target A|B --by owner --revision N --reason "why"',
+      'revise CANDIDATE --revision N --reason "change requested"',
+      'run CANDIDATE --revision N --steps 5 --mode preview|active', 'experiments', 'experiment EXPERIMENT_ID',
+      'b-packet EXPERIMENT_ID', 'b-review EXPERIMENT_ID --file .rpm/b-review.json',
+      'export-b-json', 'export-b --out .rpm/RUGBY_JUDGMENT.local.md'] };
   }
   console.log(JSON.stringify(result, null, 2));
 } catch (e) { console.error(e instanceof Error ? e.message : String(e)); process.exitCode = 1; }

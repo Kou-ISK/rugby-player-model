@@ -4,7 +4,9 @@ import { defaultProfile, defaultRulesA, emptyMemory, type Candidate, type Memory
 import { think } from '../cognition';
 import { advance, makeWorld, sense } from '../simulation';
 import { View } from './view';
-type ServerState = { apiVersion: 2; state: { revision: number; snapshots: Record<string, Snapshot>; candidates: Record<string,Candidate> }; active: { A: RulesA; B: { version: string } } };
+import { observationContext } from '../research';
+import type { Experiment } from '../../server/experiment-types';
+type ServerState = { apiVersion: 3; state: { revision: number; snapshots: Record<string, Snapshot>; candidates: Record<string,Candidate>; experiments: Record<string,{id:string;at:string;candidateId:string;mode:string}>; bReviews: {experimentId:string;model:string;assessment:string}[] }; active: { A: RulesA; B: { version: string } } };
 const app=document.querySelector<HTMLDivElement>('#app')!;
 app.innerHTML=`
 <header><div><span class="eyebrow">RUGBY PLAYER MODEL · 研究基盤</span><h1>選手の視点から、判断を研究する。</h1></div><div class="badge">LOCAL / PRIVATE</div></header>
@@ -17,14 +19,15 @@ app.innerHTML=`
 <p class="hint">一人称は身体位置＋目の高さ＋身体/頭部の向きに接続。spectatorの世界情報は認知入力に入りません。視野90°・遮蔽は簡略モデル。P2P手続き描画を再利用（表示用mock・実身体技能ではありません）。一人称では自分の模型を非表示。</p>
 <div class="metrics"><div><small>現在の意図</small><strong id="intention">—</strong></div><div><small>観測 / 記憶</small><strong id="counts">—</strong></div><div><small>独立した版</small><strong id="versions">A0 / B0</strong></div></div>
 <details open><summary>選手の観測・記憶と候補評価</summary><div id="beliefs"></div><pre id="trace"></pre></details>
-<details><summary>個人差と戦術（試行条件）</summary><p>能力・自己推定・選好・戦術遵守を別々に変更。snapshotに保存されます。</p><label>走速度上限<input id="speed" type="number" min="0" max="12" value="5"></label><label>パス能力範囲<input id="pass-range" type="number" min="0" max="50" value="15"></label><label>パス自己推定<input id="reliability" type="range" min="0" max="1" step="0.05" value="0.7"></label><label>carry選好<input id="preference" type="range" min="0" max="1" step="0.05" value="0.5"></label><label>戦術遵守（pass）<input id="adherence" type="range" min="0" max="1" step="0.05" value="0.3"></label></details>
+<details><summary>個人差と戦術（試行条件）</summary><p>能力・自己推定・選好・戦術遵守を別々に変更。snapshotに保存されます。</p><label>走速度上限<input id="speed" type="number" min="0" max="12" value="5"></label><label>パス能力範囲<input id="pass-range" type="number" min="0" max="50" value="15"></label><label>パス自己推定<input id="reliability" type="range" min="0" max="1" step="0.05" value="0.7"></label><label>carry選好<input id="preference" type="range" min="0" max="1" step="0.05" value="0.5"></label><label>チームの優先行動<select id="tactic"><option>pass</option><option>carry</option><option>support</option><option>scan</option><option>hold</option></select></label><label>戦術遵守<input id="adherence" type="range" min="0" max="1" step="0.05" value="0.3"></label></details>
 </section><aside><span class="eyebrow">共同研究 LOOP</span><h2>気づきを原則候補にする</h2><p>場面・時刻・選手・観測を保存。Codexと候補を編集し、本人がA/Bを別に承認します。</p>
 <label for="feedback">フィードバック</label><textarea id="feedback" placeholder="例：見失った支援選手の位置を断定せず、首を振って確認したい。"></textarea><button id="propose" class="primary">この場面で候補を保存</button>
 <label>保存済み候補<select id="candidates"><option value="">候補なし</option></select></label><p id="candidate-context" class="hint"></p>
-<details open><summary>候補を編集（自動解釈なし）</summary><label>A · 実行パラメータの差分 JSON<textarea id="patch" spellcheck="false">{}</textarea></label><label>B · 原則 JSON<textarea id="principle" spellcheck="false"></textarea></label><button id="save-edit">候補の編集を保存</button><p class="hint">A: scanBias / carryBias / passBias / memoryHalfLife / minimumConfidence。B: TODO欄をCodexと記述。承認前は実行に影響しません。</p></details>
-<label class="confirm"><input type="checkbox" id="owner">本人としてこの内容を確認しました</label>
-<div class="review"><button id="approve-a">A 採用</button><button id="reject-a">A 却下</button><button id="undo-a">A undo</button><button id="approve-b">B 採用</button><button id="reject-b">B 却下</button><button id="undo-b">B undo</button></div>
+<details open><summary>候補を編集（自動解釈なし）</summary><label>A · 実行パラメータの差分 JSON<textarea id="patch" spellcheck="false">{}</textarea></label><label>B · 原則 JSON<textarea id="principle" spellcheck="false"></textarea></label><label>変更理由・予測・反例 JSON<textarea id="study-notes" placeholder='{"rationale":"理由","expectedEffect":"対象条件で予測する変化","counterexample":"変えない条件／反例"}'></textarea></label><button id="save-edit">候補の編集を保存</button><p class="hint">A: contextRules（観測条件・例外・行動／模擬call）、scanBias等。contextRulesは配列全体を置換するため既存原則を保持して編集。B: TODO欄をCodexと記述。承認前は実行に影響しません。</p></details>
+<button id="codex-context">Codex用の観測contextを保存</button><button id="restore-candidate">候補の場面を復元</button><label>差戻し・再提案の理由<textarea id="review-reason"></textarea></label><button id="revise">同場面で新候補（現承認版基準）</button><label class="confirm"><input type="checkbox" id="owner">本人としてこの内容を確認しました</label>
+<div class="review"><button id="approve-a">A 採用</button><button id="reject-a">A 却下</button><button id="return-a">A 差戻し</button><button id="undo-a">A undo</button><button id="approve-b">B 採用</button><button id="reject-b">B 却下</button><button id="return-b">B 差戻し</button><button id="undo-b">B undo</button></div>
 <button id="preview">保存済み候補をpreview＋層別評価</button><button id="compare">現在の承認版と比較＋層別評価</button><button id="export-b">B文書をダウンロード</button><pre id="comparison"></pre>
+<details open><summary>実験記録とBの独立評価</summary><label>再実行step数<input id="experiment-steps" type="number" min="1" max="20" value="5"></label><button id="run-preview">未採用候補で再実行・記録</button><button id="run-active">現在の承認版で再実行・記録</button><label>保存実験<select id="experiments"></select></label><button id="load-experiment">保存結果を表示</button><button id="download-experiment">結果JSON</button><button id="b-packet">B評価packet</button><pre id="experiment-report"></pre><label>Bに使った生成AI／設定<input id="b-model" placeholder="モデル名・設定・実行日"></label><label>Bの回答<textarea id="b-output"></textarea></label><label>採点・未確認事項<textarea id="b-assessment"></textarea></label><button id="save-b-review">B回答を実験に記録</button><p id="b-review-status" class="hint"></p><p class="hint">Bはpacketを既存のAIチャットに渡して独立に評価。保存は正しさの承認ではありません。外部APIは呼びません。</p></details>
 <div id="status" role="status">ローカルbridge接続中…</div><p class="hint">私的session: .rpm/（gitignore）。外部送信・有料API不要。筋骨格技能・人間再現・ラグビー全規則の完成モデルではありません。</p></aside></main>`;
 const $ = <T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
 const input=(id:string)=>$<HTMLInputElement>(id);
@@ -51,19 +54,20 @@ function render(){
   input('head').value=String(world.body.headYaw*180/Math.PI);$('head-value').textContent=`${Math.round(world.body.headYaw*180/Math.PI)}°`;
   input('body').value=String(world.body.yaw*180/Math.PI);
   $('beliefs').textContent=trace.beliefs.map(b=>`${b.entityId} ${b.modality} · 観測 ${b.observedAt.toFixed(1)}s / 現在確信 ${b.currentConfidence.toFixed(2)}`).join('\n')||'未観測。世界の真値から補完しません。';
-  $('trace').textContent=JSON.stringify({modelRevision:trace.modelRevision,attention:trace.attention,assessment:trace.assessment,evaluation:trace.evaluation,intention:trace.intention,bodyOutput:trace.output},null,2);
+  $('trace').textContent=JSON.stringify({modelRevision:trace.modelRevision,attention:trace.attention,assessment:trace.assessment,appliedRules:trace.appliedRules,emittedCalls:world.emittedCalls??[],evaluation:trace.evaluation,intention:trace.intention,bodyOutput:trace.output},null,2);
 }
 function snapshot():Snapshot{return {contractVersion:1,scene:world.scene,seed:world.seed,world:structuredClone(world),bundle:sense(world),memoryBefore:structuredClone(memory),profile:structuredClone(profile),rulesA:structuredClone(rules),rulesBVersion:bVersion};}
 function step(){memory=trace.longTermMemory;world=advance(world,trace);render();}
 function loadCandidate(){
   const c=state?.state.candidates[selected];if(!c)return;
+  area('study-notes').value=c.notes?JSON.stringify(c.notes,null,2):'';
   area('patch').value=JSON.stringify(c.patchA,null,2);area('principle').value=JSON.stringify(c.principle,null,2);
-  $('candidate-context').textContent=`${c.id} · revision ${c.revision}\n${c.context.scene} · seed ${c.context.seed} · ${c.context.bundle.time}s · ${c.context.bundle.playerId}\nA: ${c.decisions.A} / B: ${c.decisions.B}`;
+  $('candidate-context').textContent=`${c.id} · revision ${c.revision}\n${c.context.scene} · seed ${c.context.seed} · ${c.context.bundle.time}s · ${c.context.bundle.playerId}\nA: ${c.decisions.A} / B: ${c.decisions.B}${c.parentCandidateId?` · 親候補 ${c.parentCandidateId}`:""}`;
   input('owner').checked=false;
 }
 async function refresh(force=false){
   const data:ServerState=await api('state');
-  bridgeReady=data.apiVersion===2;
+  bridgeReady=data.apiVersion===3;
   if(!bridgeReady){pause();input('owner').checked=false;throw new Error('古いbridgeです。dev serverを停止して再起動してください。');}
   if(!force&&data.state.revision===renderedRevision)return;
   const changed=rules.version!==data.active.A.version||bVersion!==data.active.B.version;
@@ -71,6 +75,10 @@ async function refresh(force=false){
   const list=select('candidates');list.replaceChildren();
   for(const c of Object.values(data.state.candidates).reverse()){const option=document.createElement('option');option.value=c.id;option.textContent=c.feedback.slice(0,38);list.append(option);}
   if(!selected||!data.state.candidates[selected])selected=list.value;else list.value=selected;
+  const previousExperiment=select('experiments').value;select('experiments').replaceChildren();
+  for(const e of Object.values(data.state.experiments).reverse()){const option=document.createElement('option');option.value=e.id;option.textContent=`${e.mode} · ${e.at}`;select('experiments').append(option);}
+  if(data.state.experiments[previousExperiment])select('experiments').value=previousExperiment;
+  $('b-review-status').textContent=`保存済みB回答: ${data.state.bReviews.length}件（未検証の外部回答）`;
   loadCandidate();if(changed)pause();render();
 }
 function on(id:string,fn:()=>unknown){$(id).addEventListener('click',()=>{Promise.resolve().then(fn).catch(e=>say(`エラー: ${e.message}`));});}
@@ -86,17 +94,17 @@ on('restore',()=>{
 on('view',()=>{view.spectator=!view.spectator;$('view').textContent=view.spectator?'一人称へ':'spectatorへ';$('view-tag').textContent=view.spectator?'SPECTATOR · 世界真値 / 認知入力とは別':'選手一人称 · 観測可能な範囲';render();});
 input('head').oninput=()=>{pause();memory=trace.longTermMemory;world.body.headYaw=Number(input('head').value)*Math.PI/180;render();};
 input('body').oninput=()=>{pause();memory=trace.longTermMemory;world.body.yaw=Number(input('body').value)*Math.PI/180;render();};
-function syncProfile(){input('speed').value=String(profile.ability.maxSpeed);input('pass-range').value=String(profile.ability.passRange);input('reliability').value=String(profile.selfEstimate.passReliability);input('preference').value=String(profile.preference.carry);input('adherence').value=String(profile.tactics.adherence);}
-for(const id of ['speed','pass-range','reliability','preference','adherence'])input(id).onchange=()=>{pause();const next=structuredClone(profile);next.ability.maxSpeed=Number(input('speed').value);next.ability.passRange=Number(input('pass-range').value);next.selfEstimate.passReliability=Number(input('reliability').value);next.preference.carry=Number(input('preference').value);next.tactics.adherence=Number(input('adherence').value);try{think(sense(world),memory,next,rules);profile=next;render();}catch(e){syncProfile();say(String(e));}};
+function syncProfile(){input('speed').value=String(profile.ability.maxSpeed);input('pass-range').value=String(profile.ability.passRange);input('reliability').value=String(profile.selfEstimate.passReliability);input('preference').value=String(profile.preference.carry);input('adherence').value=String(profile.tactics.adherence);select('tactic').value=profile.tactics.preferredAction;}
+for(const id of ['speed','pass-range','reliability','preference','adherence','tactic'])input(id).onchange=()=>{pause();const next=structuredClone(profile);next.ability.maxSpeed=Number(input('speed').value);next.ability.passRange=Number(input('pass-range').value);next.selfEstimate.passReliability=Number(input('reliability').value);next.preference.carry=Number(input('preference').value);next.tactics.adherence=Number(input('adherence').value);next.tactics.preferredAction=select('tactic').value as Profile['tactics']['preferredAction'];try{think(sense(world),memory,next,rules);profile=next;render();}catch(e){syncProfile();say(String(e));}};
 on('propose',async()=>{pause();const saved=await api('snapshot',{snapshot:snapshot()});const c=await api('propose',{snapshotId:saved.id,feedback:area('feedback').value});selected=c.id;await refresh(true);say(`候補保存: ${c.id}。実行ルールは未変更です。`);});
 select('candidates').onchange=()=>{selected=select('candidates').value;loadCandidate();};
-on('save-edit',async()=>{await api('edit',{id:selected,patchA:JSON.parse(area('patch').value),principle:JSON.parse(area('principle').value),expectedRevision:state.state.candidates[selected]?.revision});await refresh(true);say('候補の編集を保存。A/Bそれぞれの本人承認を待っています。');});
+on('save-edit',async()=>{await api('edit',{id:selected,patchA:JSON.parse(area('patch').value),principle:JSON.parse(area('principle').value),expectedRevision:state.state.candidates[selected]?.revision,notes:readNotes()});await refresh(true);say('候補の編集を保存。A/Bそれぞれの本人承認を待っています。');});
 for(const target of ['A','B']){
-  for(const decision of ['approve','reject'])on(`${decision}-${target.toLowerCase()}`,async()=>{
+  for(const decision of ['approve','reject','return'])on(`${decision}-${target.toLowerCase()}`,async()=>{
     if(!input('owner').checked)throw new Error('本人確認欄をチェックしてください');
     const c=state.state.candidates[selected];if(!c)throw new Error('候補を選んでください');
-    if(JSON.stringify(JSON.parse(area('patch').value))!==JSON.stringify(c.patchA)||JSON.stringify(JSON.parse(area('principle').value))!==JSON.stringify(c.principle))throw new Error('変更した編集内容を先に保存してください');
-    await api('review',{id:selected,target,decision,actor:'owner',expectedRevision:c.revision});await refresh(true);say(`${target} ${decision} を記録しました。`);
+    if(candidateDirty(c))throw new Error('変更した編集内容を先に保存してください');
+    await api('review',{id:selected,target,decision,actor:'owner',expectedRevision:c.revision,reason:area('review-reason').value});await refresh(true);say(`${target} ${decision} を記録しました。`);
   });
   on(`undo-${target.toLowerCase()}`,async()=>{if(!input('owner').checked)throw new Error('本人確認欄をチェックしてください');await api('undo',{target,actor:'owner',expectedVersion:target==='A'?rules.version:bVersion});await refresh(true);say(`${target} を直前の承認版へ戻しました。`);});
 }
@@ -105,12 +113,27 @@ for(const mode of ['preview','active'] as const)on(mode==='preview'?'preview':'c
   if(mode==='preview'){
     $('comparison').textContent='';
     if(!c)throw new Error('候補を選んでください');
-    if(JSON.stringify(JSON.parse(area('patch').value))!==JSON.stringify(c.patchA)||JSON.stringify(JSON.parse(area('principle').value))!==JSON.stringify(c.principle))throw new Error('未保存の編集があります。previewは保存済み候補を評価します。先に編集内容を保存してください。');
+    if(candidateDirty(c))throw new Error('未保存の編集があります。previewは保存済み候補を評価します。先に編集内容を保存してください。');
   }
   const report=await api('compare',{id:selected,mode,expectedRevision:c?.revision});
   $('comparison').textContent=JSON.stringify({mode:report.mode,candidateRevision:report.candidateRevision,activeVersion:report.activeVersion,staleBase:report.staleBase,sameConditions:report.recorded.sameConditions,scene:report.recorded.scene,seed:report.recorded.seed,time:report.recorded.time,before:report.recorded.before.intention,after:report.recorded.after.intention,evaluation:{before:report.recorded.before.evaluation,after:report.recorded.after.evaluation},versions:[report.recorded.before.rulesVersion,report.recorded.after.rulesVersion],unseen:report.unseen.map((r:any)=>({caseId:r.caseId,strata:r.strata,seed:r.seed,before:r.before.intention.action,after:r.after.intention.action})),B:report.B},null,2);
   say(mode==='preview'?`保存済み候補 revision ${report.candidateRevision} の一時previewです。実行中のA/B版・承認状態は変えていません。層別ケースで効果と反例を確認してください。`:'保存時と現在の承認版Aを同じ入力で比較。層別ケースは合成回帰評価で、人間妥当性の証明ではありません。');
 });
+function readNotes(){return area('study-notes').value.trim()?JSON.parse(area('study-notes').value):undefined;}
+function candidateDirty(c:Candidate){return JSON.stringify(JSON.parse(area('patch').value))!==JSON.stringify(c.patchA)||JSON.stringify(JSON.parse(area('principle').value))!==JSON.stringify(c.principle)||JSON.stringify(readNotes())!==JSON.stringify(c.notes);}
+function download(name:string,value:unknown){const url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);}
+on('codex-context',()=>{const c=state.state.candidates[selected];if(!c)throw new Error('候補を選んでください');download(`context-${c.id}.json`,observationContext(c));say('保存済み候補の観測contextです。Codexへ渡し、意味・例外・反例を共同編集してください。');});
+on('restore-candidate',()=>{const c=state.state.candidates[selected];if(!c)throw new Error('候補を選んでください');pause();world=structuredClone(c.context.world);memory=structuredClone(c.context.memoryBefore);profile=structuredClone(c.context.profile);select('scene').value=world.scene;input('seed').value=String(world.seed);syncProfile();render();say('候補の観測条件を復元。実行ルールは現在の承認版です。');});
+on('revise',async()=>{const c=state.state.candidates[selected];if(!c)throw new Error('候補を選んでください');if(candidateDirty(c))throw new Error('編集を先に保存してください');const child=await api('revise',{id:selected,reason:area('review-reason').value,expectedRevision:c.revision});selected=child.id;await refresh(true);say('観測を保ち、現承認版を基準に新候補を作成。元の履歴・承認は維持し、新候補は未採用です。');});
+function showExperiment(e:Experiment){
+  const sequence=(run:Experiment['results']['recorded']['after'])=>run.frames.map(f=>f.trace.intention.action);
+  $('experiment-report').textContent=JSON.stringify({id:e.id,at:e.at,candidateRevision:e.candidateRevision,modelRevision:e.modelRevision,engineFingerprint:e.engineFingerprint,provenance:e.provenance,notes:e.candidate.notes,A:[e.beforeA.version,e.afterA.version],B:[e.B.before.version,e.B.after.version],mode:e.mode,diagnostic:e.results.diagnostic,recorded:{before:sequence(e.results.recorded.before),after:sequence(e.results.recorded.after)},trials:e.results.trials.map(t=>({caseId:t.caseId,seed:t.seed,before:sequence(t.before),after:sequence(t.after)}))},null,2);
+}
+for(const mode of ['preview','active'] as const)on(`run-${mode}`,async()=>{pause();const c=state.state.candidates[selected];if(!c)throw new Error('候補を選んでください');if(candidateDirty(c))throw new Error('理由・予測・反例を含む編集を先に保存してください');const e=await api('run',{id:selected,expectedRevision:c.revision,steps:Number(input('experiment-steps').value),mode});await refresh(true);select('experiments').value=e.id;showExperiment(e);say('複数step・対照場面の実験記録を保存。採用状態は変更していません。');});
+on('load-experiment',async()=>{showExperiment(await api('experiment',{id:select('experiments').value}));say('保存時の版・理由・結果を表示。再計算していません。');});
+on('download-experiment',async()=>download('experiment.json',await api('experiment',{id:select('experiments').value})));
+on('b-packet',async()=>{download('B-evaluation-packet.json',await api('b-packet',{id:select('experiments').value}));say('保存実験のbefore/after Bと観測だけのpacketを出力。既存AIチャットで独立に試してください。');});
+on('save-b-review',async()=>{await api('b-review',{id:select('experiments').value,model:input('b-model').value,output:area('b-output').value,assessment:area('b-assessment').value});await refresh(true);say('B回答と採点メモを保存しました。未検証の外部回答として記録し、原則採用には使いません。');});
 on('export-b',async()=>{const {markdown}=await api('export-b');const url=URL.createObjectURL(new Blob([markdown],{type:'text/markdown'}));const a=document.createElement('a');a.href=url;a.download=`RUGBY_JUDGMENT-${bVersion}.md`;a.click();URL.revokeObjectURL(url);say('現在の承認済みB文書を出力しました。');});
 // Draw on interaction/steps/resize/orbit changes; a paused tab need not use a GPU frame loop.
 const stepTimer=setInterval(()=>{if(playing)step();},200);

@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-表示された `http://127.0.0.1:5173` を開く。首振り → 再生/停止 → フィードバック → 候補保存 → CodexとJSON編集 → A/B別の本人承認 → 同条件比較 → undo。sessionは `.rpm/` に私的保存され、gitignore対象です。APIキーもクラウド契約も不要です。
+表示された `http://127.0.0.1:5173` を開く。首振り → フィードバック → 候補保存 → Codexと条件・例外・反例を編集 → 未採用の複数step実験 → 本人の差戻し／A/B別採用 → 同場面＋対照比較 → undo。sessionは `.rpm/` に私的保存され、gitignore対象です。APIキーもクラウド契約も不要です。
 
 ```sh
 npm run bridge -- status
@@ -21,6 +21,7 @@ npm run --silent model -- --input examples/support-42.snapshot.json --steps 10
 ```
 
 - [B: RUGBY_JUDGMENT.md](RUGBY_JUDGMENT.md) — runnerなしで読めるB0.1-draft。[単独評価packet](docs/B_EVALUATION_SCENES.md)は原則なし/旧B/新Bを比較。私的sessionのB出力は凍結B0＋本人承認済み原則です。
+- [研究開始条件の点検](docs/RESEARCH_READINESS.md)、[共同研究loop全手順](docs/RESEARCH_LOOP.md)、[今回のMac合成検証](docs/MAC_RESEARCH_CYCLE.md)
 - [設計と情報境界](docs/ARCHITECTURE.md)、[言語選択ADR](docs/ADR-001-runtime.md)
 - [Codex local bridge](docs/LOCAL_BRIDGE.md)、[Mac実証手順](docs/MAC_ACCEPTANCE.md)、[Mac headless記録](docs/MAC_HEADLESS.md)
 - [制約・再現性](docs/LIMITATIONS.md)、[権利と来歴](docs/PROVENANCE.md)

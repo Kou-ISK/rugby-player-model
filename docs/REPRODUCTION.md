@@ -21,7 +21,7 @@ For browser verification, install a supported Chromium through Playwright or set
 | Initial world and player evidence | Original snapshot JSON and hash | Preserve seed/time/body/head, observation bundle and prior memory without giving spectator truth to cognition. |
 | Individual/rule conditions | Snapshot profile and RulesA; active A/B versions | Separate ability, self-estimate, preferences, tactics and rule changes. |
 | Candidate and review | Candidate revision/content, approval target/receipt and undo events | Distinguish preview from adoption and retain what the owner actually confirmed. |
-| Evaluation conditions/results | Recorded comparison output, chosen strata; B arm/scene/prompt/model/version/output/rating | A deterministic output is not evidence of improvement. Keep B compliance and rugby plausibility separate. |
+| Evaluation conditions/results | Durable experiment ID/engine fingerprint/frozen traces, chosen strata; pinned B materials and linked external responses/assessment notes | A deterministic output is not evidence of improvement. Keep B compliance and rugby plausibility separate. |
 | Limitations and acceptance | Cards, unsupported capability report, Mac/B evaluation status | Do not convert missing evaluation into a pass. |
 
 Keep private experiment material in `.rpm/` or another excluded local directory. The public manifest only covers the authored public fixtures; it is not a harvest/export of that directory. UUIDs, wall-clock feedback timestamps and arbitrary interactive input sequences are not controlled by a scenario seed. Numerical trace equality is tested under the same environment; no bitwise identity across every browser/platform or human outcome is promised.

@@ -1,6 +1,6 @@
 # Model card — provisional research foundation
 
-This card covers executable **A** and distinguishes it from the independently reviewed principle document **B**. Status: **uncalibrated, provisional, not a validated human or rugby-performance model**. Model revision is `cognition-0.2`; package version is `0.1.0`. The exact implementation is identified by the Git commit containing the [reproduction manifest](../research/reproducibility-manifest.json) and its source-file hashes. Rule version A0 alone does not identify an executable.
+This card covers executable **A** and distinguishes it from the independently reviewed principle document **B**. Status: **uncalibrated, provisional, not a validated human or rugby-performance model**. Model revision is `cognition-0.3`; package version is `0.2.0`. The exact implementation is identified by the Git commit containing the [reproduction manifest](../research/reproducibility-manifest.json) and its source-file hashes. Rule version A0 alone does not identify an executable.
 
 ## Purpose and method
 
@@ -15,7 +15,7 @@ The intended use is to inspect one synthetic player's available information, for
 | Observation bundle | Own synthetic body state, visible entity positions, coarse audio cue/bearing, observation time/confidence | Accurate own position/possession are engineering assumptions. No hidden entities, opponent intentions or future true ball state may enter. |
 | Memory | Prior attended observations with original time/confidence | Retrieval does not refresh facts. Capacity/decay are assumed rather than measured. |
 | Profile | Ability limits, self-estimate, individual preferences, tactical adherence | These are synthetic adjustable inputs, not measurements of a person. |
-| Rules | Versioned numeric A configuration | A rule version is separate from code revision and from B's document version. |
+| Rules | Versioned numeric A configuration and observation-conditional score/call rules | A rule version is separate from code revision and from B's document version. |
 | Trace/output | Staged evidence, uncertainty/risk/information assessment, candidate scores, intention and body commands | Intent is not successful execution. Unsupported channels are labelled as such. |
 
 Snapshots contain world truth for reproducibility and spectator inspection, but the cognition function consumes only the validated observation/memory/profile/rules boundary. Exporting a private snapshot is not permission to use its hidden world as a player's knowledge.
@@ -28,7 +28,7 @@ Remembered uncertainty can penalize approach and suggest re-observation; audio m
 
 ## Capabilities and failure modes
 
-Supported: synthetic sensing, bounded memory, traceable heuristic decisions, simple locomotion/head yaw, one-decision comparisons, saved contextual feedback, revision-bound review, undo and local persistence.
+Supported: synthetic sensing, bounded memory, traceable heuristic decisions, simple locomotion/head yaw and semantic call events, one-decision comparisons and 1–20-step recorded experiments, conditional coaching candidates, reasoned return/revision, independent A/B review, undo and local persistence. See the [readiness audit](RESEARCH_READINESS.md) for scope and the [Mac cycle record](MAC_RESEARCH_CYCLE.md) for software evidence.
 
 Unsupported: physiological/human validity; learned tactical skill; joint/muscle/posture control; realistic passing/release/catching/contact/kicking; voice production; independent eye gaze; complete rugby rules; other autonomous players; match outcomes. All other players remain static in a run. The renderer now reuses the verified P2P procedural kit through a presentation-only adapter on a local review branch. No gait/contact hint is used as evidence of a skill. Public release of the imported UNLICENSED source remains pending.
 
@@ -44,4 +44,4 @@ The published eight A strata and three snapshot fixtures are synthetic regressio
 
 Candidate content must be saved and confirmed at a specific revision before review. Preview does not adopt it. A/B approvals and active versions remain separate; owner approval is a local procedural self-attestation. Repository draft edits do not automatically replace private session B exports. Material changes should record the exact code commit, input snapshot, profile/rules, candidate revision, target approval and comparison conditions.
 
-License remains **UNLICENSED**, pending the owner's decision. [Provenance](PROVENANCE.md) records the incomplete input acquisition and proposed licensing options; [publication scope](PUBLICATION_SCOPE.md) states what is and is not included in this public foundation.
+License remains **UNLICENSED**, pending the owner's decision. [Provenance](PROVENANCE.md) records verified Mac input acquisition and pending licensing decisions; [publication scope](PUBLICATION_SCOPE.md) states what is and is not included in this public foundation.
