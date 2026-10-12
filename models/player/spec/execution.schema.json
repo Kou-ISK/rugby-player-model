@@ -1,0 +1,108 @@
+{
+  "$id": "https://rugby-player-model.local/execution-v2",
+  "$defs": {
+    "ExecutionMode": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "policyVersion"
+          ],
+          "properties": {
+            "mode": {
+              "const": "legacy"
+            },
+            "policyVersion": {
+              "const": "legacy-ecc5c298-v1"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "policyVersion",
+            "capacity"
+          ],
+          "properties": {
+            "mode": {
+              "const": "h-wm-1"
+            },
+            "policyVersion": {
+              "const": "receiver-deliberation-v1"
+            },
+            "capacity": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "k"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "finite"
+                    },
+                    "k": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 128
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "unlimited"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "ExecutionInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "executionContractVersion",
+        "executionMode",
+        "bundle",
+        "memory",
+        "profile",
+        "rules"
+      ],
+      "properties": {
+        "executionContractVersion": {
+          "const": 2
+        },
+        "executionMode": {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        "bundle": {
+          "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Bundle"
+        },
+        "memory": {
+          "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Memory"
+        },
+        "profile": {
+          "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Profile"
+        },
+        "rules": {
+          "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/RulesA"
+        }
+      }
+    }
+  }
+}

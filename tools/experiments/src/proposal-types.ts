@@ -1,0 +1,18 @@
+import type { ExecutionInput,ExecutionMode,execute } from '../../../models/player/reference/src/index.js';
+import type { Candidate } from './contracts';
+export type RefKind='engine'|'artifact'|'contract'|'config'|'profile'|'rules'|'baseline'|'amendment'|'output'|'mechanism'|'principle'|'hypothesis'|'counterexample'|'protocol'|'case'|'run'|'review';
+export type ContentRef={kind:RefKind;id:string;version:number;sha256:string;hashFormat:'sha256-bytes'|'rpm-canonical-json-v1';path:string|null};
+export type AArtifact={kind:'A';version:number;contract:ContentRef;engine:ContentRef;config:ContentRef;profile:ContentRef;rules:ContentRef};
+export type BArtifact={kind:'B';version:number;baseline:ContentRef;amendments:ContentRef[];output:ContentRef};
+export type ATarget={kind:'A';base:Omit<AArtifact,'kind'|'version'>&{artifact:ContentRef};change:{kind:'a-configuration';beforeSha256:string;afterSha256:string;patch:Candidate['patchA'];executionMode:ExecutionMode}|{kind:'code-review-ref';beforeSha256:string;afterSha256:string;reviewUrl:string;engineSha256:string};proposedArtifact:ContentRef};
+export type BTarget={kind:'B';base:Omit<BArtifact,'kind'|'version'>;change:{kind:'b-replace'|'b-amendments';beforeSha256:string;afterSha256:string;baseline:ContentRef;amendments:ContentRef[]};proposedArtifact:ContentRef};
+export type Entry={path:string;role:RefKind|'evaluator-world';mediaType:'application/json'|'text/plain'|'text/markdown';bytes:number;sha256:string;visibility:'public'|'evaluator-only'};
+export type ProposalManifest={format:'rpm.proposal';formatVersion:1;proposalId:string;revision:number;supersedes:{id:string;revision:number;sha256:string}|null;title:string;claimRefs:ContentRef[];targets:(ATarget|BTarget)[];scope:{included:string[];excluded:string[];assumptions:string[];limits:string[]};expected:{description:string;criteria:string[]};counterexamples:{caseRef:ContentRef;criterion:string}[];protocolRefs:ContentRef[];caseRefs:ContentRef[];runRefs:ContentRef[];runAbsenceReason:string|null;provenance:{author:string;source:string;method:string;seed:number|null;synthetic:true;licenseScope:string};publicScope:{declaration:'explicitly-authorized-synthetic-entries-only';entries:{path:string;permission:'author-authorized';rightsBasis:string}[]};entries:Entry[];payloadDigest:{format:'rpm-canonical-json-v1';sha256:string}};
+export type ProposalPackage={format:'rpm.proposal.transport';version:1;manifest:ProposalManifest;files:{path:string;utf8:string}[]};
+export type ProposalCase={id:string;version:number;synthetic:true;input:ExecutionInput;evaluatorOnly:string|null};
+export type EngineDescriptor={kind:'engine';engineVersion:1;sha256:string;fingerprintFormat:'source-manifest-v1';executionContractVersion:2;sourceFiles:{path:string;sha256:string}[]};
+export type ContractDescriptor={kind:'observation-only-execution';version:2;schemaSha256:string};
+export type Config={executionContractVersion:2;executionMode:ExecutionMode};
+export type BOutput={format:'rpm-b-output';version:1;localVersion:string;outputFormat:1|2;proposed:boolean;markdown:string};
+export type SemanticResult={format:'rpm-semantic-result-v1';cases:{caseId:string;before:ReturnType<typeof execute>;after:ReturnType<typeof execute>}[];B:{before:{baseline:ContentRef;amendments:ContentRef[];outputSha256:string};after:{baseline:ContentRef;amendments:ContentRef[];outputSha256:string}}|null};
+export type ProposalRun={executedTargets:('A'|'B')[];format:'rpm.proposal-run';version:1;id:string;createdAt:string;environment:{node:string;platform:string;arch:string};reproduces:ContentRef|null;inputDigest:string;semantic:SemanticResult;resultDigest:{format:'rpm-semantic-result-v1';sha256:string}};

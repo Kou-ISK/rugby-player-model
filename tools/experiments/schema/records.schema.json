@@ -1,0 +1,526 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rugby-player-model.local/schema/records-v1",
+  "$defs": {
+    "Principle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "condition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "criterion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "exceptions": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "unknown": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      },
+      "required": [
+        "id",
+        "condition",
+        "criterion",
+        "priority",
+        "exceptions",
+        "unknown",
+        "evidence"
+      ]
+    },
+    "Snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contractVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "scene": {
+          "enum": [
+            "support",
+            "occluded",
+            "audio",
+            "heldout",
+            "dynamic"
+          ]
+        },
+        "seed": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "world": {
+          "$ref": "https://rugby-player-model.local/schema/simulation-v1#/$defs/World"
+        },
+        "bundle": {
+          "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Bundle"
+        },
+        "memoryBefore": {
+          "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Memory"
+        },
+        "profile": {
+          "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Profile"
+        },
+        "rulesA": {
+          "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/RulesA"
+        },
+        "rulesBVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "observationHistory": {
+          "$ref": "#/$defs/ObservationHistory"
+        },
+        "executionMode": {
+          "$ref": "#/$defs/ExecutionMode"
+        }
+      },
+      "required": [
+        "contractVersion",
+        "scene",
+        "seed",
+        "world",
+        "bundle",
+        "memoryBefore",
+        "profile",
+        "rulesA",
+        "rulesBVersion"
+      ]
+    },
+    "Candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "createdAt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "feedback": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "context": {
+          "$ref": "#/$defs/Snapshot"
+        },
+        "principle": {
+          "$ref": "#/$defs/Principle"
+        },
+        "patchA": {
+          "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/PatchA"
+        },
+        "decisions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "A": {
+              "enum": [
+                "pending",
+                "approved",
+                "rejected",
+                "returned"
+              ]
+            },
+            "B": {
+              "enum": [
+                "pending",
+                "approved",
+                "rejected",
+                "returned"
+              ]
+            }
+          },
+          "required": [
+            "A",
+            "B"
+          ]
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "notes": {
+          "$ref": "#/$defs/StudyNotes"
+        },
+        "parentCandidateId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "evaluationSetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "coaching": {
+          "$ref": "#/$defs/CoachingWindow"
+        },
+        "executionMode": {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        "replacementB": {
+          "$ref": "#/$defs/BReplacement"
+        }
+      },
+      "required": [
+        "id",
+        "createdAt",
+        "feedback",
+        "context",
+        "principle",
+        "patchA",
+        "decisions",
+        "revision"
+      ]
+    },
+    "RulesB": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "principles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Principle"
+          }
+        },
+        "baseline": {
+          "$ref": "#/$defs/BBaseline"
+        },
+        "outputFormat": {
+          "const": 2
+        }
+      },
+      "required": [
+        "version",
+        "principles"
+      ]
+    },
+    "StudyNotes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "expectedEffect": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "counterexample": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      },
+      "required": [
+        "rationale",
+        "expectedEffect",
+        "counterexample"
+      ]
+    },
+    "ObservationHistory": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "mode": {
+          "enum": [
+            "static-study",
+            "fixed-step-study"
+          ]
+        },
+        "initialMemory": {
+          "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Memory"
+        },
+        "events": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "items": {
+            "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/ObservationEvent"
+          }
+        },
+        "sceneRef": {
+          "$ref": "https://rugby-player-model.local/schema/simulation-v1#/$defs/SceneRef"
+        }
+      },
+      "required": [
+        "version",
+        "mode",
+        "initialMemory",
+        "events"
+      ]
+    },
+    "CoachingWindow": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sceneId": {
+          "type": "string",
+          "pattern": "^[0-9a-f-]{36}$"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "contentHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "playerId": {
+          "const": "observer-0"
+        },
+        "fromTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 200
+        },
+        "toTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 200
+        }
+      },
+      "required": [
+        "sceneId",
+        "revision",
+        "contentHash",
+        "playerId",
+        "fromTick",
+        "toTick"
+      ]
+    },
+    "ApplicationPoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sceneId": {
+          "type": "string",
+          "pattern": "^[0-9a-f-]{36}$"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "contentHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "playerId": {
+          "const": "observer-0"
+        },
+        "tick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 200
+        },
+        "fromA": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "toA": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "fromB": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "toB": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "receiptId": {
+          "type": "string",
+          "pattern": "^[0-9a-f-]{36}$"
+        }
+      },
+      "required": [
+        "sceneId",
+        "revision",
+        "contentHash",
+        "playerId",
+        "tick",
+        "fromA",
+        "toA",
+        "fromB",
+        "toB",
+        "receiptId"
+      ]
+    },
+    "ExecutionMode": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "policyVersion"
+          ],
+          "properties": {
+            "mode": {
+              "const": "legacy"
+            },
+            "policyVersion": {
+              "const": "legacy-ecc5c298-v1"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "policyVersion",
+            "capacity"
+          ],
+          "properties": {
+            "mode": {
+              "const": "h-wm-1"
+            },
+            "policyVersion": {
+              "const": "receiver-deliberation-v1"
+            },
+            "capacity": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "k"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "finite"
+                    },
+                    "k": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 128
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "unlimited"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "BBaseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "sha256",
+        "text"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^urn:uuid:[0-9a-f-]{36}$"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 262144
+        }
+      }
+    },
+    "BReplacement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baseline",
+        "principles"
+      ],
+      "properties": {
+        "baseline": {
+          "$ref": "#/$defs/BBaseline"
+        },
+        "principles": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "$ref": "#/$defs/Principle"
+          }
+        }
+      }
+    }
+  }
+}

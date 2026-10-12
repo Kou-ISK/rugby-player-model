@@ -1,0 +1,21 @@
+{
+  "patchA": {
+    "contextRules": [
+      {"id":"recheck-without-receiver","when":{"possession":"has-ball","evidence":"no-fresh-receiver","unlessCloseThreat":true},"action":"scan","weight":1}
+    ]
+  },
+  "principle": {
+    "id":"recheck-without-receiver",
+    "condition":"ボールを保持し、新鮮な後方受け手の観測がなく、直近の接触脅威を観測していない場合",
+    "criterion":"受け手や空間を断定する前に首を振って情報を取り直す候補を優先する",
+    "priority":20,
+    "exceptions":"近い脅威を観測した場合は保有維持などを先に評価する。既に受け手を新鮮に観測している場合は一律に首振りへ変えない",
+    "unknown":"未観測を不在とみなさない。近い脅威が見えないことも安全の証明ではない",
+    "evidence":"合成条件付き仮説。人間認知・競技妥当性は未検証"
+  },
+  "notes": {
+    "rationale":"本人の『持っていて受け手が確認できていないなら外を見たい』という合成指導を、sceneやseedによらない観測条件に限定する",
+    "expectedEffect":"同場面と異なるseedの保持・受け手未確認場面でcarryからscanへ。近い脅威ではhold、非保持ではsupport、新鮮な受け手ではpassを維持する",
+    "counterexample":"全場面でscanになるなら条件を広げ過ぎ。圧力場面や非保持場面を対照にし、人間が安全性と競技上の妥当性を別採点する"
+  }
+}

@@ -1,0 +1,156 @@
+[
+  {
+    "inputHex": "2d30",
+    "accepted": true,
+    "canonical": "0",
+    "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+  },
+  {
+    "inputHex": "312e30",
+    "accepted": true,
+    "canonical": "1",
+    "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+  },
+  {
+    "inputHex": "316530",
+    "accepted": true,
+    "canonical": "1",
+    "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+  },
+  {
+    "inputHex": "31652d36",
+    "accepted": true,
+    "canonical": "0.000001",
+    "sha256": "159fb29a827ad04b260aa6c8ab6d8637f8f2b38af5c4f3cb49d6a21205e040f8"
+  },
+  {
+    "inputHex": "31652d37",
+    "accepted": true,
+    "canonical": "1e-7",
+    "sha256": "5b33e02f2c5103a05d32f6ba9cb058294452bfbf393967f68bb30c1bdcbbab22"
+  },
+  {
+    "inputHex": "31653231",
+    "accepted": true,
+    "canonical": "1e+21",
+    "sha256": "241c4643fa70b1dcde1205b71be4e3bebb17e9f880c8e1a33d0ead6c27271d3c"
+  },
+  {
+    "inputHex": "31452b30303032",
+    "accepted": true,
+    "canonical": "100",
+    "sha256": "ad57366865126e55649ecb23ae1d48887544976efea46a48eb5d85a6eeb4d306"
+  },
+  {
+    "inputHex": "302e313030303030303030303030303030303035",
+    "accepted": true,
+    "canonical": "0.1",
+    "sha256": "14be4b45f18e0d8c67b4f719b5144eee88497e413709d11d85b096d8e2346310"
+  },
+  {
+    "inputHex": "39303037313939323534373430393933",
+    "accepted": true,
+    "canonical": "9007199254740992",
+    "sha256": "c681da39d7273a6a24c15c9cac3a75526ff2ecf8ba4ee60346a0c70c8163bdb2"
+  },
+  {
+    "inputHex": "225c753030363122",
+    "accepted": true,
+    "canonical": "\"a\"",
+    "sha256": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+  },
+  {
+    "inputHex": "22c3a922",
+    "accepted": true,
+    "canonical": "\"é\"",
+    "sha256": "f2886017e9c7abacf804b54d64787dce2b611c9544ba21f3affdd126a6e50086"
+  },
+  {
+    "inputHex": "2265cc8122",
+    "accepted": true,
+    "canonical": "\"é\"",
+    "sha256": "3d68ce21f2899a475713cdbe7562ba9bdb6b1dfde8af1f221bdff4a0935b53b2"
+  },
+  {
+    "inputHex": "225c75643830305c756463303022",
+    "accepted": true,
+    "canonical": "\"𐀀\"",
+    "sha256": "80066806fcc52478beec53a2ac42bc6a6324eb67c1161136649a669c15d4b7bf"
+  },
+  {
+    "inputHex": "7b22f0908080223a312c22ee8080223a327d",
+    "accepted": true,
+    "canonical": "{\"\":2,\"𐀀\":1}",
+    "sha256": "daec79d8b6582badd3b46bd783a72379bc0b5ae29f5d59f6133025aad69bc8d4"
+  },
+  {
+    "inputHex": "225c6e5c745c225c5c22",
+    "accepted": true,
+    "canonical": "\"\\n\\t\\\"\\\\\"",
+    "sha256": "7ab379881814fc84c1ab5e81b2efda4f71417439b5945885f00ed62fd7ac8d61"
+  },
+  {
+    "inputHex": "3031",
+    "accepted": false
+  },
+  {
+    "inputHex": "2d3031",
+    "accepted": false
+  },
+  {
+    "inputHex": "312e",
+    "accepted": false
+  },
+  {
+    "inputHex": "3165",
+    "accepted": false
+  },
+  {
+    "inputHex": "3165393939",
+    "accepted": false
+  },
+  {
+    "inputHex": "4e614e",
+    "accepted": false
+  },
+  {
+    "inputHex": "496e66696e697479",
+    "accepted": false
+  },
+  {
+    "inputHex": "7b2261223a312c2261223a327d",
+    "accepted": false
+  },
+  {
+    "inputHex": "7b2261223a312c225c7530303631223a327d",
+    "accepted": false
+  },
+  {
+    "inputHex": "7b2278223a7b2261223a312c2261223a327d7d",
+    "accepted": false
+  },
+  {
+    "inputHex": "225c756438303022",
+    "accepted": false
+  },
+  {
+    "inputHex": "225c756463303022",
+    "accepted": false
+  },
+  {
+    "inputHex": "5b312c5d",
+    "accepted": false
+  },
+  {
+    "inputHex": "7b2278223a312c7d",
+    "accepted": false
+  },
+  {
+    "inputHex": "c328",
+    "accepted": false
+  },
+  {
+    "inputHex": "eda080",
+    "accepted": false
+  }
+]

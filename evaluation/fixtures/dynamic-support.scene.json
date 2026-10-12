@@ -1,0 +1,98 @@
+{
+  "sceneSchemaVersion": 1,
+  "tickSeconds": 0.2,
+  "durationTicks": 30,
+  "controlledPlayerId": "carrier-author-name",
+  "actors": [
+    {
+      "id": "carrier-author-name",
+      "team": "blue",
+      "initial": {
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "yaw": 0
+      },
+      "motion": {
+        "kind": "controlled"
+      }
+    },
+    {
+      "id": "future-run-left",
+      "team": "blue",
+      "initial": {
+        "position": {
+          "x": 5,
+          "z": 8
+        },
+        "yaw": 0
+      },
+      "motion": {
+        "kind": "scripted",
+        "keyframes": [
+          {
+            "tick": 0,
+            "position": {
+              "x": 5,
+              "z": 8
+            },
+            "yaw": 0
+          },
+          {
+            "tick": 30,
+            "position": {
+              "x": -4,
+              "z": 12
+            },
+            "yaw": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "future-pressure",
+      "team": "red",
+      "initial": {
+        "position": {
+          "x": -8,
+          "z": 12
+        },
+        "yaw": 0
+      },
+      "motion": {
+        "kind": "scripted",
+        "keyframes": [
+          {
+            "tick": 0,
+            "position": {
+              "x": -8,
+              "z": 12
+            },
+            "yaw": 0
+          },
+          {
+            "tick": 30,
+            "position": {
+              "x": 2,
+              "z": 6
+            },
+            "yaw": 1
+          }
+        ]
+      }
+    }
+  ],
+  "ball": {
+    "kind": "attached",
+    "carrierId": "carrier-author-name"
+  },
+  "calls": [
+    {
+      "startTick": 5,
+      "endTick": 8,
+      "sourceActorId": "future-run-left",
+      "cue": "support-call"
+    }
+  ]
+}

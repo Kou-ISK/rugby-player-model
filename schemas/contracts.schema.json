@@ -1,0 +1,205 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rugby-player-model.local/contracts/v1",
+  "$defs": {
+    "Vec": {
+      "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Vec"
+    },
+    "Body": {
+      "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Body"
+    },
+    "Percept": {
+      "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Percept"
+    },
+    "Profile": {
+      "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Profile"
+    },
+    "RulesA": {
+      "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/RulesA"
+    },
+    "PatchA": {
+      "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/PatchA"
+    },
+    "Principle": {
+      "$ref": "https://rugby-player-model.local/schema/records-v1#/$defs/Principle"
+    },
+    "Memory": {
+      "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Memory"
+    },
+    "Bundle": {
+      "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Bundle"
+    },
+    "World": {
+      "$ref": "https://rugby-player-model.local/schema/simulation-v1#/$defs/World"
+    },
+    "Snapshot": {
+      "$ref": "https://rugby-player-model.local/schema/records-v1#/$defs/Snapshot"
+    },
+    "Candidate": {
+      "$ref": "https://rugby-player-model.local/schema/records-v1#/$defs/Candidate"
+    },
+    "RulesB": {
+      "$ref": "https://rugby-player-model.local/schema/records-v1#/$defs/RulesB"
+    },
+    "BodyCommand": {
+      "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/BodyCommand"
+    },
+    "Belief": {
+      "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Belief"
+    },
+    "Evaluation": {
+      "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Evaluation"
+    },
+    "Trace": {
+      "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Trace"
+    },
+    "ContextRule": {
+      "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/ContextRule"
+    },
+    "StudyNotes": {
+      "$ref": "https://rugby-player-model.local/schema/records-v1#/$defs/StudyNotes"
+    },
+    "ObservationEvent": {
+      "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/ObservationEvent"
+    },
+    "ObservationHistory": {
+      "$ref": "https://rugby-player-model.local/schema/records-v1#/$defs/ObservationHistory"
+    },
+    "SceneDefinition": {
+      "$ref": "https://rugby-player-model.local/schema/simulation-v1#/$defs/SceneDefinition"
+    },
+    "SceneRef": {
+      "$ref": "https://rugby-player-model.local/schema/simulation-v1#/$defs/SceneRef"
+    },
+    "SceneRevision": {
+      "$ref": "https://rugby-player-model.local/schema/simulation-v1#/$defs/SceneRevision"
+    },
+    "CoachingWindow": {
+      "$ref": "https://rugby-player-model.local/schema/records-v1#/$defs/CoachingWindow"
+    },
+    "ApplicationPoint": {
+      "$ref": "https://rugby-player-model.local/schema/records-v1#/$defs/ApplicationPoint"
+    },
+    "ExecutionMode": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "policyVersion"
+          ],
+          "properties": {
+            "mode": {
+              "const": "legacy"
+            },
+            "policyVersion": {
+              "const": "legacy-ecc5c298-v1"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "policyVersion",
+            "capacity"
+          ],
+          "properties": {
+            "mode": {
+              "const": "h-wm-1"
+            },
+            "policyVersion": {
+              "const": "receiver-deliberation-v1"
+            },
+            "capacity": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "k"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "finite"
+                    },
+                    "k": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 128
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "unlimited"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "BBaseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "sha256",
+        "text"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^urn:uuid:[0-9a-f-]{36}$"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 262144
+        }
+      }
+    },
+    "BReplacement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baseline",
+        "principles"
+      ],
+      "properties": {
+        "baseline": {
+          "$ref": "#/$defs/BBaseline"
+        },
+        "principles": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "$ref": "#/$defs/Principle"
+          }
+        }
+      }
+    }
+  }
+}

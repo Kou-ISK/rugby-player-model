@@ -1,0 +1,256 @@
+{
+  "manifestVersion": 1,
+  "status": "provisional-uncalibrated-research-foundation",
+  "sourceIdentity": {
+    "method": "git-commit-containing-this-manifest-plus-sha256-files",
+    "referenceReviewCommit": "5886a70ba4d2200fa67317f995cc36e48c05d2aa",
+    "manifestSelfHashExcluded": true,
+    "note": "Reference review/CI evidence applies to that commit. Reproduce this tree from the commit containing this manifest; check the explicit file hashes below."
+  },
+  "runtime": {
+    "nodeMajor": 24,
+    "referenceNode": "24.19.0",
+    "macVerifiedNode": "24.21.0",
+    "packageVersion": "0.4.0",
+    "npmLockVersion": 3,
+    "dependencies": {
+      "ajv": "8.17.1",
+      "three": "0.186.1"
+    },
+    "devDependencies": {
+      "@playwright/test": "1.64.0",
+      "@types/node": "24.10.1",
+      "@types/three": "0.183.1",
+      "tsx": "4.23.15",
+      "typescript": "5.9.3",
+      "vite": "8.3.4"
+    },
+    "network": "Required for initial dependency/browser installation; no external AI service required for local execution."
+  },
+  "contracts": {
+    "observationVersion": 1,
+    "schema": "schemas/contracts.schema.json",
+    "bridgeApiVersion": 5,
+    "units": {
+      "distance": "meter",
+      "angle": "radian",
+      "time": "second",
+      "attackDirection": "+z"
+    }
+  },
+  "artifacts": {
+    "A": {
+      "modelRevision": "cognition-0.3",
+      "rulesBaseline": "A0",
+      "type": "hand-written-deterministic-heuristic",
+      "trainedWeights": false,
+      "calibration": "none",
+      "humanValidity": "not-established",
+      "card": "docs/MODEL_CARD.md"
+    },
+    "B": {
+      "document": "RUGBY_JUDGMENT.md",
+      "revision": "B0.1-draft",
+      "evaluationReference": "research/b-evaluation-baseline.json",
+      "frozenAt": "5886a70ba4d2200fa67317f995cc36e48c05d2aa",
+      "localExport": "frozen B0 plus separately owner-approved amendments",
+      "evaluationOutcome": "not-claimed"
+    }
+  },
+  "data": {
+    "card": "docs/DATA_CARD.md",
+    "source": "authored synthetic data only",
+    "trainingDataset": "none",
+    "snapshots": [
+      {
+        "path": "examples/support-42.snapshot.json",
+        "scene": "support",
+        "seed": 42
+      },
+      {
+        "path": "examples/occluded-77.snapshot.json",
+        "scene": "occluded",
+        "seed": 77
+      },
+      {
+        "path": "examples/audio-8.snapshot.json",
+        "scene": "audio",
+        "seed": 8
+      }
+    ],
+    "evaluationStrata": [
+      {
+        "caseId": "carrier-open",
+        "seed": 900
+      },
+      {
+        "caseId": "carrier-pressure",
+        "seed": 901
+      },
+      {
+        "caseId": "carrier-receiver",
+        "seed": 1230
+      },
+      {
+        "caseId": "noncarrier-open",
+        "seed": 1231
+      },
+      {
+        "caseId": "carrier-missing",
+        "seed": 65536
+      },
+      {
+        "caseId": "carrier-memory",
+        "seed": 65537
+      },
+      {
+        "caseId": "noncarrier-audio-left",
+        "seed": 104728
+      },
+      {
+        "caseId": "noncarrier-audio-right",
+        "seed": 104729
+      }
+    ],
+    "coverage": "published fixed regression probes using the captured player profile; separately frozen owner-declared conditions track exposure/reuse, not proven novelty or generalization"
+  },
+  "determinism": {
+    "generator": "uint32 LCG: state = (1664525 * state + 1013904223) mod 2^32",
+    "simulationStepSeconds": 0.2,
+    "snapshotIncludes": [
+      "immutable dynamic scene revision when present",
+      "world",
+      "observation bundle",
+      "ordered static-study v1 or fixed-step-study v2 observation events when captured",
+      "prior memory",
+      "profile",
+      "RulesA",
+      "B version"
+    ],
+    "notSeedControlled": [
+      "feedback UUIDs",
+      "wall-clock timestamps",
+      "unsaved manual interaction history"
+    ],
+    "crossPlatformBitwiseEquality": "not-guaranteed"
+  },
+  "reproduction": {
+    "guide": "docs/REPRODUCTION.md",
+    "commands": [
+      "npm ci",
+      "npm run manifest:check",
+      "npm run check",
+      "npm run --silent model -- --input examples/support-42.snapshot.json --steps 10",
+      "npx playwright install chromium",
+      "npm run test:browser"
+    ],
+    "browserAlternative": "Set RPM_CHROMIUM to an existing Chromium executable."
+  },
+  "referenceEvidence": {
+    "commit": "5886a70ba4d2200fa67317f995cc36e48c05d2aa",
+    "nodeTests": 27,
+    "browserTests": 4,
+    "ciRun": "https://github.com/Kou-ISK/rugby-player-model/actions/runs/38156672972",
+    "ciConclusion": "success",
+    "scope": "software checks, not scientific/human/Mac acceptance; inspect current PR checks for subsequent commits"
+  },
+  "rights": {
+    "declaredLicense": "UNLICENSED",
+    "licenseDecision": "pending-owner-decision",
+    "publicationScope": "docs/PUBLICATION_SCOPE.md",
+    "privateDataIncluded": false,
+    "p2pSourceReuse": "verified-procedural-source-owner-authorized-publication",
+    "p2pZipChecksum": "0b24168eb6874b1bb2cacaea5b5926346050ac4baa5acebf32a31b6bcefa07bd",
+    "p2pPublicRelease": "owner-authorized-2026-10-12-unlicensed-retained"
+  },
+  "remaining": [
+    "owner Mac research-loop acceptance",
+    "future OSS/license selection not made",
+    "human calibration/validation",
+    "independent B evaluation results not claimed"
+  ],
+  "files": {
+    ".github/workflows/ci.yml": "bfdf56c8ce914a89d6e4eca7dbd42259e52296767bbf8aa0d623dbe9f7fd1520",
+    ".gitignore": "d6ebdcfb810449d37f418fb50cb241e6eedd045124d8e0e5e894cf19b6c94fed",
+    ".nvmrc": "68ca3fba3b7e864770cb61aeb306d4bd4354b68ab4dd38450860c5d823e42a53",
+    "AGENTS.md": "c0d0ae6d7bc39a4c1f98d9504db6329764bc09acd966d0427425e3be0818e68b",
+    "README.md": "e65737ec1d24078827f5e6acbbb550d452d076ba68c4c644bf7562e32c02153d",
+    "RUGBY_JUDGMENT.md": "fe6c3037f649e259d3b640dcc388796a0e27a98e6767ca4b6560a3d91e4c9080",
+    "bridge-rpm.command": "b57391137b29c8ea226a5a025ddfcae50ea7ed0645dbeb91626b23f21ada506b",
+    "docs/ADR-001-runtime.md": "47bcba0cd3a099710be8af64c671ecce52b22e6faefce0e1112e3803b2d398a0",
+    "docs/ARCHITECTURE.md": "1f3a9d3c84f3950a4cef85a391239b5bd794d5116086100523bb1986b91bc72c",
+    "docs/B_EVALUATION_SCENES.md": "f29e3055600002c320fd6f07fd16292e519041ffaa74aa360fa4e84940536f83",
+    "docs/B_REVIEW.md": "61e200d12d6b32129d3999601bf4bc61c277791f2660ddf83b258b92783db752",
+    "docs/DATA_CARD.md": "dc2b3546739eadd75346b3fc1b988570846d0f1bca152f12cfd0660456073450",
+    "docs/DYNAMIC_SCENES.md": "4ea9394f8bbcdeac6b0179978c68b00fb048f8091d35b232f9f2d9f4d434a19d",
+    "docs/EVALUATION_PROTOCOL.md": "9fab5ce7a348cc24193c76ff63b1e8f35b330e64fa501088dcb34b72ba8b1077",
+    "docs/LIMITATIONS.md": "86a65af46968fb2d95746cd2fabea090b63d988b26d3709ff61139d7aa6f3c98",
+    "docs/LOCAL_BRIDGE.md": "98620e25cf9e5c5f3d384d351f4e24b5ae3967d58775a66fd6125988c09a52ce",
+    "docs/LOCAL_STORAGE.md": "13a3ce19cd1bb28a0d6b137892780640b5a63c6706666b396073ca756582fd2b",
+    "docs/MAC_ACCEPTANCE.md": "ac0742ecc5fb3f54f89f79c311a61ed27a31c3082050d79f78274526b638a0b1",
+    "docs/MAC_HEADLESS.md": "1713bdee5be2983879761d6fac878d7611e6113a8d0d41d58aeb3af614c354f4",
+    "docs/MAC_RESEARCH_CYCLE.md": "92794433663e346dba55d4b3c2cd35abe603322496279eea6480bc98179f21ff",
+    "docs/MAC_START.md": "7cc17599d474a99cce1ac826ab960bd6e59a782fe7d9f0de4811819a13b70d58",
+    "docs/MODEL_CARD.md": "69daa910bf368efbd7df80c5e235574945e474524639e2cbcc44ab6b81581c69",
+    "docs/PROVENANCE.md": "46cf5edb26ec89ad3260b373a375141c4366bdcec4c5a82753169e7de57f7268",
+    "docs/PUBLICATION_SCOPE.md": "4b0aa61eedd96a98ae2555f6684357999de8391909cfa98ff8ba6c286628cabb",
+    "docs/REPRODUCTION.md": "539ca0e0d5a6c981449b056f299eee45842ccb376ffee15ca86e3e9fd05458f3",
+    "docs/RESEARCH_LOOP.md": "5bf566ce661678cb4b235567be8b40bf2f8e6562299ddfad9c3d99ab9bd9170e",
+    "docs/RESEARCH_READINESS.md": "8c2c03d9eb03c9a8be7d0294ad3c2cf4d00d5f3700f728fdf1c1a5f1eb32e126",
+    "docs/VERIFICATION.md": "fd8597eaeb393301d7a9b216423b23b397e4d2656082d7f97bd6e414ec947ca3",
+    "docs/versions/RUGBY_JUDGMENT-B0.md": "9786c4db20ceebf8a295a0a57378142274bbcfef61b0f5dee6bd03202344ad80",
+    "examples/audio-8.snapshot.json": "b8f8906134fc5a7890d6f9c978a4ea497675aadd16a66a7cf754ec39625e32c6",
+    "examples/candidate-edit.json": "18cb5251cd2420deff9da1ad8abc59ed59b291b19ab3bf2aff1f713876fd2f6f",
+    "examples/conditional-coaching-edit.json": "e7507c4f11823493208f76f5e57027b079e480f7984ed684dc1f7065abb9d4bf",
+    "examples/dynamic-support.scene.json": "c6bcd50b16669cde49a49490ae5731dafc4d8a4a2c9df5ef9898414715d1a92c",
+    "examples/occluded-77.snapshot.json": "64f8852dedd24289a68be02c532646df9553b7b607a5d3af419c715f845e52b3",
+    "examples/support-42.snapshot.json": "7e067dd78ee6e5f0a0de2d9d3a107de338f7cd115bac09b740e22834ab491129",
+    "index.html": "5ff0092304ee2c16b9cf972285bf2b0e03f7c4c6c38514ac7ddc3a65e4bc9182",
+    "package-lock.json": "2bc64f1377e45a3c6f80f499ee907f0ee32a7879158916e663634903c3ff8773",
+    "package.json": "26f9dd8b571ee104b741527301209814d7410f7cbdbf652311624d8264010647",
+    "playwright.config.ts": "5976f101024ff27e7ad3c33f85f432131e52c7fe7d32d84c63f32b3e3b223546",
+    "research/b-evaluation-baseline.json": "4e83c69dfbf204127c1f2086f205aab674dcad9c63cfba93d41cb81fa77172c9",
+    "schemas/contracts.schema.json": "a6521b297b2930ec8de9fcefc2824af0187009b6bf99f8849b05942c1dc9e4f9",
+    "scripts/local-launcher.mjs": "cf069206c616c157cc0e5b3b374bb065fe58cfcdede764f20c1a830deca0d860",
+    "scripts/make-samples.ts": "0f177f517cab1b547706adeb9a080602f18e7e00c083d59740f178d8c0cddc47",
+    "scripts/reproducibility.mjs": "ef827294724f012336f281092496173a3cb7ecb037b79fcc2ea2ec9b767c7ae2",
+    "scripts/run-model.ts": "0b4add67dee77814403ef17f3b729347b558664e74f8388d563fb5d5a3b7e36a",
+    "scripts/spike.ts": "b937c3e7396e923c688807fec8319a50928293be83bb5b85147ab3900e9a5d55",
+    "server/cli.ts": "ee349bdbb87a1b91ed3f71c90b3ce6e8347889ed6c8051a118e0e330d813dede",
+    "server/dev.ts": "a7c20d4e804bfa0bb3737ccc912b0777e57fea5bade68ec502849c2b4c2260cb",
+    "server/evaluation.ts": "67dd0e4502b6487accc3fa0f2e2a1dcf8346e6158a35b4d24e29f6ea4c25d863",
+    "server/experiment-types.ts": "cb5e31e8dc4f9214cb304142994012c528e8b8af45a70ea952d3d97b5dede7ff",
+    "server/store.ts": "50f1bcbf6697e118c606c61bbbc6b54bf96b43fe81666bb06e9412176efc13c1",
+    "src/cognition.ts": "a56eeefc9eafaaabcfc108352731658d8822d6c999110ef78adc018514088ae7",
+    "src/contracts.ts": "759a173740ee496bfd4c8cfaa8e99d0bae52cf370072a7262658820f751d1a1e",
+    "src/observation-history.ts": "71a06dc17fbfb7f3749d3624f8b27eef120e81514bff05137bd1a5f6d782ee2c",
+    "src/playback.ts": "5f862b08ad8e65ba48b6647a57cd0b78d0a25c239303ff1d4134b7552ba18a62",
+    "src/research.ts": "5a9376d23b8e299bbfd0fc2df8163b3dd144fd4fac02c568c3778ed3e30db533",
+    "src/scene.ts": "6fb0b3d96fdbde65877a1e0f95f1d4e908200287c64719a6ae39bc4e64dfbe16",
+    "src/simulation.ts": "984fc569eed6d9a05f93b476bf78184a9dc3207d4de6f0d9787b5cf900c3145a",
+    "src/ui/main.ts": "56709aa57709cf651336dbb55b467ed6a1156eaafd69cae1315046ab2223bfd4",
+    "src/ui/models.ts": "67e2357a7be87406b6b839e16a80c321a447f6a49676b3f31c6b87d122ab85a2",
+    "src/ui/p2p/REUSE-NOTICE.md": "56f5523fe93ca1b05616effcd6c42ffa1281a783dde702feaca21a340f656919",
+    "src/ui/p2p/contact-pose.ts": "81caee0c1778d61cf9eee80c0f0943c8531686c7c9ed6b16027bc74fd3107e98",
+    "src/ui/p2p/kit-manifest.json": "bcdd0a2071f2771e8fdb5c84247b723e7718b2672b7db03ac2857b9cfc047f4d",
+    "src/ui/p2p/models.ts": "07b7965746b80d1cb222b5e13254369a257620bc42781a95821e23b550226d86",
+    "src/ui/style.css": "8818d35cac49ae1604629365ab79b756707162d6c97c121275b787bb29cb175a",
+    "src/ui/view.ts": "ce28fa5694f9bd2d033296534646bb6242de3b8005a5181951b54a906af309af",
+    "src/validation.ts": "52ae7f102a36a1612645a828db0cc3010b186efff2a2ae9e5c52a4e8c0ffbc13",
+    "start-rpm.command": "9c28b4ea9bfecec34c88141cb388f7560ad1beb9bb393adbe14c1ba03dfc3952",
+    "tests/browser/dynamic-scenes.spec.ts": "cff4ae508db91ef46b8fc1523cfa66885a6065bb4affd8d93220939286b86b59",
+    "tests/browser/p2p-view.spec.ts": "c429c95db1b1fbc984a4b7f4887aa0bbf53822d94cec9bc9795b48cc13a7316b",
+    "tests/browser/research-cycle.spec.ts": "d2c8eddcaaf5b6bf02b44bd2e18b5327e9050699f2abd1cff211f94b3f8b65d6",
+    "tests/browser/workbench.spec.ts": "3d03c1b99f94b2aaa5283d19216f1cde9180e4fe3de8d18f8a8e77531be2e5ac",
+    "tests/cognition.test.ts": "7ecaab637df3441d8aa7b7eade1d3051c95bd13b2ce509b0bc6d87529eb35830",
+    "tests/dynamic-review-regressions.test.ts": "9f44018cd96d9b00c1c079320f062e2ce18452aacfb372d67cdd025e72bb5837",
+    "tests/dynamic-scenes.test.ts": "5fe8535899f0802c9c6df1773b4f8b55befe2bafd5106e950103ab4db7f77d5f",
+    "tests/evaluation-boundaries.test.ts": "2f3ee91b274db65c9734f27f0c16f8ccf49273dac717806490a94dd4172bf7ac",
+    "tests/local-launcher.test.mjs": "cfd3d04cacb153a5be002a2eac93d589406f7d59fec4ee5bd72b899cbf6cf95f",
+    "tests/p2p-adapter.test.ts": "05d288c39de484f47963ceff89011248dea689bf2bb26975ca4b74aa9ff7faa6",
+    "tests/research-loop.test.ts": "040f76f6804c74d8e4dbbb7347cfacea13b288f13cba01528c1688c2bb209ddd",
+    "tests/research-readiness.test.ts": "50d0ca0a4e69d7e213b1b5c5426160e08c7c5d6e4ad644a1eec347a098e5df43",
+    "tests/review-regressions.test.ts": "fa812681cf4560d053e614ec7f2c53ca325c42e5d93e41b8eb124d2e1c3df948",
+    "tsconfig.json": "d13466ad3fba089a62b23bab446bcb7ca2c20673e96751f564ebf9b462b86798"
+  }
+}

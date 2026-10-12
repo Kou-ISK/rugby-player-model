@@ -1,0 +1,11 @@
+{
+  "formatVersion": 1,
+  "baselineCommit": "5886a70ba4d2200fa67317f995cc36e48c05d2aa",
+  "status": "frozen-evaluation-reference-no-results-claimed",
+  "files": {
+    "RUGBY_JUDGMENT.md": "fe6c3037f649e259d3b640dcc388796a0e27a98e6767ca4b6560a3d91e4c9080",
+    "docs/B_REVIEW.md": "61e200d12d6b32129d3999601bf4bc61c277791f2660ddf83b258b92783db752",
+    "docs/B_EVALUATION_SCENES.md": "f29e3055600002c320fd6f07fd16292e519041ffaa74aa360fa4e84940536f83",
+    "docs/versions/RUGBY_JUDGMENT-B0.md": "9786c4db20ceebf8a295a0a57378142274bbcfef61b0f5dee6bd03202344ad80"
+  }
+}

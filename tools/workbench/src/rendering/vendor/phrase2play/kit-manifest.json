@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "preparedOn": "2026-10-11",
+  "purpose": "Private minimal P2P procedural display handoff for independent RPM implementation",
+  "published": false,
+  "source": {
+    "repository": "Kou-ISK/phrase2play",
+    "commit": "51e4b9d64f5b0e728e22fe74071a582eafccad32",
+    "path": "src/web/three/models.ts",
+    "gitBlobSha1": "ea0174e38b2c23ebca6804a1062d4be9c3c23415",
+    "sourceBytesUnchanged": true
+  },
+  "includedCode": [
+    {
+      "path": "src/models.ts",
+      "origin": "P2P-authored procedural assets per source header and pinned ADR0036",
+      "license": "UNLICENSED at source; public extraction license pending"
+    },
+    {
+      "path": "src/contact-pose.ts",
+      "origin": "New minimal handoff-local presentation type, no P2P core dependency",
+      "license": "Pending RPM release decision"
+    }
+  ],
+  "runtimeDependencies": [
+    "three (external, not vendored)"
+  ],
+  "developmentDependencies": [
+    "TypeScript and compatible Three typings (not installed by this kit)"
+  ],
+  "thirdPartyCodeVendored": false,
+  "externalAssetsIncluded": false,
+  "camerasIncluded": false,
+  "credentialsOrRuntimeConfigurationIncluded": false,
+  "sourceLicenseGate": "Resolve owner-authorized public license and authorship attribution before publishing extracted source",
+  "validation": {
+    "gitBlobIdentity": "passed",
+    "typeFieldCoverage": "passed",
+    "staticNetworkStorageScan": "passed",
+    "runtimeOrBrowserTests": "not run",
+    "typecheck": "not run"
+  },
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3858,
+      "sha256": "cdc7aca4b9b686e361601fdf0f8c41f66b3145de5de788d461ef809d1d75a3a5"
+    },
+    {
+      "path": "provenance/REUSE-NOTICE.md",
+      "bytes": 2869,
+      "sha256": "26c11cd700b20f8afd78b8e606ed796fc616dd66c6c9dce67f67c2baec039850"
+    },
+    {
+      "path": "src/contact-pose.ts",
+      "bytes": 496,
+      "sha256": "81caee0c1778d61cf9eee80c0f0943c8531686c7c9ed6b16027bc74fd3107e98"
+    },
+    {
+      "path": "src/models.ts",
+      "bytes": 39094,
+      "sha256": "07b7965746b80d1cb222b5e13254369a257620bc42781a95821e23b550226d86"
+    }
+  ]
+}

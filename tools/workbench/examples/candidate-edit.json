@@ -1,0 +1,12 @@
+{
+  "patchA": { "scanBias": 2 },
+  "principle": {
+    "id": "scan-under-uncertainty",
+    "condition": "支援選手の位置が古い記憶にしかなく、確認する時間がある",
+    "criterion": "見えていない空間を空と断定せず、判断を変え得る観測を取り直す",
+    "priority": 20,
+    "exceptions": "首を振る遅延が直近の危険を増す場合、保有と姿勢の維持を優先する",
+    "unknown": "位置・時刻・確信度を捏造せず不明のまま扱う",
+    "evidence": "工学的仮説。scanBias=2は動作確認用の大きな摂動で、最適値や人間妥当性を示さない"
+  }
+}
