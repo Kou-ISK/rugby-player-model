@@ -24,3 +24,9 @@ withdrawn. Record unperformed human or AI evaluations as unperformed.
 ## Licensing contributions
 
 Submit only material you can license under the applicable scope in LICENSE-SCOPE.md. Authored contributions use MIT; retain provenance and third-party notices. Do not submit private sessions or real match/player data. No additional CLA or DCO is introduced.
+
+## Scope and coherent changes
+
+Follow [ADR-002](docs/decisions/ADR-002-research-boundaries.md) for directory ownership and contract changes. Settle the observation, action and record contracts before implementing a new mechanism. Separate software correctness, hypothesis evaluation and local A/B adoption. Attack, defense and transition share cognition mechanisms; do not equate not holding the ball with defending.
+
+Before a commit, inspect the exact staged diff and public file inventory. Keep private plans and feedback outside the repository. Prefer coherent commits with their relevant tests; consolidate unpublished fixups before review when appropriate. Preserve published history and frozen sources unless a specific migration or incident requires an explicitly authorized change. Run `npm run check`, and `npm run test:browser` for UI/bridge changes. New scene stimuli also need inspection of the rendered player view; a valid JSON file is not evidence of a plausible situation.

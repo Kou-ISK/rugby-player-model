@@ -1,3 +1,4 @@
+import { openResearchTools } from './ui-helpers';
 import { test, expect } from '@playwright/test';
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -40,7 +41,7 @@ test('synthetic coaching → return/revise → conditional transfer → independ
  const edit=JSON.parse(readFileSync(resolve(repo,'tools/workbench/examples/conditional-coaching-edit.json'),'utf8'));
  const draft={criteria:'SYNTHETIC ONLY: check evidence bounds and exceptions',noveltyAttestation:'not-used-for-coaching',cases:[{label:'EVALUATOR_ONLY_AUDIO',snapshot:cli('snapshot-export',cli('snapshot','--scene','audio','--seed','8123').snapshotId)},{label:'EVALUATOR_ONLY_OCCLUDED',snapshot:cli('snapshot-export',cli('snapshot','--scene','occluded','--seed','7181').snapshotId)}]};
  writeFileSync(join(session,'frozen.json'),JSON.stringify(draft));const frozen=cli('freeze-evaluation','--file',join(session,'frozen.json'));
- await page.goto(base);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
+ await page.goto(base);await openResearchTools(page);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
  await expect(page.locator('canvas')).toHaveAttribute('data-mode','first-person');
  await page.locator('#head').fill('-110');await page.locator('#head').dispatchEvent('input');
  await expect(page.locator('#beliefs')).toContainText('support-1');
@@ -100,15 +101,16 @@ test('synthetic coaching → return/revise → conditional transfer → independ
  await page.locator('#save-b-review').click();await expect(page.locator('#b-review-status')).toContainText('1件');
  const approved=JSON.parse(readFileSync(join(session,'state.json'),'utf8'));
  expect(approved.bReviews[0].humanValidated).toBe(false);expect(approved.bReviews[0].arm).toBe('after');expect(approved.bReviews[0].group).toBe('frozen');expect(approved.bReviews[0].inputSha256).toMatch(/^[0-9a-f]{64}$/);
- await stop();await start();expect(JSON.parse(readFileSync(join(session,'state.json'),'utf8'))).toEqual(approved);
- await page.reload();await expect(page.locator('#versions')).toHaveText('A1 / B1');
+ // Detach the old Vite client before restart so its automatic reload cannot abort our navigation.
+ await page.goto('about:blank');await stop();await start();expect(JSON.parse(readFileSync(join(session,'state.json'),'utf8'))).toEqual(approved);
+ await page.goto(base);await openResearchTools(page);await expect(page.locator('#versions')).toHaveText('A1 / B1');
  await page.locator('#candidates').selectOption(child);await page.locator('#restore-candidate').click();await expect(page.locator('#intention')).toHaveText('scan');
  await page.locator('#experiments').selectOption(experimentId);await page.locator('#load-experiment').click();await expect(page.locator('#experiment-report')).toContainText(active.engineFingerprint);
  await page.locator('#owner').check();await page.locator('#undo-a').click();await expect(page.locator('#versions')).toHaveText('A0 / B1');
  await page.locator('#owner').check();await page.locator('#undo-b').click();await expect(page.locator('#versions')).toHaveText('A0 / B0');
  await page.locator('#restore-candidate').click();await expect(page.locator('#intention')).toHaveText('carry');
  const undone=JSON.parse(readFileSync(join(session,'state.json'),'utf8'));
- await stop();await start();await page.reload();await expect(page.locator('#versions')).toHaveText('A0 / B0');
+ await page.goto('about:blank');await stop();await start();await page.goto(base);await openResearchTools(page);await expect(page.locator('#versions')).toHaveText('A0 / B0');
  expect(JSON.parse(readFileSync(join(session,'state.json'),'utf8'))).toEqual(undone);
  expect(cli('experiment',experimentId)).toEqual(active);expect(cli('context',parent).decisions.A).toBe('returned');
  expect(errors).toEqual([]);

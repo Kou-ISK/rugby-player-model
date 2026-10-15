@@ -1,5 +1,9 @@
 # Macで生成3Dと会話から研究を始める
 
+首振りはマウス固定・ドラッグ・矢印キーで操作できます。操作方法と研究上の意味は [選手視点での見回し](PLAYER_VIEW.md) を参照してください。
+
+会話中心で進める場合は [表示接続](PRESENTATION.md) を使います。指導は会話に入力し、CLIが表示済みsnapshotと結び付けます。以下のブラウザ入力は手動記録の代替手順です。
+
 1. Codexで `~/Documents/workSpace/rugby-player-model` をフォルダとして開きます。最初に「`tools/workbench/docs/MAC_START.md` に沿って研究を始めたい。試したい場面を会話で一緒に作り、採用は私が判断する」と伝えます。
 2. repo直下の `start-rpm.command` を実行し、表示された `http://127.0.0.1:5173` をブラウザで開きます。専用Node 24と同じ保存先を使います。停止は起動ターミナルで **Control-C** です。既存serverがportを使用中なら起動は失敗します。他のjobを停止しないでください。
 3. 試したい配置や動きを短く伝えます。Codexは `evaluation/fixtures/dynamic-support.scene.json` と [動的場面契約](./DYNAMIC_SCENES.md) を参照し、場面JSONをsessionの `work/` に保存して `./bridge-rpm.command scene-create --file ABSOLUTE_SCENE_JSON` を実行します。場面生成はA/B採用ではありません。まず合成例を見たい場合は次だけでも開始できます。

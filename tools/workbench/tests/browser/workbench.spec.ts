@@ -1,7 +1,8 @@
+import { openResearchTools } from './ui-helpers';
 import { test, expect } from '@playwright/test';
 test('first-person 3D, local approvals, comparison, undo and browser restart',async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('/');await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
+  await page.goto('/');await openResearchTools(page);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
   const canvas=page.locator('canvas');await expect(canvas).toHaveAttribute('data-mode','first-person');
   await expect(canvas).not.toHaveAttribute('data-rendered','0');
   await page.locator('#head').fill('-110');await page.locator('#head').dispatchEvent('input');
@@ -35,7 +36,7 @@ test('first-person 3D, local approvals, comparison, undo and browser restart',as
   await page.locator('#owner').check();await page.locator('#approve-a').click();await expect(page.locator('#versions')).toHaveText('A1 / B0');
   await page.locator('#compare').click();await expect(page.locator('#comparison')).toContainText('"sameConditions": true');await expect(page.locator('#comparison')).toContainText('104729');
   await page.locator('#owner').check();await page.locator('#approve-b').click();await expect(page.locator('#versions')).toHaveText('A1 / B1');
-  await page.reload();await expect(page.locator('#versions')).toHaveText('A1 / B1');await expect(page.locator('#candidate-context')).toContainText('approved');
+  await page.reload();await openResearchTools(page);await expect(page.locator('#versions')).toHaveText('A1 / B1');await expect(page.locator('#candidate-context')).toContainText('approved');
   await page.locator('#owner').check();await page.locator('#undo-a').click();await expect(page.locator('#versions')).toHaveText('A0 / B1');
   await page.locator('#owner').check();await page.locator('#undo-b').click();await expect(page.locator('#versions')).toHaveText('A0 / B0');
   await page.locator('#restore').click();await expect(page.locator('#status')).toContainText('復元');
@@ -47,7 +48,7 @@ test('local bridge rejects cross-origin and non-JSON mutation',async({request})=
   const host=await request.get('/api/state',{headers:{Host:'untrusted.example'}});expect(host.status()).toBe(403);
 });
 test('approval between client polls rejects an unseen competing edit and requires reconfirmation',async({page,request})=>{
-  await page.goto('/');await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
+  await page.goto('/');await openResearchTools(page);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
   await page.locator('#feedback').fill('race reproduction');await page.locator('#propose').click();await expect(page.locator('#candidate-context')).toContainText('revision 1');
   await page.locator('#patch').fill('{"scanBias":1}');await page.locator('#save-edit').click();await expect(page.locator('#candidate-context')).toContainText('revision 2');
   await page.locator('#owner').check();
@@ -70,14 +71,14 @@ test('a new client refuses writes against an older still-running bridge',async({
   const legacy=await (await request.get('/api/state')).json();delete legacy.apiVersion;
   await page.route('**/api/state',route=>route.fulfill({json:legacy}));
   const writes:string[]=[];page.on('request',r=>{if(r.method()==='POST')writes.push(r.url());});
-  await page.goto('/');await expect(page.locator('#status')).toContainText('古いbridge');
+  await page.goto('/');await openResearchTools(page);await expect(page.locator('#status')).toContainText('古いbridge');
   await page.locator('#feedback').fill('must not submit');await page.locator('#propose').click();
   await expect(page.locator('#status')).toContainText('再起動');expect(writes).toEqual([]);
 });
 
 test('research mode saves three arms, remains preview-only, adopts A separately and restores mode after reload/undo',async({page,request})=>{
  const initial=await (await request.get('/api/state')).json(),baseA=initial.active.A.version,baseB=initial.active.B.version;
- await page.goto('/');await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
+ await page.goto('/');await openResearchTools(page);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
  await page.locator('#feedback').fill('Synthetic H-WM-1: receiver deliberation capacity test');await page.locator('#propose').click();await expect(page.locator('#candidate-context')).toContainText('revision 1');
  await page.locator('#execution-mode').selectOption('finite');await page.locator('#execution-k').fill('1');
  await page.locator('#save-edit').click();await expect(page.locator('#candidate-context')).toContainText('revision 2');
@@ -86,7 +87,7 @@ test('research mode saves three arms, remains preview-only, adopts A separately 
  await page.locator('#preview').click();await expect(page.locator('#comparison')).toContainText('preview');
  await page.locator('#owner').check();await page.locator('#approve-a').click();await expect(page.locator('#trace')).toContainText('cognition-h-wm-1-v1');
  const adopted=await (await request.get('/api/state')).json();expect(adopted.active.B.version).toBe(baseB);expect(adopted.active.executionMode.capacity).toEqual({kind:'finite',k:1});
- await page.reload();await expect(page.locator('#trace')).toContainText('cognition-h-wm-1-v1');await expect(page.locator('#mode-study-result')).toContainText('"name": "unlimited"');await expect(page.locator('#execution-mode')).toHaveValue('finite');
+ await page.reload();await openResearchTools(page);await expect(page.locator('#trace')).toContainText('cognition-h-wm-1-v1');await expect(page.locator('#mode-study-result')).toContainText('"name": "unlimited"');await expect(page.locator('#execution-mode')).toHaveValue('finite');
  await page.locator('#owner').check();await page.locator('#undo-a').click();await expect(page.locator('#versions')).toHaveText(`${baseA} / ${baseB}`);
  expect((await (await request.get('/api/state')).json()).active.executionMode).toEqual(initial.active.executionMode);
 });

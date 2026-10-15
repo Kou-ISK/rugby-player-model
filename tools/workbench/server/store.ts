@@ -1,3 +1,4 @@
+import type {Command} from './presentation';
 import {validateBSelection,makeStandaloneBPacket,fixedBDocument,validateStandaloneBPacket,validateBAssessment,standaloneInputHash} from '../../experiments/src/b-standalone';
 import type {World} from '../../simulation/src/contracts';
 import {emptyGraph,indexProposal,indexRun,addReview,withdraw,validateGraph,type EvidenceGraph} from '../../experiments/src/lineage';
@@ -43,7 +44,7 @@ function checkRevision(c: Candidate, expected: number) {
 }
 export type SceneComparison = {id:string;at:string;kind:'changed-scene-fixed-rules';sameConditions:false;rulesA:RulesA;before:{snapshotId:string;snapshot:Snapshot;run:ReplayResult};after:{snapshotId:string;snapshot:Snapshot;run:ReplayResult}};
 export type ModeStudy={format?:'rpm.mode-study';version?:2;inputHashFormat?:'rpm-canonical-json-v1';inputManifest?:{protocol:'fixed-observation-three-arm-v1';modelArtifact:{id:string;version:2;sha256:string};bundleSha256:string;memorySha256:string;profileSha256:string;rulesSha256:string;modeSha256:string[];engineFingerprintFormat:string;time:number;playerId:string;scene:string;seed:number|null};id:string;at:string;candidateId:string;candidateRevision:number;engineFingerprint:string;inputSha256:string;arms:{name:string;result:ReturnType<typeof execute>}[]};
-export type State = { sessionDeclaration?:{purpose:'synthetic-tutorial';createdAt:string}; evidenceGraph:EvidenceGraph; importedProposals:Record<string,ImportedProposal>; publicExports:PublicExport[]; artifactLinks:ArtifactLink[]; standaloneBReviews:StandaloneBReview[]; modesA:Record<string,ExecutionMode>; modeStudies:Record<string,ModeStudy>; sceneComparisons:Record<string,SceneComparison>; scenes:Record<string,SceneRevision[]>; format: 1|2; revision: number; snapshots: Record<string, Snapshot>; candidates: Record<string, Candidate>;
+export type State = { snapshotRequests?:Record<string,{snapshotId:string;sha256:string}>; presentationReceipts?:Record<string,Command>;snapshotLinks?:Record<string,string>; sessionDeclaration?:{purpose:'synthetic-tutorial';createdAt:string}; evidenceGraph:EvidenceGraph; importedProposals:Record<string,ImportedProposal>; publicExports:PublicExport[]; artifactLinks:ArtifactLink[]; standaloneBReviews:StandaloneBReview[]; modesA:Record<string,ExecutionMode>; modeStudies:Record<string,ModeStudy>; sceneComparisons:Record<string,SceneComparison>; scenes:Record<string,SceneRevision[]>; format: 1|2; revision: number; snapshots: Record<string, Snapshot>; candidates: Record<string, Candidate>;
   versionsA: Record<string, RulesA>; versionsB: Record<string, RulesB>; activeA: string[]; activeB: string[]; events: Event[];
   experiments: Record<string, Experiment>; bReviews: BReview[]; evaluationSets:Record<string,FrozenEvaluation> };
 const initial = (): State => ({ evidenceGraph:emptyGraph(),importedProposals:{},publicExports:[],artifactLinks:[],standaloneBReviews:[],modesA:{},modeStudies:{},sceneComparisons:{}, scenes:{}, format: 2, revision: 0, snapshots: {}, candidates: {}, versionsA: { A0: defaultRulesA() },
@@ -121,11 +122,31 @@ export class Store {
       s.sceneComparisons[result.id]=result;return result;
     });
   }
-  saveSnapshot(snapshot: unknown): string {
+  recordPresentation(receipt:Command){
+    if(receipt.status!=='completed'||!receipt.result)throw new Error('Only acknowledged presentations are durable');
+    return this.transact(s=>{s.presentationReceipts??={};const old=s.presentationReceipts[receipt.id];if(old){if(canonical(old)!==canonical(receipt))throw new Error('Presentation receipt conflict');return old;}s.presentationReceipts[receipt.id]=structuredClone(receipt);return receipt;});
+  }
+  researchLog(){const s=this.read();return {observationContinuations:Object.entries(s.snapshots).filter(([,v])=>v.observationPredecessor).map(([id,v])=>({snapshotId:id,predecessor:v.observationPredecessor,fromTime:v.observationHistory?.events[0]?.bundle.time,toTime:v.bundle.time})),presentations:s.presentationReceipts??{},candidates:Object.values(s.candidates).map(c=>({id:c.id,sourceSnapshotId:s.snapshotLinks?.[c.id]??null,parentCandidateId:c.parentCandidateId??null,revision:c.revision,coaching:c.coaching,decisions:c.decisions,experiments:Object.values(s.experiments).filter(e=>e.candidateId===c.id).map(e=>({id:e.id,candidateRevision:e.candidateRevision,mode:e.mode}))})),humanValidation:'Not inferred from UI acknowledgement or synthetic tests'};}
+  private assertObservationPredecessor(snapshot:Snapshot,s:State){
+    const ref=snapshot.observationPredecessor;if(!ref)return;
+    const previous=s.snapshots[ref.snapshotId],history=snapshot.observationHistory;
+    if(!previous||digest(previous)!==ref.sha256||!history?.events.length||canonical(snapshot.observationAnchor)!==canonical(previous.world))throw new Error('Unknown or changed observation predecessor');
+    const last=previous.observationHistory?.events.at(-1);
+    if(!last||canonical(history.initialMemory)!==canonical(previous.memoryBefore)||canonical(history.events[0])!==canonical({...last,sequence:0,trigger:'initial'}))throw new Error('Observation continuation boundary mismatch');
+  }
+  saveSnapshot(snapshot: unknown,requestId?:string): string {
     validateSnapshot(snapshot);
     assertSnapshotHistory(snapshot);this.assertSceneBinding(snapshot);
     if (JSON.stringify(sense(snapshot.world)) !== JSON.stringify(snapshot.bundle)) throw new Error('Snapshot perception does not match sensor adapter');
-    return this.transact(s => { const id = randomUUID(); s.snapshots[id] = structuredClone(snapshot); return id; });
+    if(requestId!==undefined&&!/^[a-zA-Z0-9-]{1,128}$/.test(requestId))throw new Error('Invalid snapshot request ID');
+    return this.transact(s => {
+      this.assertObservationPredecessor(snapshot,s);
+      const sha256=digest(snapshot),previous=requestId?s.snapshotRequests?.[requestId]:undefined;
+      if(previous){if(previous.sha256!==sha256)throw new ConflictError('Snapshot request ID reused with different content');return previous.snapshotId;}
+      const id=randomUUID();s.snapshots[id]=structuredClone(snapshot);
+      if(requestId){s.snapshotRequests??={};s.snapshotRequests[requestId]={snapshotId:id,sha256};}
+      return id;
+    });
   }
   freezeEvaluation(draft:unknown):FrozenEvaluation {
     checkEvaluationDraft(draft);for(const c of draft.cases)this.assertSceneBinding(c.snapshot);
@@ -146,6 +167,7 @@ export class Store {
         if(set.draft.cases.some(c=>exposureReasons(c.snapshot,context).length))throw new Error('Frozen evaluation evidence cannot be used as the coaching scene');
       }
       const c = candidateDraft(randomUUID(), feedback, context);
+      s.snapshotLinks??={};s.snapshotLinks[c.id]=snapshotId;
       if(context.world.dynamic){
         const d=context.world.dynamic,firstTick=Math.round((context.observationHistory?.events[0].bundle.time??context.bundle.time)/.2);
         c.coaching={...sceneRef(d.scene),playerId:'observer-0',fromTick:window?.fromTick??firstTick,toTick:window?.toTick??d.tick};
@@ -210,7 +232,7 @@ export class Store {
       if(parent.evaluationSetId)child.evaluationSetId=parent.evaluationSetId;
       if(parent.replacementB)child.replacementB=structuredClone(parent.replacementB);if(parent.executionMode)child.executionMode=structuredClone(parent.executionMode);child.patchA=structuredClone(parent.patchA);child.principle=structuredClone(parent.principle);
       if(parent.notes)child.notes=structuredClone(parent.notes);
-      s.candidates[child.id]=child;s.events.push({id:randomUUID(),at:new Date().toISOString(),action:'revise',actor:'local',candidateId:child.id,parentCandidateId:id,reason});
+      s.candidates[child.id]=child;if(s.snapshotLinks?.[id])s.snapshotLinks[child.id]=s.snapshotLinks[id];s.events.push({id:randomUUID(),at:new Date().toISOString(),action:'revise',actor:'local',candidateId:child.id,parentCandidateId:id,reason});
       return child;
     });
   }
@@ -238,9 +260,10 @@ export class Store {
       staleBase: c.context.rulesA.version !== active.A.version, executionModes:{before:c.context.executionMode??legacyMode(),after:options.mode==='preview'?c.executionMode??c.context.executionMode??legacyMode():active.executionMode},recorded: compare(c.context, after,options.mode==='preview'?c.executionMode??c.context.executionMode??legacyMode():active.executionMode), regressionKind:'published-fixed-regression', regression: regressionCompare(c.context.rulesA, after,c.context.profile,c.context.executionMode??legacyMode(),options.mode==='preview'?c.executionMode??c.context.executionMode??legacyMode():active.executionMode),
       B: { before: c.context.rulesBVersion, after: active.B,documents:{status:options.mode==='preview'?'proposed-not-approved':'active',before:this.bMarkdown(beforeB),after:this.bMarkdown(options.mode==='preview'?previewB:active.B,options.mode==='preview')},evaluation: 'Manual standalone-model review required; no AI service called.' } };
   }
-  runExperiment(id: string, expectedRevision: number, steps: number, mode: 'preview'|'active') {
+  runExperiment(id: string, expectedRevision: number, steps: number, mode: 'preview'|'active', start: 'coaching'|'snapshot' = 'coaching') {
     if(fingerprint()!==loadedFingerprint)throw new Error('Engine source changed; restart the dev server before recording an experiment');
     if(!['preview','active'].includes(mode))throw new Error('Invalid experiment mode');
+    if(!['coaching','snapshot'].includes(start))throw new Error('Invalid experiment start');
     return this.transact(s=>{
       const c=s.candidates[id];if(!c)throw new Error('Unknown candidate');checkRevision(c,expectedRevision);
       if(!c.notes)throw new Error('Save rationale, expected effect and counterexample before recording an experiment');
@@ -252,7 +275,7 @@ export class Store {
       if(c.evaluationSetId&&!set)throw new Error('Missing frozen evaluation set');
       if(set&&(digest(set.draft)!==set.digest||canonical(set.profile)!==canonical(c.context.profile)))throw new Error('Frozen evaluation digest/profile mismatch');
       if(set&&Object.values(s.candidates).some(candidate=>set.draft.cases.some(test=>exposureReasons(test.snapshot,candidate.context).length)))throw new Error('Frozen evaluation observations became coaching data');
-      const results=experimentRun(c.context,afterA,steps,set?.draft.cases.map((test,i)=>({id:`frozen-${i+1}`,snapshot:test.snapshot})),c.coaching,mode==='preview'?c.executionMode??c.context.executionMode??legacyMode():active.executionMode);
+      const results=experimentRun(c.context,afterA,steps,set?.draft.cases.map((test,i)=>({id:`frozen-${i+1}`,snapshot:test.snapshot})),start==='snapshot'?undefined:c.coaching,mode==='preview'?c.executionMode??c.context.executionMode??legacyMode():active.executionMode);
       const useIndex=set?Object.values(s.experiments).filter(e=>e.evaluation?.set.id===set.id).length+1:0;
       const exposureMatches=Object.values(s.experiments).flatMap(e=>{
         const evidence=[e.candidate.context,...(e.evaluation?.set.draft.cases.map(c=>c.snapshot)??[]),...e.results.observationCases];

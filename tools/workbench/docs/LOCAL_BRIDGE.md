@@ -1,5 +1,9 @@
 # Codexと使うローカルfile/CLI bridge
 
+首振りはマウス固定・ドラッグ・矢印キーで操作できます。操作方法と研究上の意味は [選手視点での見回し](PLAYER_VIEW.md) を参照してください。
+
+会話中心で進める場合は [表示接続](PRESENTATION.md) を使います。指導は会話に入力し、CLIが表示済みsnapshotと結び付けます。以下のブラウザ入力は手動記録の代替手順です。
+
 設定済みの本人Macは [MAC_START.md](./MAC_START.md) と [保存場所](./LOCAL_STORAGE.md) を使います。以下の `npm run bridge --` は `./bridge-rpm.command`、`.rpm/` の作業ファイルはsession内の `work/` / `exports/` の絶対パスへ読み替えます。UIとCLIの通常起動を同じ設定に揃えてください。
 
 See [dynamic scene contracts, CLI and acceptance scope](./DYNAMIC_SCENES.md) for the new fixed-step workflow: one A-controlled player and scripted stimuli.
@@ -78,3 +82,9 @@ snapshotのA/B基準版が変わった候補は採用できません。preview�
 `mode-edit CANDIDATE --revision N --mode finite --k 4`、`--mode unlimited`、`--mode legacy`で候補に保存します。UIの研究モード欄も同じ編集を使います。変更だけではactiveは変わりません。`mode-study CANDIDATE --revision N --k 4`は同一観測で従来・新policy無制限・新policy有限を別armとして保存します。`mode-studies`で再起動後も取得できます。有限対無制限が容量対照、従来対無制限はpolicy差です。A専用採用後に実行へ適用し、A undoで以前のmodeへ戻ります。Bは変わりません。
 
 旧記録でmodeがない場合は記録当時のlegacyを意味します。readerは旧記録へ新fieldやhashを書き足しません。新しい観測履歴には各eventのmodeを保存します。新規sessionと新しい書込みは外側のstate format 2を使い、旧バイナリはこれを拒否します。rollback時もformat 2対応readerを使い、新版sessionを保全してください。非legacy activeをundoするだけでは旧reader互換には戻りません。新版の記録を削除して旧版互換にしないでください。
+
+## 観測の継続保存（bridge API 11）
+
+一人称の観測は224件を目安に自動保存し、位置・時刻を維持して次の保存単位へ進みます。旧snapshotは変更しません。新snapshotの任意欄 `observationPredecessor` は元snapshotのID・hash、`observationAnchor` は区間開始時の再生専用世界です。観測contextには前者だけを含め、後者はA/Bの選手入力へ渡しません。`research-log` の `observationContinuations` で保存間の参照を確認できます。開始状態と観測の重複一件を用いて再生し、取得時刻・confidenceを更新しません。
+
+共有提案は従来どおり選択した固定観測と記憶を出力し、私的snapshotの連鎖全体を自動公開しません。古いbridgeへ新UIから書き込まないため、更新時はserverを再起動します。

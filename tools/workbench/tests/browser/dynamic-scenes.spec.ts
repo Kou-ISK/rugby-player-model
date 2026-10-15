@@ -1,3 +1,4 @@
+import { openResearchTools } from './ui-helpers';
 import { test, expect } from '@playwright/test';
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -24,7 +25,7 @@ test('T01–T11: synthetic dynamic scene → coaching → preview paths → UI a
  test.setTimeout(90000);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  const scene=cli('scene-create','--file',join(repo,'evaluation/fixtures/dynamic-support.scene.json'));
  expect(scene.generationSeed).toBeNull();expect(cli('scenes')).toHaveLength(1);
- await page.goto(base);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
+ await page.goto(base);await openResearchTools(page);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
  const pixels=await page.evaluate(async({scene,moduleRoot})=>{
    const viewPath='/src/rendering/view.ts',scenePath=moduleRoot+'tools/simulation/src/scene.ts';const {View}=await import(viewPath),{sceneWorld}=await import(scenePath);
    const container=document.createElement('div');container.style.cssText='width:400px;height:300px;position:absolute;left:-500px';document.body.append(container);
@@ -63,12 +64,16 @@ test('T01–T11: synthetic dynamic scene → coaching → preview paths → UI a
  const approved=readState(),receipt=approved.events.find((e:any)=>e.application?.toA==='A1').application;
  expect(receipt).toMatchObject({sceneId:scene.sceneId,revision:1,fromA:'A0',toA:'A1',fromB:'B0',toB:'B0'});
  expect(receipt.tick).toBeGreaterThanOrEqual(3);expect(await page.locator('#clock').textContent()).toContain(`tick ${receipt.tick}/30`);
- await page.locator('#owner').check();await page.locator('#approve-b').click();await expect(page.locator('#versions')).toHaveText('A1 / B1');
- await page.locator('#owner').check();await page.locator('#undo-a').click();await expect(page.locator('#versions')).toHaveText('A0 / B1');
+ // The application receipt is another state revision. Wait until it has been polled
+ // before making the next synthetic owner confirmation; an unseen revision clears it.
+ const settleReceipt=async()=>{const revision=readState().revision;await page.waitForResponse(async r=>r.url()===base+'/api/state'&&(await r.json()).state.revision>=revision);};
+ await settleReceipt();
+ await page.locator('#owner').check();await page.locator('#approve-b').click();await expect(page.locator('#versions')).toHaveText('A1 / B1');await expect(page.locator('#status')).toContainText('B approve');await settleReceipt();
+ await page.locator('#owner').check();await page.locator('#undo-a').click();await expect(page.locator('#versions')).toHaveText('A0 / B1');await expect(page.locator('#status')).toContainText('A を直前');await settleReceipt();
  await page.locator('#owner').check();await page.locator('#undo-b').click();await expect(page.locator('#versions')).toHaveText('A0 / B0');
  await page.locator('#snapshot').click();await expect(page.locator('#status')).toContainText('snapshot保存');
- const persisted=readState();await stop();await start();expect(readState()).toEqual(persisted);
- await page.reload();await expect(page.locator('#versions')).toHaveText('A0 / B0');await page.locator('#restore').click();await expect(page.locator('#clock')).toContainText(`tick ${receipt.tick}/30`);
+ const persisted=readState();await page.goto('about:blank');await stop();await start();expect(readState()).toEqual(persisted);
+ await page.goto(base);await openResearchTools(page);await expect(page.locator('#versions')).toHaveText('A0 / B0');await page.locator('#restore').click();await expect(page.locator('#clock')).toContainText(`tick ${receipt.tick}/30`);
  expect(cli('experiment',experimentId)).toEqual(experiment);expect(cli('context',id).coaching).toEqual(context.coaching);
  await page.locator('#replay-history').click();await expect(page.locator('#history-report')).toContainText('fixed-step-study');
  await page.screenshot({path:info.outputPath('synthetic-dynamic-mac.png'),fullPage:true});
@@ -82,15 +87,15 @@ test('R1/R4: terminal coaching replays saved before/after in 3D at the same tick
  const captured=cli('scene-snapshot',scene.sceneId,'--revision','1','--tick','30');
  const c=cli('propose',captured.snapshotId,'--feedback','SYNTHETIC: stop and scan over the interval','--from-tick','0','--to-tick','30');
  const edit=JSON.parse(readFileSync(join(repo,'tools/workbench/examples/conditional-coaching-edit.json'),'utf8'));edit.patchA={scanBias:2};const path=join(session,'terminal-edit.json');writeFileSync(path,JSON.stringify(edit));cli('edit',c.id,'--file',path,'--revision','1');
- await page.goto(base);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');await page.locator('#candidates').selectOption(c.id);await page.locator('#restore-candidate').click();await expect(page.locator('#clock')).toContainText('tick 30/30');
+ await page.goto(base);await openResearchTools(page);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');await page.locator('#candidates').selectOption(c.id);await page.locator('#restore-candidate').click();await expect(page.locator('#clock')).toContainText('tick 30/30');
  await page.locator('#experiment-steps').fill('20');await page.locator('#run-preview').click();await expect(page.locator('#status')).toContainText('実験記録を保存');
  const id=await page.locator('#experiments').inputValue(),experiment=cli('experiment',id);
  expect(experiment.results.recordedInput.snapshot.world.dynamic.tick).toBe(0);expect(experiment.results.recordedInput.snapshot.memoryBefore.episodes).toEqual([]);
  expect(experiment.results.recorded.before.frames).toHaveLength(20);expect(experiment.results.recorded.before.finalSelf.position).not.toEqual(experiment.results.recorded.after.finalSelf.position);
  const originalClock=await page.locator('#clock').textContent(),originalTrace=await page.locator('#trace').textContent(),originalHistory=await page.locator('#history-status').textContent(),stateBytes=readFileSync(join(session,'state.json'),'utf8');
- const writes:string[]=[];page.on('request',r=>{if(r.method()==='POST'&&!r.url().endsWith('/api/experiment'))writes.push(r.url());});
+ const writes:string[]=[];page.on('request',r=>{if(r.method()==='POST'&&!r.url().endsWith('/api/experiment')&&!r.url().endsWith('/api/display-poll'))writes.push(r.url());});
  await page.locator('#show-comparison-before').click();await expect(page.locator('#view-tag')).toContainText('比較 preview / before');await expect(page.locator('#clock')).toContainText('tick 0');
- await expect(page.locator('#step')).toBeDisabled();await expect(page.locator('#snapshot')).toBeDisabled();await expect(page.locator('#approve-a')).toBeDisabled();await expect(page.locator('#owner')).toBeDisabled();
+ await expect(page.locator('#look-start')).toBeDisabled();await expect(page.locator('canvas')).toHaveAttribute('data-look-mode','unavailable');await expect(page.locator('#step')).toBeDisabled();await expect(page.locator('#snapshot')).toBeDisabled();await expect(page.locator('#approve-a')).toBeDisabled();await expect(page.locator('#owner')).toBeDisabled();
  await page.locator('#comparison-frame').fill('9');const time=await page.locator('#clock').textContent(),beforePixels=await page.locator('canvas').screenshot();
  const beforeBody=JSON.parse((await page.locator('#trace').textContent())!).body;
  await page.locator('#comparison-after').click();await expect(page.locator('#clock')).toHaveText(time!);const afterBody=JSON.parse((await page.locator('#trace').textContent())!).body;
@@ -101,7 +106,7 @@ test('R1/R4: terminal coaching replays saved before/after in 3D at the same tick
  const response=page.waitForResponse(r=>r.url().endsWith('/api/snapshot'));await page.locator('#snapshot').click();const restoredId=(await (await response).json()).id;
  expect(cli('snapshot-export',restoredId)).toEqual(cli('snapshot-export',captured.snapshotId));
  // The saved experiment remains viewable after a browser reload; no A approval is required.
- await page.reload();await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');await page.locator('#experiments').selectOption(id);await page.locator('#show-comparison-after').click();await expect(page.locator('#clock')).toContainText('tick 0');await page.locator('#comparison-exit').click();
+ await page.reload();await openResearchTools(page);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');await page.locator('#experiments').selectOption(id);await page.locator('#show-comparison-after').click();await expect(page.locator('#clock')).toContainText('tick 0');await page.locator('#comparison-exit').click();
  await info.attach('review-fix-evidence',{body:JSON.stringify({scope:'synthetic Mac headless; not owner acceptance',experimentId:id,fromTick:0,savedAtTick:30,frames:20,sameTickSwitch:true,differentBodyAndPixels:true,returnStateUnchanged:true,restoredSnapshotEqual:true,comparisonMutationRequests:writes.filter(url=>!url.endsWith('/api/snapshot')),errors}),contentType:'application/json'});
  expect(errors).toEqual([]);
 });

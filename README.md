@@ -31,9 +31,15 @@ See [Contributing](CONTRIBUTING.md) for changes to models, principles or experim
 
 ## What is implemented
 
-The player model separates world state, sensed observations and uncertain beliefs. The viewer displays generated players, a pitch and a ball; rendering does not add physical skills. Passing is currently an intention with unsupported execution. Other actors follow scripted stimuli rather than a complete rugby simulation.
+The player model separates world state, sensed observations and uncertain beliefs. The viewer displays generated players, a pitch and a ball; rendering does not add physical skills. In legacy scenes, passing is intention-only and other actors are scripted stimuli. Opt-in scene v3 adds bounded motor skills and independent agents; see the closed-loop contract below.
 
 The default model preserves the legacy behavior. The optional [H-WM-1 hypothesis](models/player/spec/H-WM-1.md) limits the evidence used to compare and choose a receiver. Risk, orienting and existing freshness checks still use retained evidence. It is not a complete model of human working memory. Compare finite capacity with the same policy at unlimited capacity; compare the legacy policy separately.
+
+The [cognitive research contract](docs/COGNITIVE_RESEARCH.md) defines the target mechanisms, required records and validation gates. The [portable player guide](models/judgment/PLAYER_GUIDE.md) is a standalone draft for LLM use. Neither is evidence of human cognitive equivalence.
+
+A running viewer also accepts [local presentation commands](tools/workbench/docs/PRESENTATION.md): capture its actual observations or present a fixed snapshot without UI automation. Coaching stays in your conversation; the workbench has no embedded AI.
+
+For ongoing dialogue, use the [research facilitation loop](tools/workbench/docs/RESEARCH_LOOP.md#会話で研究を進める役割と区切り): the assistant records each interpretation, prepares the next discriminating scene and asks one concrete coaching question. Each private session keeps its current question and next step, separate from model adoption.
 
 Useful references:
 
@@ -50,3 +56,9 @@ Use the [Mac start guide](tools/workbench/docs/MAC_START.md) and [current storag
 ## License and source material
 
 MIT applies to the authored scope listed in [LICENSE-SCOPE.md](LICENSE-SCOPE.md). Dependency licenses and notices remain in force. The procedural rendering sources and frozen principle documents retain their original bytes and historical notices; [provenance](docs/provenance/PROVENANCE.md) records their origin. Private sessions, real match data and external assets are outside the public scope.
+
+観測v2の場面では自己・他選手の身体方向と攻守の推定を保存し、同じ研究手順で扱えます。守備の移動・タックルや向きに応じた走路選択は次工程です。[観測契約と研究手順](models/player/spec/ORIENTATION_PHASE.md)。
+
+## 閉ループの追加契約
+
+任意選択のscene v3は、身体方向を含む観測から運動を推定し、小目標の維持・切替と攻守の抽象動作、独立した少人数の相互応答を扱う。仕様・工学的仮定・機構除去比較・限界は [Closed loop](models/player/spec/CLOSED_LOOP.md) を参照。旧scene v1/v2と保存記録は従来の意味を保持する。ソフトウェア試験は人間の認知的妥当性やA/Bの採用ではない。
