@@ -1,58 +1,58 @@
-# 選手視点での見回し
+# Looking around in player view
 
-3D画面内の左上で「三人称へ／一人称へ」を切り替えます。切替は常時表示され、ホバーやタッチ、キーボードで探せます。三人称は世界の配置を見る俯瞰で、選手の観測とは別です。画面内の下側に再生・1 step・見回し・視線を正面へを配置しています。
+[English](PLAYER_VIEW.md) | [日本語](PLAYER_VIEW.ja.md)
 
-一人称の「マウスで見回す」を押すと、カーソルを画面に固定して左右を見回せます。ブラウザがカーソル固定に対応しない場合も、3D画面のドラッグで操作できます。上下方向の知覚は未実装なので、見回しは左右だけです。
+Switch between first person (一人称へ) and third person (三人称へ) at the top left inside the 3D viewport. The control is always visible and supports pointer, touch and keyboard interaction. Third person shows spectator world layout, not player observations. Playback, one step, look and recenter controls sit along the viewport's bottom edge.
 
-| 操作 | 観測への作用 |
+In first person, “マウスで見回す” locks the pointer for horizontal looking. Drag the viewport if pointer lock is unavailable. Vertical perception is not implemented.
+
+| Control | Effect on observation |
 |---|---|
-| マウス左右／画面のドラッグ | 首を回す。左右137°に達した後は身体も追従し、同じ操作で後ろまで見回せる |
-| Shift＋マウス／ドラッグ | 頭の相対角を保って身体ごと回す |
-| Esc | マウス固定・操作を終了。表示済みの向きは保持 |
-| 「視線を正面へ」／画面にフォーカスしてR | 頭の相対角を0°にする。身体の向き・位置・時刻は保持 |
-| 画面にフォーカスして← → | 首を5°ずつ回す。Shiftを併用すると身体を回す |
-| 感度 | 初期値は従来の2倍。「従来」「さらに速い」も選べる。マウス移動量に対する回転量を変更。知覚・身体能力のモデル値は変更しない |
+| Horizontal mouse movement / dragging | Turn the head; beyond ±137°, the body follows so the same gesture can look behind |
+| Shift + mouse / drag | Turn the body while preserving relative head angle |
+| Esc | Release pointer control, retaining displayed orientation |
+| “視線を正面へ” / R with viewport focused | Set relative head angle to 0°; retain body heading, position and time |
+| Left/right arrows with viewport focused | Turn the head by 5°; add Shift to turn the body |
+| Sensitivity | Default is twice the former sensitivity; former/faster choices change mouse-to-angle gain, not model perception or body ability |
 
-感度・角度スライダーは「見回しの設定・操作方法」にあります。場面選択、reset・復元、手動指導入力、JSON編集・A/B採否は、下の「研究ツール」を開いて使います。通常の指導はCodexチャットで行います。テキスト入力中のキー操作は見回しへ転送しません。俯瞰と保存済み実験の比較表示では、研究対象の身体・首は操作できません。ウィンドウから離れたときも操作を解除します。移動はモデルの行動として実行するため、WASD移動はありません。
+Sensitivity and angle sliders are under “見回しの設定・操作方法.” Open “研究ツール” below for scene selection, reset/restore, manual coaching, JSON editing and independent reviews. Normal coaching belongs in the Codex conversation. Typing in inputs does not turn the camera. Spectator and recorded-comparison views cannot rotate the research player's body/head. Leaving the window releases control. There is no WASD movement: movement is a model action.
 
-## なぜ首と身体を分けるか
+## Why separate head and body?
 
-首振りは、選手が新しく得る視覚情報を変える観測介入です。身体方向は、自己の向きと身体を基準とした行動の関係を検討する条件です。視線は身体方向と頭の相対角の和で決まり、同じsensorが描画対象と認知入力を制限します。場面v2以降は、見えた他選手の身体方向も観測に含めます。
+A head turn is an observation intervention that changes acquired visual information. Body direction is a condition for examining self orientation and body-relative action. Gaze combines body heading and relative head angle; the same sensor restricts rendered entities and cognitive inputs. Scenes v2 and later also observe other players' visible body orientation.
 
-見回しで時間を止め、`head-turn` / `body-turn`、取得順、自己の姿勢、観測bundle、profile、実行モード、A設定を既存の観測履歴へ保存します。通常は50msごとにマウス移動をまとめ、操作終了や首／身体の切替でも残りを確定します。表示を先行させず、**描画した向きと記録した観測を一致**させます。解除・フォーカス移動・復元で取り消すのは未表示の入力だけです。
+Looking pauses time and records `head-turn` / `body-turn`, acquisition order, self pose, bundle, profile, execution mode and model settings in the observation history. Mouse input is normally batched every 50 ms and flushed when control ends or switches between head/body. Displayed orientation and recorded observation match; release, blur and restore discard only undisplayed input.
 
-一つの保存単位は256件までですが、通常は224件でそれまでの観測を自動保存し、同じ位置・時刻・記憶から次の単位へ継続します。以前の観測は削除しません。保存中も残りの容量で操作でき、通信が間に合わない場合だけ保存完了を待ちます。失敗時は「保存を再試行」で同じ保存要求を再送し、場面のresetは不要です。
+A segment holds at most 256 events. Normally it autosaves at 224 and continues from the same position, time and memory without deleting earlier observations. Remaining capacity permits interaction during saving; only a slow save pauses acquisition. “保存を再試行” retries the same request without resetting the scene.
 
-継続の境界観測は一件重ね、その直前の記憶から再生します。観測時刻・confidenceは元のままです。前のsnapshotへの参照とhash、区間開始時の世界を私的snapshotに保持します。開始時の世界は実験再生用で、選手の認知入力や観測contextには渡しません。「現在の観測履歴を再生」は現在の保存単位を扱います。以前の単位は「保存した時点」から復元でき、継続の参照はresearch-logにも残ります。指導区間の開始tickは現在の単位以降です。より前の区間は対応する保存点で扱います。
+Continuations overlap one boundary observation and replay from its original memory-before, preserving timestamps/confidence. Private snapshots store the predecessor ID/hash and interval-start world. That world is replay-only, never player input or observation context. History replay covers the current segment; restore earlier segments through “保存した時点.” Links also appear in `research-log`. Coaching start ticks belong to the current segment; use the appropriate saved segment for earlier intervals.
 
-「視線を正面へ」は首だけを戻します。「場面を最初から」は移動・時刻を開始点へ戻しますが、直前の状態を保存して復元先に選びます。「保存した時点へ戻る」でその位置・時刻・観測履歴へ戻れます。明示的に別の保存点を選ぶこともできます。
+Recenter resets only the head. Restarting the scene resets movement/time but saves the prior state and selects it as a restore point. “保存した時点へ戻る” restores that position, time and history; another saved point can be selected explicitly.
 
-マウスの50ms集約、首の可動端からの身体追従、自動保存の区切りは操作・保存上の工学的設定です。人間の知覚周期や実際の身体旋回時間を表していません。
+The 50 ms batching, body-follow behavior and segment boundaries are interface/storage assumptions, not human perceptual or body-turn timing.
 
-## この操作から何を評価できるか
+## What can this evaluate?
 
-手動の首・身体の回転は研究者が指定した介入です。対象モデルの自律行動による見回しと区別します。停止中は同じシミュレーション時刻なので、周囲が止まったまま追加情報を取得できます。これで自律的な探索能力、実際の首の旋回時間、反応速度や接触直前の判断を検証したことにはなりません。
+Manual turns are researcher interventions, distinct from autonomous model looking. Paused turns acquire information at the same simulation time while the world is stationary. They do not validate autonomous exploration, physical turning time, reaction speed or pre-contact decisions.
 
-このツールでは、観測・記憶・判断・再観測の機構について仮説を作り、同じ条件と反例でAの候補を比較できます。指導文の保存でAが自動学習することはなく、Bの原則文書も独立した成果物です。A/Bの採用は本人の判断で別々に行います。
+The tool supports hypotheses and counterexample comparisons about observation, memory, judgment and reobservation. Saving coaching does not train the executable model automatically. The judgment document remains independent, with separate owner adoption.
 
-研究は次の順に進めます。
+1. Confirm layout, attack/defense, orientation and scripted versus autonomous actors.
+2. Inspect observations through manual looking, preserve the reference and coach in conversation.
+3. Form a mechanism candidate: which cues, predictions and action-change conditions matter?
+4. Separate manual-intervention effects from autonomous actions; compare counterexamples, ablations and evaluation conditions frozen in advance.
+5. Evaluate executable results and independent document responses separately, then obtain owner decisions.
 
-1. 場面の配置、攻守、向き、他選手が自律か指定経路かを確認する。
-2. 手動の見回しで観測内容を確かめ、参照を保存し、指導を会話で伝える。
-3. 指導を「何を手掛かりに、何を予測し、いつ行動を変更するか」の機構候補にする。
-4. 手動介入の効果とモデル自身の行動を分け、条件を変えた反例・機構除去・事前に凍結した評価条件で比較する。
-5. Aの実行結果とBの独立した回答を別々に評価し、本人が採否を判断する。
+Scene v3 supports simplified running/passing/catching/contact and autonomous actors; scripted opponents do not react to the player. Scripted scenes alone cannot establish appropriate release just before a tackle. Software tests verify input/storage/replay integrity, not human cognitive validity or unseen transfer. See [Closed loop](../../../models/player/spec/CLOSED_LOOP.md) and [evaluation protocol](../../../evaluation/PROTOCOL.md).
 
-場面v3は簡略化した走行・パス・捕球・接触と自律選手を扱えますが、指定経路の相手は対象選手へ反応しません。そのような場面だけで「タックル直前に適切に渡せる」とは評価できません。現在のソフトウェア試験は入力・保存・再生の整合性の証拠であり、人間の認知を再現するモデルとしての妥当性や未知の局面への転用を確立していません。[Closed loop](../../../models/player/spec/CLOSED_LOOP.md) と [評価手順](../../../evaluation/PROTOCOL.md) も参照してください。
+## Field of view and distance
 
-## 視野と距離感
+Dynamic scenes accept `horizontalFovDegrees` from 60–120. Unspecified existing scenes retain 90° and historical observations. Perspective camera, visibility and bundle use the same value, saved in scene hashes/snapshots. Aspect-ratio changes adjust vertical FOV to preserve horizontal FOV; viewpoint and eye height stay fixed.
 
-動的場面に `horizontalFovDegrees`（60–120）を指定できます。未指定の既存場面は90°を維持し、過去の観測を書き換えません。同じ値を通常の透視カメラ・可視判定・観測bundleへ使い、場面のhashとsnapshotへ保存します。画面の縦横比が変わると垂直画角を調整して水平画角を保ちます。視点位置と目の高さは変えません。
+Human binocular field including peripheral vision is approximately 180–200°, with unequal precision across the field ([National Research Council](https://www.ncbi.nlm.nih.gov/books/NBK207559/)). Projecting all of it onto a small flat display is not naturally equivalent: disagreement between physical viewing angle and rendered FOV affects wide-angle appearance ([Microsoft Research](https://www.microsoft.com/en-us/research/publication/real-time-warps-for-improved-wide-angle-viewing/)).
 
-人間の両眼視野は周辺を含めて約180–200°ありますが、全域を同じ精度で認識するわけではありません（[National Research Council, Visual Impairments: Tests of Visual Functions](https://www.ncbi.nlm.nih.gov/books/NBK207559/)）。これを狭い平面画面へ一度に投影しても、自然な見え方にはなりません。画面が実際に占める視角と描画する画角がずれると、広角画像の見え方に影響します（[Microsoft Research, Real-Time Warps for Improved Wide-Angle Viewing](https://www.microsoft.com/en-us/research/publication/real-time-warps-for-improved-wide-angle-viewing/)）。
+Use ordinary perspective and looking around; 110° is a provisional engineering condition for usability assessment. Overhead teammate/opponent labels are hidden, with team colors shown above the viewport and body-direction arrows at the feet. Flat panoramic projection changes perceived distance/direction and is not used here.
 
-通常の透視投影と見回しを使い、110°は見やすさを確認する暫定の工学的条件として扱います。頭上の味方・相手ラベルは表示せず、3D画面の上にチーム色を示します。足元の身体方向の矢印は残しています。平面のパノラマ表示は距離・方向の見え方を変えるため、この研究表示には使いません。
+For geometric distance calibration, measure viewport width W and eye-to-screen distance D; use horizontal FOV `2 atan(W / (2D))` as a reference. This has a different purpose from wide-angle game settings and yields a narrower field in a small panel. Combining broad coverage with natural appearance also requires assessing display size, viewing position and hardware.
 
-距離感を幾何学的に合わせる場合は、3D表示領域の実際の横幅 W と目から画面までの距離 D を測り、水平画角 `2 atan(W / (2D))` を基準にします。この値は操作性を優先するゲーム用の広角設定とは目的が異なり、小さいパネルでは見える範囲が狭くなります。広い範囲と自然な見え方を両立させるには表示面積・視聴位置や装置も評価する必要があります。
-
-現在のsensorは中心・周辺の精度差や眼球運動を実装していません。画角調整や画面のぼかしだけで人間の視覚を再現したとは扱いません。画角変更は別の場面版として保存し、変更前後の履歴や判断を混ぜず、DFの進路比較では画角をそろえます。
+The sensor has no central/peripheral precision difference or eye-movement model. FOV changes or screen blur do not reproduce human vision. Save changed FOV as a new scene revision, keep histories separate and hold FOV constant when comparing defender routes.

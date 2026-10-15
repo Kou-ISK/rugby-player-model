@@ -1,47 +1,45 @@
 # Model card — provisional research foundation
 
-This card covers executable **A** and distinguishes it from the independently reviewed principle document **B**. Status: **uncalibrated, provisional, not a validated human or rugby-performance model**. Model revision is `cognition-0.3`; package version is `0.4.0`. The exact implementation is identified by the Git commit containing the [reproduction manifest](../../reproducibility.json) and its source-file hashes. Rule version A0 alone does not identify an executable.
+[English](MODEL_CARD.md) | [日本語](MODEL_CARD.ja.md)
 
-## Purpose and method
+Status: **uncalibrated and not validated as a human-cognition or rugby-performance model**. This card covers the executable player model, independently of judgment principles. Package version is `0.4.0`; engine branches include legacy `cognition-0.3`, orientation/phase and optional closed loop. The commit containing the [reproduction manifest](../../reproducibility.json) and its source hashes identify code; a rule version such as `A0` alone does not.
 
-A is a hand-written, deterministic hypothesis-testing model for local discussion with the owner and Codex. It separates sensation, attention, working/episodic memory, belief and uncertainty, action evaluation, intention and capability-labelled body output. There are no trained neural weights, fitting dataset, reward optimizer or claim to recover a particular athlete's cognition. Human/Codex feedback creates explicit candidates; approved parameter changes are manual experiments, not evidence of successful learning.
+## Purpose
 
-The intended use is to inspect one synthetic player's available information, formulate a falsifiable rule change, preview it without adoption, compare fixed inputs and stratified cases, and accept/reject/undo A and B independently. The model should not be used to select athletes, assess ability clinically, prescribe safe real-world contact, adjudicate a match, or claim improved performance from a changed synthetic action label.
+A hand-written, deterministic hypothesis-testing model separates sensation, attention, memory, uncertain belief, action evaluation, intention and capability-labeled output. It has no trained neural weights, fitting dataset or reward optimizer and does not recover a particular athlete's cognition. Coaching creates explicit candidates; manually adopted changes are experiments, not demonstrated learning.
+
+Inspect synthetic player information, formulate falsifiable changes, preview without adoption, compare fixed conditions/counterexamples and review each deliverable independently. Do not use this prototype for athlete selection, clinical ability assessment, safe real-contact prescriptions, match adjudication or performance claims based on changed synthetic action labels.
 
 ## Inputs and outputs
 
-| Boundary | Supplied information | Important limitation |
-| --- | --- | --- |
-| Observation bundle | Own synthetic body state, visible entity positions, coarse audio cue/bearing, observation time/confidence | Accurate own position/possession are engineering assumptions. No hidden entities, opponent intentions or future true ball state may enter. |
-| Memory | Prior attended observations with original time/confidence | Retrieval does not refresh facts. Capacity/decay are assumed rather than measured. |
-| Profile | Ability limits, self-estimate, individual preferences, tactical adherence | These are synthetic adjustable inputs, not measurements of a person. |
-| Rules | Versioned numeric A configuration and observation-conditional score/call rules | A rule version is separate from code revision and from B's document version. |
-| Trace/output | Staged evidence, uncertainty/risk/information assessment, candidate scores, intention and body commands | Intent is not successful execution. Unsupported channels are labelled as such. |
+| Boundary | Content and limitation |
+|---|---|
+| Bundle | Synthetic self state, visible evidence, coarse audio, time/confidence; no hidden positions, intentions or future truth |
+| Memory | Previously attended observations with unchanged source time/confidence; assumed capacity/decay |
+| Profile | Synthetic ability, self-estimate, preferences and tactical adherence; not personal measurements |
+| Rules | Versioned numeric/conditional configuration, separate from code and document versions |
+| Trace/body requests | Evidence, uncertainty, scores, intention and supported/unsupported output; intention is not execution |
 
-Snapshots contain world truth for reproducibility and spectator inspection, but the cognition function consumes only the validated observation/memory/profile/rules boundary. Exporting a private snapshot is not permission to use its hidden world as a player's knowledge.
+World-bearing snapshots are evaluator envelopes. Cognition consumes only validated bundle/memory/profile/rules; snapshot export does not authorize hidden-world player knowledge.
 
-## Assumptions and calibration
+## Engineering assumptions
 
-The 90° horizontal view, 35m visual range, circular occlusion, coarse audio bearing, 4-input attention encoding, legacy 4-belief display excerpt (not a judgment capacity limit), 128-episode bound, 30s episode lifetime, exponential decay, uncertainty growth and all scoring weights are **engineering hypotheses**. They have not been fit to human gaze, behavior, biomechanical measurements or match outcomes. Scores and confidence values are not calibrated probabilities of correct play.
+Legacy defaults include 90° horizontal FOV, 35 m visual range, circular occlusion, coarse audio, four-percept encoding, a four-belief display excerpt (not a decision bottleneck), 128 episodes and a 30-second lifetime. Decay, uncertainty growth and weights are uncalibrated. Configurable FOV and [orientation/phase](spec/ORIENTATION_PHASE.md), [H-WM-1](spec/H-WM-1.md) and [closed-loop](spec/CLOSED_LOOP.md) extensions explicitly version their assumptions. Scores/confidence are not calibrated success probabilities.
 
-Remembered uncertainty can penalize approach and suggest re-observation; audio meaning/direction can guide a head turn. Neither mechanism proves a hidden entity is present. Stale memory does not become fresh pass eligibility. Negative observation does not yet clear a remembered entity, and a coarse remembered sound cannot be repositioned precisely after translation without distance information.
+Remembered uncertainty can penalize approach and request reobservation; audio meaning/bearing can direct a turn. Neither proves a hidden actor present, refreshes stale receivers or yields exact remembered sound positions after translation. Negative observation does not independently clear a remembered actor.
 
 ## Capabilities and failure modes
 
-Supported: synthetic sensing, bounded memory, traceable heuristic decisions, simple locomotion/head yaw and semantic call events, ordered static-study head/body observation replay, profile-preserving fixed regressions, prospectively frozen evaluation conditions, and 1–20-step recorded experiments, conditional coaching candidates, reasoned return/revision, independent A/B review, undo and local persistence. See the [readiness audit](../../docs/verification/RESEARCH_READINESS.md) for scope and the [Mac cycle record](../../docs/verification/MAC_RESEARCH_CYCLE.md) for software evidence.
+Shared capabilities include synthetic sensing, bounded memory, traceable decisions, observation replay, profile-preserving regressions, frozen conditions, recorded experiments, candidate revision, independent review/undo and persistence. Legacy motion is kinematic with semantic calls; passes are intention-only. Dynamic v1/v2 others are scripted. Opt-in v3 adds bounded acceleration/turning, abstract passing/catching/contact and independent actors with their own evidence. It does not implement full rugby physics or laws.
 
-Unsupported: physiological/human validity; learned tactical skill; joint/muscle/posture control; realistic passing/release/catching/contact/kicking; voice production; independent eye gaze; complete rugby rules; other autonomous players; match outcomes. Other players are static in the legacy four scenes; dynamic scenes use declared scripted paths while only the selected player is controlled by A. The renderer reuses the verified P2P procedural kit through a presentation-only adapter. No gait/contact hint is used as evidence of a skill. Publication of the bounded source and minimal pose type is explicitly authorized; UNLICENSED remains in effect.
+Unresolved: biological validity, learned tactics, joints/muscles/posture, realistic contact/flight/kicking, speech, independent eye gaze, complete phases/laws, validated group coordination and match outcomes. P2P procedural geometry is presentation-only, not evidence of skill. Limited MIT permission is in [LICENSE-SCOPE](../../LICENSE-SCOPE.md); historical UNLICENSED notices remain provenance.
 
-Material risks in interpretation: confusing absence of observation with empty space; overtrusting synthetic confidence; treating a weighted score as optimal; mistaking a pass intention for an executed pass; calling parameter variants novel-match validation; or comparing old/new code as if only a rule changed. The interface and tests expose these distinctions but do not establish human validity.
+Interpretation risks include unseen = empty, overtrusted confidence, weighted score = optimal, intention = successful action, known parameter variants = unseen validation, and code changes mistaken for rule-only interventions. Interface/tests expose distinctions without proving human validity.
 
-## Evidence and acceptance
+## Evidence and governance
 
-At reference commit `5886a70`, 27 Node tests and 4 browser tests passed, with exact GitHub run [38156672972](https://github.com/Kou-ISK/rugby-player-model/actions/runs/38156672972) succeeding. They establish implementation properties: boundaries, paired causal effects of memory/audio, revision conflicts, deterministic local replay and UI operations. They do not establish rugby quality or transfer to a human.
+At reference commit `5886a70`, 27 Node tests and four browser tests passed, with [CI run 38156672972](https://github.com/Kou-ISK/rugby-player-model/actions/runs/38156672972). This is historical software evidence, not the current test count or human validation. See [verification](../../docs/verification/VERIFICATION.md), [readiness](../../docs/verification/RESEARCH_READINESS.md), [Mac cycle](../../docs/verification/MAC_RESEARCH_CYCLE.md), [data card](../../evaluation/DATA_CARD.md) and [limitations](../../docs/LIMITATIONS.md).
 
-The published eight A strata and three snapshot fixtures are synthetic regression inputs; there is no measured generalization score or demographic evaluation. B has a separate frozen [evaluation reference](../../evaluation/baselines/b-evaluation-baseline.v1.json), a runner-independent packet and a separate approval path. No B outcome is inferred here from its text, preliminary work elsewhere or A's test results. **Owner Mac acceptance is not recorded as passed.** See [verification](../../docs/verification/VERIFICATION.md), [data card](../../evaluation/DATA_CARD.md) and [limitations](../../docs/LIMITATIONS.md).
+Public fixtures/regressions are synthetic and provide no measured generalization or demographic score. The independent document has a [frozen reference](../../evaluation/baselines/judgment-evaluation.v1.json), standalone evaluation and its own adoption. No document benefit or owner screen acceptance follows from executable tests; actual human decisions require session evidence.
 
-## Governance
-
-Candidate content must be saved and confirmed at a specific revision before review. Preview does not adopt it. A/B approvals and active versions remain separate; owner approval is a local procedural self-attestation. Repository draft edits do not automatically replace private session B exports. Material changes should record the exact code commit, input snapshot, profile/rules, candidate revision, target approval and comparison conditions.
-
-License remains **UNLICENSED**, pending the owner's decision. [Provenance](../../docs/provenance/PROVENANCE.md) records verified Mac input acquisition and pending licensing decisions; [publication scope](../../docs/provenance/PUBLICATION_SCOPE.md) states what is and is not included in this public foundation.
+Review saved content at the confirmed revision; preview is not adoption. Independent active versions and undo remain separate. Owner approval is local self-attestation. Repository edits do not replace private principles. Record code, snapshot, profile/rules, candidate revision, review target and comparison conditions. [Provenance](../../docs/provenance/PROVENANCE.md) and [publication scope](../../docs/provenance/PUBLICATION_SCOPE.md) define the authorized, limited source set.

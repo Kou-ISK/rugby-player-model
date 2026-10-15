@@ -1,5 +1,5 @@
 import type {Command} from './presentation';
-import {validateBSelection,makeStandaloneBPacket,fixedBDocument,validateStandaloneBPacket,validateBAssessment,standaloneInputHash} from '../../experiments/src/b-standalone';
+import {validateBSelection,makeStandaloneBPacket,fixedBDocument,validateStandaloneBPacket,validateBAssessment,standaloneInputHash} from '../../experiments/src/judgment-evaluation';
 import type {World} from '../../simulation/src/contracts';
 import {emptyGraph,indexProposal,indexRun,addReview,withdraw,validateGraph,type EvidenceGraph} from '../../experiments/src/lineage';
 import { buildProposal,type ExportScope,type ProposalCandidate } from '../../experiments/src/proposal-export';

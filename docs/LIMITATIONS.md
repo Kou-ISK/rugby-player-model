@@ -1,34 +1,56 @@
-# Reproducibility and unsupported work
+# Reproducibility and limitations
 
-## What is reproducible
+[English](LIMITATIONS.md) | [日本語](LIMITATIONS.ja.md)
 
-The four scene generators (`support`, `occluded`, `audio`, `heldout`) use a uint32 seed. Time advances by fixed 0.2s steps. UI reset reproduces the initial geometry with current profile/rules. Snapshot stores the full selected world plus the exact observation bundle, prior episodic memory, profile and rule versions. Comparison fixes those decision inputs; only A rules differ. CLI and browser share the cognition and sensor code. Snapshot restore preserves recorded body/head state and memory but uses the currently active approved rules.
+## Reproducible behavior
 
-The evaluation suite now explicitly stratifies eight synthetic conditions: carrier/open (900), carrier/pressure (901), carrier/fresh receiver (1230), noncarrier/open (1231), carrier/missing vision (65536), carrier/stale threat memory (65537), noncarrier/left call (104728), noncarrier/right call (104729). Possession is set explicitly rather than accidentally determined by seed parity. This is a regression/parameter-generalization probe, **not evidence of general rugby competence**, and published cases are not permanently unseen. Both fixed-regression paths preserve the candidate's profile. Prospective condition sets freeze profile, inputs and criteria before feedback, with explicit first-use/reuse records. Unrecorded prior knowledge and exposure cannot be detected. B's actual AI execution and scoring are manual and separate.
+The four legacy generators (`support`, `occluded`, `audio`, `heldout`) use uint32 seeds and 0.2-second steps. Reset reproduces initial geometry with current profile/rules. A snapshot retains world, exact observations, prior memory, profile and versions. Fixed-input comparisons change only selected rules. CLI/browser share cognition and sensing. Restore preserves recorded body/head/memory while using current approved rules.
 
-`examples/` contains three public synthetic snapshots, reproducible with `npm run samples`. Run the headless model with `npm run --silent model -- --input examples/support-42.snapshot.json --steps 10`. It emits the staged trace as JSON and does not modify the private session. A replay starts from the snapshot's world/memory/profile/rules; each later observation is produced by the sensor adapter, never taken from a future world state.
+The eight published regressions explicitly cover carrier/open (900), carrier/pressure (901), carrier/fresh receiver (1230), noncarrier/open (1231), missing vision (65536), stale threat memory (65537), and noncarrier left/right calls (104728/104729). Possession is explicit, not seed parity. They preserve candidate profile and are known regression/parameter probes, not general rugby competence. Prospective conditions freeze profile, inputs and criteria before coaching and record first-use/reuse; prior knowledge outside records cannot be detected. Actual judgment-document execution/scoring remains independent and manual.
 
-## Unsupported or simplified
+Three public snapshots live in `evaluation/fixtures/`, generated with `npm run samples`. Headless replay is:
 
-- Other players are scripted in dynamic scenes and static in legacy scenes. No opposing agent, realistic tackle, collision response, pass/release/catch, kicking, match scoring, fatigue, set-piece dynamics or complete law engine.
-- Movement is capped kinematic translation. Model intent may select a pass, but output reports it unsupported and never claims success. Joints, muscles, posture, voice production and independent eye gaze are extension points only.
-- Flat pitch, circular 2D occlusion and horizontal FOV. First-person renderer masks unobservable entities using the same adapter, conservatively removing an entire occluded model. No partial body visibility, vertical visual attention, detailed hearing propagation or reaction-time fit. Own ball possession and body location are synthetic accurate proprioception assumptions.
-- Perceptual attention is a 4-item heuristic. Bounded episodic storage expires after 30 simulation seconds; it is not a validated human long-term-memory system. Semantic knowledge is supplied as explicit rule configuration. No spontaneous learning from prose or neuronal reproduction.
-- Predictions hold the last observation and widen uncertainty. No true velocity or future ball path enters the player model or camera.
-- In cognition-0.2, stale visual uncertainty regions penalize approach and create re-observation value; audio cue/direction can select a head turn. Region growth, risk/information weights and cue weights are engineering hypotheses, not fitted human behavior. They do not prove a hidden opponent is present or make stale receivers eligible for passes. There is no negative-observation update yet: failure to re-detect a remembered entity does not independently establish that it has left.
-- Audio stores the observer's yaw at observation time. Recalled direction remains coarse and uncertain; translation cannot be corrected into an exact new bearing without range. Legacy audio with no yaw frame cannot steer a remembered head turn. Neither source coordinates nor identity are invented.
-- Quick comparison is one captured decision. Recorded experiments run 1–20 steps from matching initial conditions; after actions diverge the observations can diverge. Neither is a paired full-match intervention. A conditional rule changes scores in a limited predicate vocabulary; it does not prove improvement or learn automatically from coaching. Constant-action negative controls detect a trivial all-scan result in the supplied hypothesis only; they do not establish generalization.
-- The browser restarts at the initial scene until “restore latest” is chosen. Saved UI snapshots/candidates now include the ordered head/body observation tape, capped at 256 events without silent truncation. Unsaved resets and unsubmitted text do not survive. Paused turns share simulation time; no real-time reaction-speed claim is supported. Legacy snapshots cannot recover unrecorded trajectories.
-- A/B baseline versions are drafts. Local owner approval is a procedural self-attestation, not identity verification. Approved candidate labels are historical; undo changes active versions without erasing the approval record.
-- Candidate edits/reviews require the confirmed content revision; undo requires the confirmed active version. Conflicts are rejected rather than automatically retried. Existing sessions gain candidate revisions for new operations; legacy approval events remain legacy evidence.
-- The root B0.1-draft is available for independent evaluation, while local B exports remain frozen B0 plus approved amendments. This draft does not silently modify the owner's active B.
-- Snapshot rules identify parameter versions, not an archived executable. Trace identifies the legacy, H-WM-1 or orientation/phase engine branch; before/after comparisons recompute both sides with the current engine. To reproduce old engine outputs, use the recorded engine source version and hashes (a Git commit alone does not capture uncommitted source). Upgrading code and replaying an old snapshot is not the original historical execution.
-- The Mac bridge exports one B arm with anonymous cases, excluding evaluation labels/scene/seed/world/A outputs. A separate evaluator map retains metadata and criteria. External responses are tied to experiment, arm, case group and input hash. No external AI is called; the Mac acceptance response is a synthetic mock. No B benefit or owner screen acceptance is inferred. Prior B work reported elsewhere is separate evidence.
-- Meaningful call selection emits a semantic event only, with a bounded history/cooldown. Voice, acoustics and teammate reaction remain unsupported.
-- JSON state is a single-file local store. Long research histories and many full-trace experiments may require migration to a larger storage backend; no multi-user authentication or distributed writer support is claimed.
-- P2P procedural source is hash-verified and reused under the owner-authorized publication scope; UNLICENSED is retained. These display models do not establish body skills; the self-model is hidden in first person. Other players use scripted paths in dynamic scenes and remain static in legacy scenes. Mac headless evidence is distinct from owner interaction.
+```sh
+npm run --silent model -- --input evaluation/fixtures/support-42.snapshot.json --steps 10
+```
 
-## Verification commands
+It emits JSON without changing private sessions. Later observations come from sensing, not future world truth. Dynamic scene definitions/hashes, acquired history and source fingerprints provide additional reproduction boundaries; a seed cannot reproduce arbitrary unsaved manual actions, UUIDs or wall-clock feedback times.
+
+## Scope by version
+
+| Area | Limit |
+|---|---|
+| Legacy scenes and dynamic v1/v2 | Others are static/scripted; movement is capped kinematic translation, pass is unsupported intent, no release/catch/contact resolution |
+| [Orientation/phase](../models/player/spec/ORIENTATION_PHASE.md) | v2 adds visible direction/holding cues and uncertain possession; defense/unknown can only scan/hold. Orientation affects recorded relations, not route scoring. No scripted holder transfer |
+| [Closed loop](../models/player/spec/CLOSED_LOOP.md) | Optional v3 adds bounded acceleration/turning, 2D release/catch/contact, observed velocity, persistent subgoals and independent small-team actors; scripted stimuli still do not react |
+| All versions | No full rugby law/score engine, biomechanics, realistic tackle consequences, kicking, fatigue, complete set pieces, independent eye gaze, speech generation or validated learned behavior |
+
+Contact in v3 is an abstract motor event, not proof of a legal/safe tackle, injury, ruck or turnover. New physical skills and new cognitive policies are separate interventions. Published ablations are development data, not proof of self-organization, human equivalence, unseen transfer or owner acceptance.
+
+## Perception and cognition assumptions
+
+- Flat pitch, horizontal FOV, circular 2D occlusion and whole-model visibility masks; no partial-body/vertical attention, peripheral-acuity or detailed acoustic model. Self position/possession are synthetic accurate proprioception assumptions.
+- Four-percept attention, bounded 128-episode/30-second memory, decay, uncertainty growth and score weights are engineering hypotheses, not measured human constants or biological long-term memory. Legacy working-memory display is not a capacity bottleneck; H-WM-1 limits receiver deliberation only.
+- Legacy prediction retains last position with growing uncertainty; v3 velocity uses multiple acquired observations with bounded extrapolation. Neither receives true velocity or future ball state.
+- Old uncertainty can penalize approach and guide reobservation; call meaning/bearing can guide looking. These do not prove hidden opponents exist or refresh stale receivers. Failure to re-detect an actor does not independently establish absence.
+- Audio retains original observer yaw and coarse uncertain bearing. Without range, translation cannot yield an exact new bearing; legacy audio lacking a yaw frame cannot steer remembered looking. No source coordinates/identity are invented.
+- Meaningful legacy calls are bounded semantic events with cooldown, not acoustic voice or teammate reactions. The v3 policy's separate limitations are in its contract.
+
+## Research and storage limits
+
+Quick comparison is one decision. Ordinary recorded experiments are 1–20 steps; optional v3 mechanism studies allow their specified larger horizon. Actions can change later observations. These are not paired full matches, and conditional score rules neither prove improvement nor learn from prose. Constant-action controls reject a trivial all-scan result only for the supplied hypothesis.
+
+Manual looking while paused acquires extra observations at the same simulation time. It does not measure real-time cognition, physical turning or reaction speed. Each history segment is bounded at 256 events; API 11 normally preserves/continues at 224 with immutable predecessor evidence. Current-segment replay is distinct from earlier saved segments. Unsaved text/history and unrecorded legacy trajectories cannot be recovered. The browser needs an explicit saved-state restore after restart.
+
+Both deliverables remain research drafts with independent versions/reviews. Owner approval is local self-attestation. Confirmed revision/active-version checks reject concurrent edits or stale undo; no automatic adoption retry occurs. Historical approved labels remain after undo. Old approvals are not retroactively assigned new confirmation evidence.
+
+The current judgment reading edition does not replace private exports: those retain the frozen initial document and explicitly adopted amendments. A rule version is not an archived binary. Before/after comparisons recompute both arms with the current engine; exact old execution requires its recorded source/runtime/hashes, including uncommitted changes. Document translations are distinct hashed experimental inputs.
+
+Anonymous judgment packets exclude evaluator labels, scene/seed, world and executable outputs. Responses bind arm/group/input hash but remain unverified. No AI is called, and synthetic mock transport is not actual AI evaluation or human screen acceptance. Original outside research is separate evidence.
+
+The local JSON store has one writer and no multi-user authentication/distributed writes. Long histories may require a larger storage backend. P2P geometry is display-only, hash-preserved and covered only by the limited publication/license scope; first-person self geometry is hidden. Headless Mac checks are not owner interaction.
+
+## Verification
 
 ```sh
 npm ci
@@ -38,12 +60,4 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-With an already installed browser, `RPM_CHROMIUM=/absolute/path/to/chromium npm run test:browser` avoids a browser download. Cloud used its installed Chromium because the browser-download service was unavailable. Do not reinterpret that download failure as a test failure: actual tests ran against the installed browser. First dependency/browser installation and GitHub CI provisioning are network operations; core tests and app execution after installation need no remote service.
-
-CI uses only package install, typechecking, Node tests, build, a small spike and browser tests. No paid cloud resources, secrets or production deployment. Repository workflows are provided; local Cloud command success is distinct from a remotely completed CI run. See [verification evidence](./verification/VERIFICATION.md).
-
-[Orientation/phase v1](../models/player/spec/ORIENTATION_PHASE.md) opts new scenes into visible body-orientation evidence and uncertain possession estimates. Sensor quantization, exact self proprioception, holding cues and aging rates are engineering assumptions. Defense/unknown only support scan/hold. Other-player orientation is recorded in relational inference but does not yet drive route choice or action scoring. Scripted holder transfer remains unsupported. V1 observations keep their original semantics.
-
-## Opt-in scene v3
-
-The limitations above describe the original branches where applicable. [Closed-loop v1](../models/player/spec/CLOSED_LOOP.md) adds bounded acceleration/turning, 2D passing/catching/contact, observation-derived velocity, persistent intent and independent small-team agents. It does not establish human validity, full rugby mechanics, self-organization, unseen transfer or owner acceptance. Published ablation fixtures are development data. Scripted stimuli remain nonreactive; autonomous actors are explicit scene choices. A code upgrade and A/B owner adoption are separate events.
+An installed Chromium can be selected with `RPM_CHROMIUM=/absolute/path/to/chromium npm run test:browser`. Initial dependency/browser/CI provisioning needs network access; installed model/tests/app need no remote service. A browser-download failure is separate from tests actually run against an installed browser. CI configuration uses installation, checks, build, spike and browser tests without paid cloud deployment or production secrets. Local success does not establish a completed remote CI run. See [historical verification](verification/VERIFICATION.md).

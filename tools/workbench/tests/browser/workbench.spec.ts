@@ -24,7 +24,7 @@ test('first-person 3D, local approvals, comparison, undo and browser restart',as
   await page.locator('#save-edit').click();await expect(page.locator('#status')).toContainText('候補の編集を保存');
   await page.locator('#preview').click();await expect(page.locator('#comparison')).toContainText('"mode": "preview"');
   await expect(page.locator('#comparison')).toContainText('carrier-pressure');await expect(page.locator('#versions')).toHaveText('A0 / B0');
-  await expect(page.locator('#candidate-context')).toContainText('A: pending');
+  await expect(page.locator('#candidate-context')).toContainText('選手モデル: pending');
   await page.locator('#patch').fill('{"scanBias":1}');
   const previewRequests:string[]=[];page.on('request',r=>{if(r.url().endsWith('/api/compare'))previewRequests.push(r.url());});
   await page.locator('#preview').click();await expect(page.locator('#status')).toContainText('未保存の編集');

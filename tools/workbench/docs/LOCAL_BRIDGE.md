@@ -1,90 +1,85 @@
-# Codexと使うローカルfile/CLI bridge
+# Local file/CLI bridge for conversational research
 
-首振りはマウス固定・ドラッグ・矢印キーで操作できます。操作方法と研究上の意味は [選手視点での見回し](PLAYER_VIEW.md) を参照してください。
+[English](LOCAL_BRIDGE.md) | [日本語](LOCAL_BRIDGE.ja.md)
 
-会話中心で進める場合は [表示接続](PRESENTATION.md) を使います。指導は会話に入力し、CLIが表示済みsnapshotと結び付けます。以下のブラウザ入力は手動記録の代替手順です。
+Use [player-view controls](PLAYER_VIEW.md) for looking and [presentation transport](PRESENTATION.md) to bind conversational coaching to the displayed snapshot. Browser text entry is a manual alternative. On the configured Mac follow [MAC_START](MAC_START.md) and [storage](LOCAL_STORAGE.md): replace `npm run bridge --` below with `./bridge-rpm.command` and `.rpm/` paths with absolute session `work/` or `exports/` paths. UI and CLI must use the same session.
 
-設定済みの本人Macは [MAC_START.md](./MAC_START.md) と [保存場所](./LOCAL_STORAGE.md) を使います。以下の `npm run bridge --` は `./bridge-rpm.command`、`.rpm/` の作業ファイルはsession内の `work/` / `exports/` の絶対パスへ読み替えます。UIとCLIの通常起動を同じ設定に揃えてください。
+[Dynamic scenes](DYNAMIC_SCENES.md) support fixed-step research with one controlled player and scripted stimuli; v3 optionally supports independent actors. Work with local files in an ordinary Codex conversation or manually. No paid API, key, AI submission or automatic prose-to-rule conversion exists. `propose` only stores a scene-linked **candidate**.
 
-See [dynamic scene contracts, CLI and acceptance scope](./DYNAMIC_SCENES.md) for the new fixed-step workflow: one A-controlled player and scripted stimuli.
-通常のCodexでこのリポジトリを開き、ローカルファイルを一緒に編集します。新たな有料API・鍵・AI自動送信は不要です。自然言語を自動で実行規則に変換する機能はありません。`propose` は場面付きの原則**候補**を保存するだけです。
+[Freeze evaluation conditions](../../../evaluation/PROTOCOL.md) before coaching when testing unused conditions. The fixed eight cases preserve the candidate profile and are regressions, not unseen validation. Manual looking history is stored/replayed as observation research.
 
-未使用条件を評価する場合は、フィードバックより先に [評価条件を凍結](../../../evaluation/PROTOCOL.md) します。固定8ケースは本人のprofileを引き継ぐ回帰試験であり、未見評価ではありません。UIの首振り観測履歴は静止研究として保存・再生します。
+## Start from the UI
 
-## UIから始める
-
-1. `npm run dev`。一人称で首を振る、再生、停止。
-2. フィードバックを記述して「この場面で候補を保存」。scene/seed/time/player、観測bundle、記憶、個人条件、A/B版が同時に記録されます。
-3. 表示された候補IDをCodexへ渡す。以下を実行し、観測に基づく候補を共同編集します。
+1. Run `npm run dev`; look, play and pause in first person.
+2. Enter feedback and save a candidate. Scene/seed/time/player, observation bundle, memory, individual conditions and both deliverable versions are captured.
+3. Give the candidate ID to Codex and export observation-only context:
 
 ```sh
 npm run --silent bridge -- context CANDIDATE_ID > .rpm/context.json
 ```
 
-`context.json` は世界真値を含みません。表示された候補の `revision` を控え、`editable.patchA` と `editable.principle` を `.rpm/edit.json` に取り出してCodexと編集します。形式は [条件付き指導例](../examples/conditional-coaching-edit.json) を参照。`notes` に変更理由・予測・反例を記入します。`contextRules` は配列全体の置換なので、保持する既存原則も含めます。原則は条件・基準・優先度・例外・不明時・根拠を埋めます。
+Keep the displayed `revision`. Copy `editable.patchA` and `editable.principle` to `.rpm/edit.json`; see the [conditional example](../examples/conditional-coaching-edit.json). Add rationale, predicted effect and counterexample to `notes`. `contextRules` replaces the entire array, so include retained rules. Fill principle conditions, criteria, priority, exceptions, uncertainty and evidence.
 
 ```sh
 npm run bridge -- edit CANDIDATE_ID --file .rpm/edit.json --revision CONFIRMED_REVISION
 ```
 
-Codexへの依頼例：
+Example request: “Review this context using only player-available evidence. Preserve observation timestamps and do not infer empty space from invisibility. Write a testable player-model parameter patch and independent judgment candidate, then save with bridge edit. Explain rationale, exceptions and possible refutations. I will decide adoption, rejection and undo.”
 
-> `.rpm/context.json` を読み、この選手が知り得る情報だけで判断をレビューしてください。観測時刻を保持し、見えない空間を空と断定しないでください。Aの検証可能なパラメータ差分と、Bの汎用的な原則候補を `.rpm/edit.json` に書き、`bridge edit` まで実行してください。採用・却下・undoは私が行います。変更理由、例外、反証になり得る場面を説明してください。
+4. The UI reflects CLI changes within seconds. The owner confirms content and independently adopts, rejects or returns each target; return requires a reason. Confirmation clears after each action.
+5. Before adoption, preview the saved revision plus fixed regressions. Unsaved edits suppress stale results and block comparison until saved. Preview overlays the captured base without changing active versions or execution. Active-version comparison is separate. The eight strata cover possession, pressure, missing observations, memory and audio. Quick preview is one decision; recorded runs contain 1–20 steps, inputs, reasons and versions. Judgment documents are evaluated independently through experiment packets. See [research loop](RESEARCH_LOOP.md). These are not win-rate or full-match causal effects.
+6. Owner-confirmed undo changes only its target. Historical “approved” labels remain; inspect active versions for current state.
 
-4. UIは数秒でCLIの変更を反映します。内容を確認し本人チェックを入れ、A/Bそれぞれ「採用」「却下」または理由付き「差戻し」。チェックは一操作ごとに解除されます。
-5. 採用前は「保存済み候補をpreview＋固定回帰」。未保存のJSON編集がある間は警告し、古い比較表示を消して要求を送信しません。先に保存し、表示されたrevisionを確認してください。保存時のAへ候補差分を一時合成し、版・承認・実行状態を変えず効果と反例を見ます。「現在の承認版と比較」は現在activeのAと保存時のAを比べる別操作です。層別8ケースは保持/非保持、圧力、観測欠損、記憶、音を含みます。この簡易比較は1時点の判断です。「未採用候補で再実行・記録」では1–20stepの結果・理由・版・入力を固定保存します。「現在の承認版で再実行・記録」と区別してください。Bは保存実験のpacketから文書／構造化追加原則／観測ケースを出力し、独立に評価・回答記録します。[手順とCLI](./RESEARCH_LOOP.md)を参照。勝率や試合全体の因果効果ではありません。
-6. 本人チェック＋対象のundo。A undoはBを戻しません。候補の「approved」は過去の承認履歴で、現在の版は画面のA/B版を確認します。
-
-## CLIだけで同じloopを使う
+## The same loop from CLI
 
 ```sh
 npm run bridge -- snapshot --scene support --seed 42 --head -2
-npm run bridge -- propose SNAPSHOT_ID --feedback "支援の再確認を検討する"
+npm run bridge -- propose SNAPSHOT_ID --feedback "Consider rechecking support"
 npm run --silent bridge -- context CANDIDATE_ID > .rpm/context.json
 npm run bridge -- edit CANDIDATE_ID --file tools/workbench/examples/candidate-edit.json --revision 1
 npm run --silent bridge -- context CANDIDATE_ID > .rpm/context.json
 npm run --silent bridge -- preview CANDIDATE_ID --revision 2 > .rpm/preview.json
 ```
 
-ここまでが候補作成です。次は**本人が意図して実行する承認コマンド**です。Codexは本人から個別の承認指示がない限り実行しません。
+The following are **intentional owner review operations**, not automatic assistant steps:
 
 ```sh
-npm run bridge -- approve CANDIDATE_ID --target A --by owner --revision 2
-npm run bridge -- approve CANDIDATE_ID --target B --by owner --revision 2
+npm run bridge -- approve CANDIDATE_ID --target player --by owner --revision 2
+npm run bridge -- approve CANDIDATE_ID --target judgment --by owner --revision 2
 npm run --silent bridge -- compare CANDIDATE_ID > .rpm/comparison.json
-npm run bridge -- export-b --out .rpm/RUGBY_JUDGMENT.local.md
-npm run bridge -- undo A --by owner --version A1
-npm run bridge -- undo B --by owner --version B1
+npm run bridge -- export-judgment --out .rpm/RUGBY_JUDGMENT.local.md
+npm run bridge -- undo player --by owner --version A1
+npm run bridge -- undo judgment --by owner --version B1
 ```
 
-上の数値は「revision 1の候補を1回編集し、A/Bの初回版を採用する」例です。実際には本人が確認したrevisionと、画面または `status` で確認したactive版を指定します。**最新値を自動取得して承認に渡すスクリプトにしないでください。** 却下にも `reject CANDIDATE_ID --target A --by owner --revision 2` のように確認版が必要です。
+Numbers illustrate one edit of revision 1 and first adoption. Supply the revision actually confirmed and active version shown by UI/`status`, never an automatically fetched latest value. Rejection also requires a confirmed revision, for example `reject CANDIDATE_ID --target player --by owner --revision 2`.
 
-編集・承認・却下はlock内で確認revisionを照合します。別CLIが編集した場合はHTTP 409 / CLIエラーで拒否し、UIは最新内容を再表示して本人チェックを解除します。undoも確認済みactive版と異なれば拒否します。競合時の自動承認再試行はしません。承認履歴に確認revisionと差分・原則のコピーが固定されます。既存sessionの古い候補にはrevision 1を付与しますが、過去の承認に確認revisionがあったと後付けでは主張しません。
+Edit/review compares revisions inside the writer lock. Conflicts return HTTP 409/CLI errors; the UI refreshes and clears confirmation. Undo checks the confirmed active version. Do not retry adoption automatically. Receipts freeze reviewed revision/content. Older candidates gain revision 1 for new operations, without retroactively claiming old approvals confirmed a revision.
 
-snapshotのA/B基準版が変わった候補は採用できません。previewでは古い基準版での試算であることを表示します。採用するには新しいsnapshot、または理由を付けた `revise` で現承認版を基準に新候補を作ります。後者は観測を保持し、親候補IDを記録します。コピーした差分は現承認版に対して再点検し、既存のcontextRulesを誤って消さないでください。いずれかの対象を採用/却下/差戻しした候補は編集不可です。両方の内容を先に仕上げるか、新しい候補を作ります。
+Stale captured bases cannot be adopted; preview labels their older base. Capture a new snapshot or use reasoned `revise` to create a linked child on current approved bases, preserving observations. Recheck copied patches, especially whole-array `contextRules`. Once either target has a review decision the candidate is immutable; finish both before review or create a child.
 
-`models/judgment/RUGBY_JUDGMENT.md` はB0.1-draftの提案文書です。bridgeの既定B出力は凍結B0＋本人承認済み原則を使い、リポジトリ文書の編集で私的sessionのBを変更しません。新しい原則はB候補として個別に承認できます。全文baselineの置換も別の本人判断として利用でき、旧baselineと原則順序を保持します。合成の手動操作・共有提案・B単独評価は [FIRST_RUN.md](./FIRST_RUN.md) を参照してください。本人sessionの全文置換は実施していません。
+The repository's judgment draft 0.1 is a proposal. Session exports remain the frozen initial document plus owner-approved amendments; repository edits do not change private adopted principles. Full baseline replacement is a separate explicit owner decision retaining old baseline/order. See [FIRST_RUN](FIRST_RUN.md) for synthetic manual operation, sharing and standalone evaluation. No owner baseline replacement is implied.
 
-`npm run --silent` はJSONをファイルに保存する場合に必要です（npmの見出しを混ぜないため）。状態は `.rpm/state.json`、通常はUI/CLI経由で扱い、手で内部状態を書き換えません。`RPM_SESSION_DIR` で別ディレクトリを指定する場合は、誤ってGit追跡される場所を選ばないでください。
+Use `npm run --silent` for JSON redirection. Internal state is `.rpm/state.json`; modify it through UI/CLI. Keep alternate `RPM_SESSION_DIR` outside Git-tracked material.
 
-## 再起動・競合・回復
+## Restart, conflict and recovery
 
-再起動しても候補・承認・履歴は保存済みです。画面は初期場面から始まるため「最新を復元」で直近snapshotの世界・記憶・個人条件に戻します。現在の承認済みルールは維持します。前後比較は候補に保存された旧ルールと現在のルールを使います。
+Candidates, reviews and history persist. The browser initially opens the starting scene; restore latest to recover recorded world/memory/profile while keeping current approved rules. Comparison uses the candidate's captured rules and current rules.
 
-同時書き込みは一方が `Session busy` で失敗し、後から再試行できます。プロセスが強制終了され `.rpm/.lock` が残った場合：dev serverと書き込みCLIをすべて停止し、`.rpm/` 全体をバックアップした後、`.rpm/.lock` **だけ**を除去して再起動します。実行中にlockを削除しないでください。状態ファイルの破損は自動初期化せずエラーにします。保存前の未編集テキストや未保存再生履歴は復元されません。
+Concurrent writers may fail with `Session busy`; retry after the writer finishes. After a crash, stop all writers, back up the whole session, then remove only its stale `.lock`. Never remove a live lock. Corruption reports an error rather than silently initializing state. Unsaved text/history cannot be restored.
 
-私的session、ユーザーのフィードバック、入力計画原文、認証情報はPRへ含めません。共有する場合は新しい合成サンプルに編集し直し、本人が公開範囲を確認します。
+Do not submit private sessions, feedback, plans or credentials in PRs. Sharing requires an explicitly approved synthetic reconstruction and publication scope.
 
-## H-WM-1研究モード（未検証）
+## H-WM-1 research mode (unvalidated)
 
-受け手の比較・選択に対する容量制約です。全判断をK件に制限する、人間作業記憶の完成モデルではありません。保持観測による危険／定位、fresh/no-fresh条件は全保持証拠を使います。既定は従来のままです。
+This limits receiver deliberation, not all judgment to K items or a complete human working-memory model. Risk/orienting and fresh/no-fresh predicates still use all retained evidence. Legacy remains the default.
 
-`mode-edit CANDIDATE --revision N --mode finite --k 4`、`--mode unlimited`、`--mode legacy`で候補に保存します。UIの研究モード欄も同じ編集を使います。変更だけではactiveは変わりません。`mode-study CANDIDATE --revision N --k 4`は同一観測で従来・新policy無制限・新policy有限を別armとして保存します。`mode-studies`で再起動後も取得できます。有限対無制限が容量対照、従来対無制限はpolicy差です。A専用採用後に実行へ適用し、A undoで以前のmodeへ戻ります。Bは変わりません。
+Use `mode-edit CANDIDATE --revision N --mode finite --k 4`, `--mode unlimited` or `--mode legacy`. Saving a mode candidate does not activate it. `mode-study CANDIDATE --revision N --k 4` stores legacy, unlimited-policy and finite-policy arms with identical observations; `mode-studies` retrieves them after restart. Finite versus unlimited isolates capacity; legacy versus unlimited compares policy. Only player-model adoption/undo changes active mode; judgment principles remain independent.
 
-旧記録でmodeがない場合は記録当時のlegacyを意味します。readerは旧記録へ新fieldやhashを書き足しません。新しい観測履歴には各eventのmodeを保存します。新規sessionと新しい書込みは外側のstate format 2を使い、旧バイナリはこれを拒否します。rollback時もformat 2対応readerを使い、新版sessionを保全してください。非legacy activeをundoするだけでは旧reader互換には戻りません。新版の記録を削除して旧版互換にしないでください。
+Missing mode in historical records means legacy. Readers do not add fields or hashes to old records. New histories store mode per event. New sessions/writes use outer format 2, rejected by old binaries. Rollback requires a format-2-compatible reader and preservation of newer data; undoing to legacy does not restore old-reader compatibility.
 
-## 観測の継続保存（bridge API 11）
+## Continuous observation storage (bridge API 11)
 
-一人称の観測は224件を目安に自動保存し、位置・時刻を維持して次の保存単位へ進みます。旧snapshotは変更しません。新snapshotの任意欄 `observationPredecessor` は元snapshotのID・hash、`observationAnchor` は区間開始時の再生専用世界です。観測contextには前者だけを含め、後者はA/Bの選手入力へ渡しません。`research-log` の `observationContinuations` で保存間の参照を確認できます。開始状態と観測の重複一件を用いて再生し、取得時刻・confidenceを更新しません。
+First-person history normally autosaves at 224 events and continues from the same position/time. Historical snapshots remain unchanged. Optional `observationPredecessor` binds prior ID/hash; `observationAnchor` holds the replay-only interval-start world. Context includes only the former; the latter never enters player-model/document inputs. `research-log.observationContinuations` exposes links. Replay overlaps one acquired event using unchanged time/confidence and original memory-before.
 
-共有提案は従来どおり選択した固定観測と記憶を出力し、私的snapshotの連鎖全体を自動公開しません。古いbridgeへ新UIから書き込まないため、更新時はserverを再起動します。
+Shared proposals still export selected fixed observations/memory, not the entire private chain. Restart the server after updates so a new UI does not write to an old bridge.

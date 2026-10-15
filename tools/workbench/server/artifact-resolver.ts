@@ -31,7 +31,7 @@ export const engineSourceFiles = [
   'tools/simulation/src/world.ts', 'tools/simulation/src/sensing.ts', 'tools/simulation/src/body.ts', 'tools/simulation/src/skills.ts',
   'tools/simulation/src/contracts.ts', 'tools/simulation/src/scene.ts', 'tools/simulation/schema/scene.schema.json',
   'tools/experiments/src/mechanism-study.ts', 'tools/experiments/src/capture.ts', 'tools/experiments/src/compare.ts', 'tools/experiments/src/candidates.ts',
-  'tools/experiments/src/judgment.ts', 'tools/experiments/src/b-standalone.ts',
+  'tools/experiments/src/judgment.ts', 'tools/experiments/src/judgment-evaluation.ts',
   'tools/experiments/src/strict-json.ts', 'tools/experiments/src/proposal.ts',
   'tools/experiments/src/proposal-types.ts', 'tools/experiments/src/proposal-export.ts',
   'tools/experiments/src/proposal-records.ts', 'tools/experiments/src/lineage.ts',

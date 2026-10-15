@@ -68,8 +68,8 @@ test('T01–T11: synthetic dynamic scene → coaching → preview paths → UI a
  // before making the next synthetic owner confirmation; an unseen revision clears it.
  const settleReceipt=async()=>{const revision=readState().revision;await page.waitForResponse(async r=>r.url()===base+'/api/state'&&(await r.json()).state.revision>=revision);};
  await settleReceipt();
- await page.locator('#owner').check();await page.locator('#approve-b').click();await expect(page.locator('#versions')).toHaveText('A1 / B1');await expect(page.locator('#status')).toContainText('B approve');await settleReceipt();
- await page.locator('#owner').check();await page.locator('#undo-a').click();await expect(page.locator('#versions')).toHaveText('A0 / B1');await expect(page.locator('#status')).toContainText('A を直前');await settleReceipt();
+ await page.locator('#owner').check();await page.locator('#approve-b').click();await expect(page.locator('#versions')).toHaveText('A1 / B1');await expect(page.locator('#status')).toContainText('判断原則 approve');await settleReceipt();
+ await page.locator('#owner').check();await page.locator('#undo-a').click();await expect(page.locator('#versions')).toHaveText('A0 / B1');await expect(page.locator('#status')).toContainText('選手モデル を直前');await settleReceipt();
  await page.locator('#owner').check();await page.locator('#undo-b').click();await expect(page.locator('#versions')).toHaveText('A0 / B0');
  await page.locator('#snapshot').click();await expect(page.locator('#status')).toContainText('snapshot保存');
  const persisted=readState();await page.goto('about:blank');await stop();await start();expect(readState()).toEqual(persisted);

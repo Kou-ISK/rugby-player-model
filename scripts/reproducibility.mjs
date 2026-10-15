@@ -28,7 +28,7 @@ try {
   };
   for (const dir of ['src', 'server', 'scripts', 'schemas', 'models', 'tools', 'evaluation', 'docs', 'research', '.github']) walk(dir);
   const files = Object.fromEntries([...inventory].sort().map(path => [path, sha(path)]));
-  const frozen = json('evaluation/baselines/b-evaluation-baseline.v1.json');
+  const frozen = json('evaluation/baselines/judgment-evaluation.v1.json');
   for (const [logical, expected] of Object.entries(frozen.files)) {
     if (sha(relocation[logical]) !== expected) throw new Error(`Frozen B bytes changed: ${logical}`);
   }

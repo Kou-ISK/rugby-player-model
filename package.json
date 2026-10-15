@@ -19,10 +19,11 @@
     "typecheck": "tsc --noEmit",
     "build": "npm run build:player && vite build tools/workbench --outDir ../../dist --emptyOutDir",
     "test:browser": "playwright test --config tools/workbench/playwright.config.ts",
-    "check": "npm run manifest:check && npm run typecheck && npm test && npm run build && npm run check:boundaries",
+    "check": "npm run manifest:check && npm run check:docs && npm run typecheck && npm test && npm run build && npm run check:boundaries",
     "build:player": "tsc -p models/player/tsconfig.build.json",
     "test:first-run": "node scripts/first-run-acceptance.mjs",
-    "check:boundaries": "node scripts/check-boundaries.mjs"
+    "check:boundaries": "node scripts/check-boundaries.mjs",
+    "check:docs": "node scripts/check-docs.mjs"
   },
   "dependencies": {
     "ajv": "8.17.1",

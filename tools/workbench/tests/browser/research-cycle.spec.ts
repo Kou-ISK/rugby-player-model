@@ -35,8 +35,9 @@ function cli(...args:string[]){
 }
 test.beforeAll(start);
 test.afterAll(async()=>{await stop();rmSync(session,{recursive:true,force:true});});
-test('synthetic coaching → return/revise → conditional transfer → independent A/B → two real server restarts → undo',async({page,request},info)=>{
- test.setTimeout(90000);
+test('synthetic coaching → return/revise → conditional transfer → independent model and principles → two real server restarts → undo',async({page,request},info)=>{
+ // This end-to-end flow starts three real servers and runs synchronous CLI checks.
+ test.setTimeout(180000);
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  const edit=JSON.parse(readFileSync(resolve(repo,'tools/workbench/examples/conditional-coaching-edit.json'),'utf8'));
  const draft={criteria:'SYNTHETIC ONLY: check evidence bounds and exceptions',noveltyAttestation:'not-used-for-coaching',cases:[{label:'EVALUATOR_ONLY_AUDIO',snapshot:cli('snapshot-export',cli('snapshot','--scene','audio','--seed','8123').snapshotId)},{label:'EVALUATOR_ONLY_OCCLUDED',snapshot:cli('snapshot-export',cli('snapshot','--scene','occluded','--seed','7181').snapshotId)}]};
@@ -63,7 +64,7 @@ test('synthetic coaching → return/revise → conditional transfer → independ
  writeFileSync(join(session,'edit.json'),JSON.stringify(edit));cli('edit',parent,'--file',join(session,'edit.json'),'--revision','1');
  await expect(page.locator('#candidate-context')).toContainText('revision 2',{timeout:10000});
  await page.locator('#review-reason').fill('SYNTHETIC: 近い脅威は例外にして対照を残す');
- await page.locator('#owner').check();await page.locator('#return-a').click();await expect(page.locator('#candidate-context')).toContainText('A: returned');
+ await page.locator('#owner').check();await page.locator('#return-a').click();await expect(page.locator('#candidate-context')).toContainText('選手モデル: returned');
  await expect(page.locator('#versions')).toHaveText('A0 / B0');
  await page.locator('#revise').click();await expect(page.locator('#candidate-context')).toContainText('親候補 '+parent);
  const child=await page.locator('#candidates').inputValue();expect(child).not.toBe(parent);
@@ -93,7 +94,7 @@ test('synthetic coaching → return/revise → conditional transfer → independ
  expect(packet.structuredAmendments).toHaveLength(1);
  await page.locator('#b-arm').selectOption('after');await page.locator('#b-cases').selectOption('frozen');
  const downloadPromise=page.waitForEvent('download');await page.locator('#b-packet').click();const download=await downloadPromise;
- expect(download.suggestedFilename()).toBe('B-anonymous-input.json');
+ expect(download.suggestedFilename()).toBe('judgment-input.json');
  expect(JSON.parse(readFileSync((await download.path())!,'utf8'))).toEqual(packet);
  await page.locator('#b-model').fill('Synthetic mock; no external AI called');
  await page.locator('#b-output').fill('Synthetic response: re-observe, except under nearby pressure.');

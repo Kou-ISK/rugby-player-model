@@ -1,7 +1,7 @@
 import {mechanismStudy} from '../../experiments/src/mechanism-study';
 import {currentEngineDescriptor,repositoryRoot} from './artifact-resolver';
 import {newPresentationId} from './presentation';
-import {fixedBDocument} from '../../experiments/src/b-standalone';
+import {fixedBDocument} from '../../experiments/src/judgment-evaluation';
 import { isAbsolute,join } from 'node:path';
 import { canonicalWire,parseStrict } from '../../experiments/src/strict-json';
 import { statSync } from 'node:fs';
@@ -14,7 +14,10 @@ import type { SceneId } from '../../simulation/src/contracts';
 import { sense } from '../../simulation/src/index';
 import { replayObservationHistory,newHistory,appendObservation } from '../../experiments/src/history';
 if(Number(process.versions.node.split('.')[0])!==24)throw new Error('Node 24 is required by the pinned research runtime');
-const [command = 'help', id, ...rest] = process.argv.slice(2);
+const [requestedCommand = 'help', id, ...rest] = process.argv.slice(2);
+const commandAliases:Record<string,string>={'judgment-evaluation-packet':'b-standalone-packet','judgment-evaluation-review':'b-standalone-review','judgment-packet':'b-packet','judgment-evaluator-map':'b-evaluator-map','judgment-review':'b-review','export-judgment-json':'export-b-json','export-judgment':'export-b'};
+const command=commandAliases[requestedCommand]??requestedCommand;
+const reviewTarget=(value:string):Target=>value==='player'?'A':value==='judgment'?'B':value as Target;
 const args = process.argv.slice(2);
 const flag = (name: string, fallback = '') => args.includes(name) ? args[args.indexOf(name) + 1] : fallback;
 const initDirectory=command==='session'&&id==='init'?flag('--dir'):undefined;
@@ -43,13 +46,13 @@ try {
       const readPackage=()=>{const path=flag('--file');if(statSync(path).size>100*1024*1024)throw new Error('Proposal transport too large');return new TextDecoder('utf-8',{fatal:true}).decode(readFileSync(path));};
       if(id==='export'){
         if(!args.includes('--public-synthetic'))throw new Error('--public-synthetic requires your explicit rights confirmation for the listed authored inputs');
-        const pkg=store.exportProposal(localId,Number(flag('--revision')),{confirmation:'explicitly-authorized-synthetic-entries-only',author:flag('--author'),rightsBasis:flag('--rights'),targets:flag('--targets').split(',') as ('A'|'B')[]});
+        const pkg=store.exportProposal(localId,Number(flag('--revision')),{confirmation:'explicitly-authorized-synthetic-entries-only',author:flag('--author'),rightsBasis:flag('--rights'),targets:flag('--targets').split(',').map(reviewTarget)});
         const path=flag('--out');if(!path)throw new Error('--out required');writeFileSync(path,canonicalWire(pkg)+'\n',{mode:0o600});result={path,proposalId:pkg.manifest.proposalId,revision:pkg.manifest.revision};
       }else if(id==='validate')result=store.validateProposal(readPackage());
       else if(id==='import')result=store.importProposal(readPackage());
-      else if(id==='rebase'){if(!args.includes('--public-synthetic'))throw new Error('Confirm the new base is authorized synthetic material with --public-synthetic');result=store.rebaseProposal(localId,Number(flag('--session-revision')),flag('--reason'),{confirmation:'explicitly-authorized-synthetic-entries-only',author:flag('--author'),rightsBasis:flag('--rights'),targets:flag('--targets').split(',') as ('A'|'B')[]});}
-      else if(id==='reproduce')result=store.reproduceProposal(localId,flag('--manifest'),flag('--targets')?flag('--targets').split(',') as ('A'|'B')[]:undefined);
-      else if(id==='adopt'||id==='reject')result=store.reviewProposal(localId,flag('--target') as Target,id==='adopt'?'approve':'reject',flag('--by'),Number(flag('--session-revision')),flag('--manifest'),flag('--run'),flag('--reason'));
+      else if(id==='rebase'){if(!args.includes('--public-synthetic'))throw new Error('Confirm the new base is authorized synthetic material with --public-synthetic');result=store.rebaseProposal(localId,Number(flag('--session-revision')),flag('--reason'),{confirmation:'explicitly-authorized-synthetic-entries-only',author:flag('--author'),rightsBasis:flag('--rights'),targets:flag('--targets').split(',').map(reviewTarget)});}
+      else if(id==='reproduce')result=store.reproduceProposal(localId,flag('--manifest'),flag('--targets')?flag('--targets').split(',').map(reviewTarget):undefined);
+      else if(id==='adopt'||id==='reject')result=store.reviewProposal(localId,reviewTarget(flag('--target')),id==='adopt'?'approve':'reject',flag('--by'),Number(flag('--session-revision')),flag('--manifest'),flag('--run'),flag('--reason'));
       else if(id==='list')result=Object.values(store.read().importedProposals).map(({package:_,...record})=>record);
       else throw new Error('proposal export/validate/import/reproduce/adopt/reject/list');break;
     }
@@ -96,9 +99,9 @@ try {
       result = observationContext(c); break;
     }
     case 'edit': { const edit = JSON.parse(readFileSync(flag('--file'), 'utf8')); result = store.edit(id, edit.patchA, edit.principle, Number(flag('--revision')),edit.notes,edit.executionMode,edit.replaceB); break; }
-    case 'approve': case 'reject': case 'return': store.review(id, flag('--target') as Target, command, flag('--by'), Number(flag('--revision')),flag('--reason')); result = store.active(); break;
+    case 'approve': case 'reject': case 'return': store.review(id, reviewTarget(flag('--target')), command, flag('--by'), Number(flag('--revision')),flag('--reason')); result = store.active(); break;
     case 'revise': result=store.revise(id,flag('--reason'),Number(flag('--revision')));break;
-    case 'undo': store.undo(id as Target, flag('--by'), flag('--version')); result = store.active(); break;
+    case 'undo': store.undo(reviewTarget(id), flag('--by'), flag('--version')); result = store.active(); break;
     case 'mode-study': result=store.modeStudy(id,Number(flag('--revision')),Number(flag('--k')));break;
     case 'mode-studies': result=store.read().modeStudies;break;
     case 'mode-edit': {const c=store.read().candidates[id];if(!c)throw new Error('Unknown candidate');const m=flag('--mode');if(!['legacy','finite','unlimited'].includes(m))throw new Error('--mode must be legacy/finite/unlimited');result=store.edit(id,c.patchA,c.principle,Number(flag('--revision')),c.notes,m==='legacy'?legacyMode():m==='finite'?finiteMode(Number(flag('--k'))):unlimitedMode());break;}
@@ -115,16 +118,16 @@ try {
       const path = flag('--out'); if (!path) throw new Error('--out required, e.g. .rpm/RUGBY_JUDGMENT.local.md');
       writeFileSync(path, store.exportB(), { mode: 0o600 }); result = { path, version: store.active().B.version }; break;
     }
-    default: result = { usage: ['research-log', 'mechanism-study SCENE_ID --revision N --steps 40 --out ABSOLUTE_JSON', 'export-player --out ABSOLUTE_JSON', 'view-request compare --client ID --revision N --experiment ID --arm before|after --frame N', 'view-request return --client ID --revision N', 'views', 'view-request capture|present --client DISPLAY_ID --revision N [--snapshot SNAPSHOT_ID] [--request-id REQUEST_ID]', 'view-result REQUEST_ID', 'b-standalone-packet --file CASES.json --arm none|old|new [--version B0 | --text-file PRINCIPLES.md | --document FIXED_DOCUMENT.json]', 'b-standalone-review --file REVIEW.json (packet, model, output, separate assessment scores)', 'scene-create --file .rpm/scene.json [--seed N]', 'scene-revise SCENE_ID --revision N --file .rpm/scene.json', 'scenes', 'scene-compare SNAPSHOT --after SNAPSHOT --rules A0 --steps 5', 'scene-comparisons', 'scene-authoring SCENE_ID --revision N', 'scene-snapshot SCENE_ID --revision N --tick 10', 'propose SNAPSHOT --feedback text --from-tick 3 --to-tick 10 --player observer-0','status', 'snapshot --scene support --seed 42 --head -2',
+    default: result = { usage: ['research-log', 'mechanism-study SCENE_ID --revision N --steps 40 --out ABSOLUTE_JSON', 'export-player --out ABSOLUTE_JSON', 'view-request compare --client ID --revision N --experiment ID --arm before|after --frame N', 'view-request return --client ID --revision N', 'views', 'view-request capture|present --client DISPLAY_ID --revision N [--snapshot SNAPSHOT_ID] [--request-id REQUEST_ID]', 'view-result REQUEST_ID', 'judgment-evaluation-packet --file CASES.json --arm none|old|new [--version B0 | --text-file PRINCIPLES.md | --document FIXED_DOCUMENT.json]', 'judgment-evaluation-review --file REVIEW.json (packet, model, output, separate assessment scores)', 'scene-create --file .rpm/scene.json [--seed N]', 'scene-revise SCENE_ID --revision N --file .rpm/scene.json', 'scenes', 'scene-compare SNAPSHOT --after SNAPSHOT --rules A0 --steps 5', 'scene-comparisons', 'scene-authoring SCENE_ID --revision N', 'scene-snapshot SCENE_ID --revision N --tick 10', 'propose SNAPSHOT --feedback text --from-tick 3 --to-tick 10 --player observer-0','status', 'snapshot --scene support --seed 42 --head -2',
       'propose SNAPSHOT --feedback "your correction"', 'context CANDIDATE', 'edit CANDIDATE --file .rpm/edit.json --revision N',
-      'approve|reject CANDIDATE --target A|B --by owner --revision N', 'preview CANDIDATE --revision N', 'compare CANDIDATE', 'undo A|B --by owner --version A1|B1',
-      'return CANDIDATE --target A|B --by owner --revision N --reason "why"',
+      'approve|reject CANDIDATE --target player|judgment --by owner --revision N', 'preview CANDIDATE --revision N', 'compare CANDIDATE', 'undo player|judgment --by owner --version A1|B1',
+      'return CANDIDATE --target player|judgment --by owner --revision N --reason "why"',
       'revise CANDIDATE --revision N --reason "change requested"',
       'run CANDIDATE --revision N --steps 5 --mode preview|active [--start coaching|snapshot]', 'experiments', 'experiment EXPERIMENT_ID',
       'snapshot-context SNAPSHOT_ID (observations only)', 'snapshot-export SNAPSHOT_ID (authoring world included)', 'history-replay SNAPSHOT_ID', 'freeze-evaluation --file .rpm/evaluation-plan.json', 'evaluation-sets',
       'propose SNAPSHOT_ID --feedback text --evaluation-set FROZEN_SET_ID',
-      'b-packet EXPERIMENT_ID --arm none|before|after --cases regression|frozen', 'b-evaluator-map EXPERIMENT_ID', 'b-review EXPERIMENT_ID --file .rpm/b-review.json',
-      'export-b-json', 'export-b --out .rpm/RUGBY_JUDGMENT.local.md'] };
+      'judgment-packet EXPERIMENT_ID --arm none|before|after --cases regression|frozen', 'judgment-evaluator-map EXPERIMENT_ID', 'judgment-review EXPERIMENT_ID --file .rpm/judgment-review.json',
+      'export-judgment-json', 'export-judgment --out .rpm/RUGBY_JUDGMENT.local.md'] };
   }
   if(['research-log','mechanism-study','export-player'].includes(command)&&flag('--out')){const path=flag('--out');if(!isAbsolute(path))throw new Error('--out must be an absolute path');writeFileSync(path,JSON.stringify(result,null,2)+'\n',{mode:0o600});result={path};}
   console.log(JSON.stringify(result, null, 2));

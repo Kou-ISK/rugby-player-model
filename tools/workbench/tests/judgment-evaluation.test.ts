@@ -6,7 +6,7 @@ import {join} from 'node:path';
 import {Store} from '../server/store';
 import {capture} from '../research';
 import {defaultRulesA} from '../../../models/player/reference/src/index.js';
-import {fixedBDocument,standaloneInputHash} from '../../experiments/src/b-standalone';
+import {fixedBDocument,standaloneInputHash} from '../../experiments/src/judgment-evaluation';
 const scores={principleConformance:{result:'insufficient-evidence',reason:'Synthetic software example'},rugbyValidity:{result:'insufficient-evidence',reason:'No human rugby validation'}};
 function inputs(){const s=capture('support',42,defaultRulesA(),'B0');return [{id:'private-evaluator-label',bundle:s.bundle,memory:s.memoryBefore,profile:s.profile}];}
 test('B-only none/old/new packets freeze actual subject input independently of later B adoption and restart',()=>{

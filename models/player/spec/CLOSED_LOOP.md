@@ -1,10 +1,12 @@
 # Closed-loop hypothesis v1
 
-Scene schema 3 opts into Bundle 3 and `cognition-loop-v1` / Trace 4. Scene 1/2 retain their previous sensors, cognition and body integration. This is a new, uncalibrated engineering hypothesis, not an approved A parameter version or a demonstrated model of human cognition. Its source hash identifies the implementation; A0 alone does not.
+[English](CLOSED_LOOP.md) | [日本語](CLOSED_LOOP.ja.md)
+
+Scene schema 3 opts into Bundle 3 and `cognition-loop-v1` / Trace 4. Scene 1/2 retain their previous sensors, cognition and body integration. This is a new, uncalibrated engineering hypothesis, not an approved player model parameter version or a demonstrated model of human cognition. Its source hash identifies the implementation; A0 alone does not.
 
 ## Observation and decision contract
 
-A still receives only Bundle, Memory, Profile and RulesA. Body/head/view orientation and visible body direction use the v2 observation contract. Self motor velocity, stopping deadline and the last motor result are synthetic proprioception. Other agents' memory, plans, intended paths and the true ball trajectory never enter A or the player camera.
+The player model still receives only Bundle, Memory, Profile and RulesA. Body/head/view orientation and visible body direction use the v2 observation contract. Self motor velocity, stopping deadline and the last motor result are synthetic proprioception. Other agents' memory, plans, intended paths and the true ball trajectory never enter player model or the player camera.
 
 Two acquired visual observations, at different times no more than 2 seconds apart, permit a displacement velocity estimate (clipped to 10 m/s). Single observations do not. Extrapolation is limited to 0.5 seconds and increases positional uncertainty. Estimates retain source IDs and original observation time. Retrieved evidence keeps its original time/confidence. This is neither an uncertainty-calibrated arrival probability nor a measured human velocity estimator.
 
@@ -16,7 +18,7 @@ A plan records action, observed target ID, goal, phase, start/review time and ev
 
 ## Motor and interaction contract
 
-Simulation uses a 0.2-second cognitive step with ten 0.02-second motor substeps. All autonomous actors first sense the same pre-step world using separate memories, profiles and team-relative attack directions. Only then are commands executed. Controlled and autonomous actors share the explicit A configuration. Stable actor ordering resolves simultaneous equal-distance catches; ordering the runtime actor array does not change results.
+Simulation uses a 0.2-second cognitive step with ten 0.02-second motor substeps. All autonomous actors first sense the same pre-step world using separate memories, profiles and team-relative attack directions. Only then are commands executed. Controlled and autonomous actors share the explicit player model configuration. Stable actor ordering resolves simultaneous equal-distance catches; ordering the runtime actor array does not change results.
 
 | Quantity | Engineering default |
 | --- | --- |
@@ -39,8 +41,8 @@ In a separate synthetic session, import `evaluation/fixtures/loop-attack.scene.j
 npm run --silent bridge -- mechanism-study SCENE_ID --revision 1 --steps 40 --out /absolute/private/work/study.json
 ```
 
-The report freezes the full input and its hash, engine source manifest, six arms (full, four single removals, local+tactics removed), rules, traces, runtime frames and evaluator-only progress/spacing/event/switch measures. Full/local-off/tactics-off/both-off form the 2×2 comparison. Measures use the same last recorded frame and state their observation horizon. Before/after traces are computed with the same body implementation and abilities. This separates a cognitive intervention from a skill upgrade. It does not reconstruct an old executable by supplying an old A version.
+The report freezes the full input and its hash, engine source manifest, six arms (full, four single removals, local+tactics removed), rules, traces, runtime frames and evaluator-only progress/spacing/event/switch measures. Full/local-off/tactics-off/both-off form the 2×2 comparison. Measures use the same last recorded frame and state their observation horizon. Before/after traces are computed with the same body implementation and abilities. This separates a cognitive intervention from a skill upgrade. It does not reconstruct an old executable by supplying an old player model version.
 
 V3 replay permits 1–201 frames, bounded by scene end; legacy regression stimuli remain capped at 20 frames. A step-budget replay can advance its final body one step beyond its last recorded decision; report metrics deliberately use the recorded horizon. Fixed-observation comparison and closed-loop comparison remain distinct. Runtime/metrics are evaluator data and must never be passed into an LLM player packet.
 
-These published stimuli are development examples, not unseen holdouts. Tests cover physical bounds, interruption, reception/interception, isolated sensory inputs, synchronous update order, ablation reproducibility, snapshot/history rewind and portable proposal reproduction. Group coordination, human equivalence, generalization and better rugby decisions require separately specified predictions and independent data. New owner coaching and A/B adoption remain explicit human decisions.
+These published stimuli are development examples, not unseen holdouts. Tests cover physical bounds, interruption, reception/interception, isolated sensory inputs, synchronous update order, ablation reproducibility, snapshot/history rewind and portable proposal reproduction. Group coordination, human equivalence, generalization and better rugby decisions require separately specified predictions and independent data. New owner coaching and player model and judgment principles adoption remain explicit human decisions.

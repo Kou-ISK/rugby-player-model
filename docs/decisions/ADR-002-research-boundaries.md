@@ -1,25 +1,27 @@
 # ADR-002: Model, research and publication boundaries
 
-Status: accepted implementation boundary. This decision does not approve a cognitive hypothesis or a private A/B candidate.
+[English](ADR-002-research-boundaries.md) | [日本語](ADR-002-research-boundaries.ja.md)
+
+Status: accepted implementation boundary. This decision does not approve a cognitive hypothesis or a private player model and judgment principles candidate.
 
 ## Decision
 
-Keep the existing separation rather than moving files for each experiment. The reusable outputs are an observation-only executable model (A), independent player judgment documents (B), and local research tools. An experiment changes mechanisms or evidence, not the ownership of these directories.
+Keep the existing separation rather than moving files for each experiment. The reusable outputs are an observation-only executable model (the player model), independent player judgment documents (judgment principles), and local research tools. An experiment changes mechanisms or evidence, not the ownership of these directories.
 
 | Directory | Owns | Must not own |
 |---|---|---|
 | `models/player/` | Observation contracts, reference cognition, mode definitions, standalone API, model tests/card | World truth, renderer, filesystem session access, AI service calls |
-| `models/judgment/` | Self-contained judgment texts, portable player instructions, frozen historical B texts | Dependence on A or a particular AI vendor |
+| `models/judgment/` | Self-contained judgment texts, portable player instructions, frozen historical judgment principles texts | Dependence on player model or a particular AI vendor |
 | `tools/simulation/` | Synthetic world, sensing, supported body execution | Cognitive policy, candidate adoption or browser UI |
 | `tools/experiments/` | Immutable inputs, candidates, comparisons, evaluation packets, provenance | UI interaction or an embedded AI service |
-| `tools/workbench/` | Local presentation, CLI/HTTP bridge, persistence and rendering adapters | A second implementation of cognition or an automatic B-to-A compiler |
+| `tools/workbench/` | Local presentation, CLI/HTTP bridge, persistence and rendering adapters | A second implementation of cognition or an automatic principles-to-player-model compiler |
 | `evaluation/` | Authorized synthetic stimuli, evaluator criteria and historical baselines | Private coaching or real match/player data |
 | `docs/` | Architecture decisions, reusable procedures, scope and verification evidence | Owner-specific plans, private installation logs or research conversations |
 | `scripts/` | Build, reproduction and boundary checks | Research rules or hidden runtime behavior |
 
 Root `src/` and `server/` are compatibility entry points; new implementation belongs in the directories above. Preserve old imports until a separately documented compatibility change. Do not create attack-specific and defense-specific copies of perception, memory or decision state. Phase-specific goals and supported skills use the common observation boundary. Possession, role and uncertainty require explicit contracts before implementation; no-ball does not imply defending.
 
-Imports flow from the workbench toward experiments/simulation/player, from experiments toward simulation/player, and from simulation toward player contracts. A stays independently executable. B stays independently readable. Share pure presentation contracts without importing the server into the browser. Preserve byte-pinned vendor and B sources; adapt around them.
+Imports flow from the workbench toward experiments/simulation/player, from experiments toward simulation/player, and from simulation toward player contracts. The player model stays independently executable. Judgment principles stays independently readable. Share pure presentation contracts without importing the server into the browser. Preserve byte-pinned vendor and judgment principles sources; adapt around them.
 
 ## Changes that require a design decision
 

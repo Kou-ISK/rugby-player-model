@@ -1,21 +1,22 @@
-> Historical publication-scope record. Current limited MIT permission was subsequently applied on 2026-10-12; see [LICENSE-SCOPE.md](../../LICENSE-SCOPE.md). The historical license-status text below records the earlier publication decision.
-
 # Authorized publication scope
 
-On 2026-10-12 the owner explicitly authorized public release of the reviewed RPM implementation, authored synthetic fixtures and documentation, including the P2P-derived procedural drawing source and minimal posture type named below. Independent implementation and stable-setup reviews passed. This scope excludes private owner research sessions, personal information, secrets and private conversation transcripts. It does not establish human validity, owner screen acceptance or open-source licensing. `package.json` stays `private: true` (no npm publication) and `license: UNLICENSED`; no new code/document/data license is selected. See [PROVENANCE.md](./PROVENANCE.md).
+[English](PUBLICATION_SCOPE.md) | [日本語](PUBLICATION_SCOPE.ja.md)
 
-| Category | In this public draft? | Provenance / permission boundary |
-| --- | --- | --- |
-| New cognition, local bridge and UI code | Yes | Authored for this task; project licensing remains undecided. No automatic model-rule or B approval follows from publication. |
-| P2P procedural player/pitch/ball geometry | Yes, explicitly authorized | `src/ui/p2p/models.ts` from pinned P2P commit `51e4b9d`. Original bytes and attribution preserved behind the RPM adapter. Presentation only; UNLICENSED retained. |
-| Research architecture, model/data cards, principles and synthetic evaluation packet | Yes | Public specifications distilled for the task. B's evaluation reference remains frozen at `5886a70`; card additions do not alter it or claim an evaluation result. |
-| Synthetic fixtures, example candidate and content-hash manifest | Yes | Reproducible authored values and source-file identities; no real-player dataset or private session. No data license has been adopted yet. |
-| Dependency packages | Installed from the exact npm lockfile; not vendored as project-owned source | Retain their own notices/terms. Runtime package metadata lists Three.js and Ajv as MIT; project UNLICENSED does not replace dependency licenses. |
-| Referenced research and rugby laws | Links and short paraphrases only | No copied rulebook, article corpus or implied endorsement. Check applicable rules independently for real use. |
-| Minimal ContactPose and P2P provenance records | Yes, explicitly authorized | `src/ui/p2p/contact-pose.ts` is the kit-authored structural presentation type, not the P2P core contract. The source/hash record and original notice are retained with a dated publication amendment. The full ZIP and private plan stay outside Git; no blanket sublicensing is implied. |
-| Planning-document originals, Library identifiers, download details, credentials, internal paths and logs | No | The v4 plan and kit were privately obtained on the Mac. The plan was reconciled for A/B independence, owner approval, local workflow and rendering-only reuse; its text and transfer metadata are not public documentation. |
-| `.rpm/`, private feedback, user/Codex session transcripts, real-session screenshots and human/match data | No | Local/private by default. Public fixture licensing proposals do not authorize releasing these records. |
+The owner authorized public release on 2026-10-12 and subsequently applied the limited MIT grant recorded in [LICENSE-SCOPE](../../LICENSE-SCOPE.md). This page describes inclusion boundaries; original legal text is [LICENSE](../../LICENSE). Packages remain private to prevent accidental npm publication. Publication is separate from scientific validity, screen acceptance and local adoption.
 
-The scope above describes this draft's contents, not an automatic future release policy. Future inclusion of real observations, imported assets or a full private session requires a separate review of rights, purpose and public scope. The outstanding items are owner screen acceptance, empirical calibration, independently recorded B evaluation and any future license selection. They remain visible in the PR and [verification record](../verification/VERIFICATION.md).
+| Material | Public scope |
+|---|---|
+| Authored player model, bridge, simulation, experiments and UI | Included under the stated MIT scope; no automatic research adoption |
+| Architecture, cards, principles and synthetic review scenes | Included; frozen evaluation source bytes and historical references remain intact |
+| Authored fixtures, example candidates and reproduction manifests | Included synthetic material; no real-player dataset or private session |
+| P2P procedural geometry | Only pinned `tools/workbench/src/rendering/vendor/phrase2play/models.ts`, with original bytes/attribution |
+| Minimal pose type and provenance | Only kit-authored `contact-pose.ts` and its retained provenance records; no P2P core contract or blanket asset permission |
+| Dependencies | Installed from lockfile, not relicensed as project-owned source; retain their terms/notices |
+| Papers and rugby rules | Links and short paraphrases only; no copied corpus or endorsement |
+| Original private plans/ZIPs, transfer metadata, identifiers, credentials and private logs | Excluded |
+| Private sessions, feedback/conversations, real-session screenshots, personal or real match/player data | Excluded |
+| Other P2P infrastructure/assets, GLB and future unreviewed imports | Excluded |
 
-The reproduction manifest is an integrity and configuration aid, not a signature, rights certificate or scientific validation. Its file list is explicitly limited to public source/specification/test material; it does not collect local session contents or runtime environment variables. A new Git commit identifies new code; a successful hash check alone does not approve changes to A/B or resolve the license decision.
+[Provenance](PROVENANCE.md) records verified source identities. Historical UNLICENSED notices and the kit's earlier publication state are retained as provenance; current permission is the dated limited grant, not a blanket change to all imported material.
+
+Future data/assets require their own rights, purpose and publication review. Public synthetic proposals must enumerate authorized entries and provenance. A session export does not automatically become public or licensed. The manifest inventories explicit public source/specification/tests without harvesting session contents or environment variables. A successful hash check is not a signature, rights certificate, research approval or empirical validation.

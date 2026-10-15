@@ -1,9 +1,11 @@
-# Use judgment principles (B)
+# Judgment principles
 
-Use [RUGBY_JUDGMENT.md](RUGBY_JUDGMENT.md) directly with permitted scene descriptions. No A model, runner, viewer or AI vendor is required. B0.1-draft is separate from the locally adopted B0 plus ordered amendments.
+[English](README.md) | [日本語](README.ja.md)
 
-The frozen [B0 source](docs/versions/RUGBY_JUDGMENT-B0.md) retains its original bytes. Its optional `docs/B_REVIEW.md` link was already unresolved relative to that archive directory at ecc5c298. Use [the review guide](docs/B_REVIEW.md) from this distribution base. A standalone raw archive cannot resolve that optional link; this does not change the self-contained principles.
+Use [the judgment principles](RUGBY_JUDGMENT.md) with permitted scene descriptions. No player-model runner, viewer, specific AI vendor or API is required. The [player role guide](PLAYER_GUIDE.md) describes the one-player information boundary, recurring decision process and concise output record.
 
-For independent **none / old / new** observation packets and response recording without a player-model experiment, follow the [standalone B comparison guide](../../tools/workbench/docs/B_STANDALONE.md). It fixes the actual model input and document reference before evaluation, then records principle conformance and rugby validity separately. A B replacement creates a new baseline reference; old versions and amendment order survive undo/restart.
+The current reading edition is an unapproved draft. It is independent of the executable player model and of any private session's adopted document. Translation or repository editing never adopts a principle. Freeze the language, complete text and hash of every document used in an evaluation.
 
-The standalone [PLAYER_GUIDE.md](PLAYER_GUIDE.md) supplies the one-player role, observation boundary, recurring decision process and output record. It is a draft companion, not an adopted amendment to any private B version. Freeze its text and hash together with the principles when evaluating an LLM.
+For an independent **none / old / new** comparison, follow [judgment evaluation](../../tools/workbench/docs/JUDGMENT_EVALUATION.md). Give evaluators the same observation-only inputs in fresh conversations, then record principle conformance and rugby plausibility separately. An imported proposal and an external response remain unapproved/unverified until explicitly reviewed.
+
+[Review criteria](docs/REVIEW.md) and [synthetic evaluation scenes](docs/EVALUATION_SCENES.md) support manual evaluation without a runner. Public examples are regression material after exposure, not permanently unseen evidence. [Archived sources](archive/README.md) preserve the original draft, initial baseline, review protocol and scene packet byte for byte. The session still exports its exact stored baseline plus ordered approved amendments; replacing that baseline requires a separate owner decision.

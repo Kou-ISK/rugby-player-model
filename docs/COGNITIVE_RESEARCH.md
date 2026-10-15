@@ -1,82 +1,84 @@
-# 認知モデルと研究道具の要件
+# Cognitive model and research-tool requirements
 
-この文書は研究設計上の契約であり、人間の認知を再現できたという結果ではない。実装済み機構と限界は [Architecture](ARCHITECTURE.md) を正本とする。Aの実行モデル、Bの判断文書、実験を支える道具は独立した成果物として扱う。
+[English](COGNITIVE_RESEARCH.md) | [日本語](COGNITIVE_RESEARCH.ja.md)
 
-## 成果物と成立条件
+This is a research design contract, not a finding that human cognition has been reproduced. [Architecture](ARCHITECTURE.md) is authoritative for implemented mechanisms and limitations. The executable player model, judgment principles and research tools are independent deliverables.
 
-| 成果物 | 必要な性質 | 成立を確かめる方法 |
+## Deliverables and acceptance
+
+| Deliverable | Required properties | How to examine them |
 |---|---|---|
-| A：実行可能な選手認知 | 観測→注意・記憶→不確実な状況推定→行為の評価→意図維持・修正→身体要求の循環。場面名に依存しない | 同じ入力の再現、情報漏洩検査、機構を外した対照、別条件への転移 |
-| B：LLMにも渡せる選手の判断文書 | 一人の選手の情報境界、判断過程、条件・例外・不明時の扱いを自己完結して説明 | 同じ観測を原則なし／旧版／新版へ別々に渡し、遵守と競技的妥当性を別採点 |
-| 研究道具 | 合成場面を見せ、実際に取得した観測と指導を固定し、機構候補と反例を比較・保存 | 他者が新規sessionで同じ手順を実施し、同じ入力・版・結果へ到達 |
+| Player model | Observations → attention and memory → uncertain situation inference → action evaluation → maintained or revised intention → body requests; no lookup by scene name | Repeated inputs, information-leakage checks, mechanism ablations and transfer to other conditions |
+| Judgment principles | Self-contained information boundaries, decision process, conditions, exceptions and responses to missing information; usable by a person or LLM | Give identical observations to separate no-principles, previous-version and proposed-version arms; score compliance and rugby plausibility separately |
+| Research tools | Present synthetic scenes, freeze acquired observations and coaching, compare mechanisms and counterexamples, preserve records | Another contributor can follow the procedure in a new session and reproduce inputs, versions and results |
 
-公開可能性は [LICENSE-SCOPE](../LICENSE-SCOPE.md) に従う。公開コード、合成fixture、モデル文書だけで導入・検証できることを必要条件とする。私的な研究会話・計画・実データは公開セットに入れない。ツールはAI APIを呼ばず、任意の会話環境または人が入出力ファイルを扱う。LLMを使う場合、その製品の利用条件は別に適用される。
+Publication follows [LICENSE-SCOPE](../LICENSE-SCOPE.md). Public code, synthetic fixtures and model documents must suffice for installation and verification. Private conversations, plans and real data stay outside the public set. Tools do not call AI APIs: a person or any conversational environment exchanges files. An LLM product's own terms still apply.
 
-## 戦術と相互関係
+## Tactics and interpersonal relations
 
-設計仮説は、既知のチーム目標・役割・戦術が行動の制約を与え、局所的に知覚した味方・相手との関係が利用可能な行為を変え、実行結果によって双方を更新する循環である。全体戦術を持つことは全選手の現在位置を知ることではない。戦術・役割も事前に共有された内容と、選手が実際に受け取った更新だけを使う。
+The design hypothesis is a loop: known team goals, roles and tactics constrain action; locally perceived teammate/opponent relations change available actions; execution and new observations update both. Knowing team tactics does not reveal everyone's current position. Use only previously shared tactics and updates the player actually received.
 
-ゲームモデルによる大域的制約と局所的相互作用の双方向性は、チームスポーツの理論研究と整合する。ただし独立した二つの脳内装置を実証したものではない。[Ribeiro et al., 2019, Hypothesis and Theory](https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2019.02213/full)。共有知識と知覚された行為可能性を統合する立場もある。[Steiner et al., 2017, Integrative Perspective](https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2017.01440/full)。群れとの類似を神経機構の一致とは扱わず、戦術＝意識的、相互作用＝無意識という対応も前提にしない。
+Bidirectional relations between global game-model constraints and local interaction are consistent with team-sport theory ([Ribeiro et al., 2019](https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2019.02213/full)). This does not establish two independent brain systems. An integrative account also combines shared knowledge and perceived affordances ([Steiner et al., 2017](https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2017.01440/full)). A flock analogy is not proof of identical neural mechanisms; tactics need not be conscious while interaction is unconscious.
 
-実装では次の機能を区別するが、同じ観測・記憶に基づいて連携させる。
+Distinguish these functions, while grounding them in the same observations and memory:
 
-1. **目標・制約**：チーム目標、局面、役割、既知の約束、技能上の制約。
-2. **関係と行為可能性**：観測された相対位置・向き・運動、届きそうな空間、支援・圧力の変化。能力と状況に依存する推定。
-3. **調整**：不確実性と切迫度に応じた注意配分、再観測、意図の維持・中止・切替。
-4. **実行と再入力**：要求した行為、実際にできた行為、実行後に得た観測を区別する。
+1. **Goals and constraints:** team objectives, phase, role, known agreements and skill limits.
+2. **Relations and affordances:** observed relative position, orientation and movement; reachable space; changing support and pressure. Estimates depend on ability and context.
+3. **Regulation:** allocate attention, reobserve, maintain, cancel or switch intentions according to uncertainty and urgency.
+4. **Execution and feedback:** distinguish requested action, achieved action and subsequent observations.
 
-二つ以上の選手が各自の観測・記憶を使って相互に反応する段階までは、自己組織化の成立を主張しない。他選手の経路を固定した場面は、一選手への刺激を制御する実験には使える。
+Do not claim self-organization until at least two players react to each other using independent observations and memory. Scripted paths are useful controlled stimuli for a single-player experiment.
 
-## 研究単位と記録
+## Research unit and records
 
-ケースは機構を調べるための刺激であり、場面別の正解辞書を成果物にしない。指導から直ちに行動のif文を追加せず、「どの情報を使い、何を予測し、どの条件で判断を変えるか」を反証可能な仮説にする。
+Cases are stimuli for investigating mechanisms, not entries in a scene-to-answer dictionary. Translate coaching into a falsifiable hypothesis about information, prediction and decision changes before adding action rules.
 
-| 記録 | 必須内容 |
+| Record | Required content |
 |---|---|
-| 場面・表示 | 合成場面の版・hash、対象選手、初期状態、時間／tick、頭・身体の向き、表示種別、クライアントと表示revision、表示応答。表示応答は本人が見た証明ではない |
-| 認知入力 | 実際の観測履歴、観測時刻・確信度・出典、介入前の記憶、能力・自己評価・選好、既知の戦術、A/B・実行設定 |
-| 指導 | 原文、参照snapshotと区間、解釈、曖昧な点、指導者が確認した解釈。原文とモデル候補を分ける |
-| 仮説 | 変更する機構、適用範囲、予測、失敗条件、反例、対照条件、未実装能力、事前凍結した評価条件 |
-| 実験 | 固定観測比較か閉ループ比較か、コード・文書・入力hash、seed、全行為と実行可否、推定の変化、終端理由、変更の有無 |
-| 判断と来歴 | ソフトウェア試験結果、研究者の評価、A/B別の採否、適用範囲、撤回理由、後続の反例。過去記録を上書きしない |
+| Scene and display | Synthetic scene version/hash, player, initial state, time/tick, head/body orientation, view mode, client/revision and display receipt; a receipt does not prove human viewing |
+| Cognitive input | Acquired history, original timestamps/confidence/sources, pre-intervention memory, ability/self-estimate/preferences, known tactics, both deliverable versions and execution settings |
+| Coaching | Original text, snapshot and interval, interpretation, ambiguities and interpretation confirmed by the coach; keep source text separate from candidates |
+| Hypothesis | Changed mechanism, scope, predictions, failure criteria, counterexamples, controls, unsupported capabilities and evaluation conditions frozen in advance |
+| Experiment | Fixed-observation or closed-loop comparison, code/document/input hashes, seed, actions and execution support, belief changes, terminal reason and intervention |
+| Judgment and provenance | Software checks, researcher assessment, separate adoption decisions, scope, withdrawal reasons and later counterexamples; never overwrite history |
 
-全項目が現在専用fieldで実装されているわけではない。既存のsnapshot・candidate・notes・experiment・evidence graphで表せる内容を利用し、完了した表示応答はsessionへ永続保存し、`research-log` でsnapshot・指導候補・実験をたどれる。v3の計画・運動推定・判断遷移はtraceへ保存する。人間が確認した解釈や予測誤差の研究採点は別に記録する。
+Not every item has a dedicated field. Use existing snapshots, candidates, notes, experiments and the evidence graph. Completed display receipts persist; `research-log` links snapshots, coaching and experiments. Version 3 traces retain plans, motion estimates and decision transitions. Record human-confirmed interpretations and research scoring of prediction errors separately.
 
-会話の指導は**研究者の介入**である。選手がその瞬間に聞いた声として挿入しない。事前戦術、知覚された声、研究者の指導、強制した行動を別々に扱う。指導原文は解釈の追跡に必要だが、保存だけでは理解・実装・効果検証にならない。
+Conversational coaching is a **researcher intervention**, not something the player heard at that instant. Separate prior tactics, perceived calls, coaching and forced actions. Original text is necessary for interpretation provenance; saving it alone is not understanding, implementation or validation.
 
-## 検証の順序と停止条件
+## Verification order and stopping conditions
 
-1. **道具の整合**：表示した場面と捕捉入力が一致する。古い表示、多重タブ、通信再送・再起動で別場面に黙って結び付けない。
-2. **場面と知覚の妥当性**：チーム・保持・攻撃方向を識別できる。身体の向きと移動方向を別々に設定する。見える向きだけを観測へ送り、遮蔽中の方向や未来を送らない。本人による場面の意味の確認が必要。
-3. **動作の成立**：必要な旋回・加速・走路・パス・捕球・接触判定を抽象化して実装。工学的な近似、単位、限界を固定する。能力外は未対応と出力し、成功扱いしない。
-4. **認知の機構比較**：複数時点の観測から運動を推定し、到達の不確実性を更新。小目標、継続・切替条件を持つ。現行の単純policyと同じ身体条件で比較する。技能追加の効果と認知変更の効果を混同しない。
-5. **相互作用**：各選手に独立した観測・記憶を用意。戦術制約の有無 × 局所的調整の有無を比較する。相互応答する条件と経路固定条件を分ける。集団の間隔・同期・被覆などの評価用全体指標は選手へ戻さない。
-6. **一般化と外部再現**：左右反転、人数・速度・開始位置・遮蔽・能力・戦術の変化に同じ機構で応じるかを評価。開発に使用済みの例と未使用条件を分ける。Bは任意のLLMまたは手動で独立評価する。
+1. **Tool integrity:** displayed scene and captured input match; stale views, tabs, retries and restarts never silently bind coaching to another scene.
+2. **Scene and perception validity:** teams, possession and attack direction are understandable. Specify body orientation separately from motion. Only visible orientation enters observations, never occluded orientation or future truth. The owner confirms the scene's meaning.
+3. **Motor feasibility:** implement required turning, acceleration, routes, passing, catching and contact abstractions. Freeze assumptions, units and limits. Report unsupported actions without claiming success.
+4. **Mechanism comparison:** infer motion across observations, update uncertain arrival estimates and maintain/switch subgoals. Compare against the simpler policy with identical body conditions. Separate skill additions from cognitive changes.
+5. **Interaction:** provide independent observations and memory per player. Compare tactical constraints present/absent × local adjustment present/absent, and reactive actors against scripted paths. Evaluator-only spacing, synchronization and coverage measures never return to players.
+6. **Generalization and independent reproduction:** vary reflection, numbers, speed, initial position, occlusion, ability and tactics using the same mechanism. Separate development examples from unused conditions. Evaluate the judgment document independently, manually or with any LLM.
 
-閾値・重み・観測容量を人間の定数とは扱わない。仮説ごとに測る量、期待される変化、失敗とする条件を実験前に固定する。機構の寄与を確認しても、実際の人の行動資料との照合なしに「人間と同じ認知」と結論しない。実試合映像の分析はこの工程に含めない。
+Thresholds, weights and capacities are not human constants. Freeze measurements, expected changes and failure criteria before each experiment. Even an effective mechanism does not establish human equivalence without comparison to actual human behavior. Real-match video analysis is outside this procedure.
 
-## 現行実装と未達範囲
+## Implemented and unresolved scope
 
-[観測v2](../models/player/spec/ORIENTATION_PHASE.md)は身体方向と局面推定を追加し、旧v1入力を保持する。[閉ループv3](../models/player/spec/CLOSED_LOOP.md)は任意選択の新機構で、観測系列からの運動推定、小目標の維持と切替、加減速と旋回、放出・飛行・捕球・抽象接触、各自の観測を使う少人数の相互応答を実装する。機構を外した対照を同じ身体条件で実行できる。
+[Observation v2](../models/player/spec/ORIENTATION_PHASE.md) adds orientation and phase inference while retaining v1. Optional [closed-loop v3](../models/player/spec/CLOSED_LOOP.md) adds observation-derived motion, subgoal persistence/switching, acceleration/turning, release/flight/catch/abstract contact, independent small-team reactions and ablations with identical motor conditions.
 
-これは実装可能性を調べる工学的仮説であり、競技的な改善や人間の認知との同等性を示した結果ではない。到達確率の較正、長期計画、人体の運動、全ラグビー規則、任意のチーム戦術、学習、未見条件への転移、自己組織化の科学的検証は未達。本人の場面・指導解釈・A/B採否を合成試験で代用しない。
+These are engineering hypotheses about implementability, not established rugby improvement or human equivalence. Arrival-probability calibration, long-term planning, biomechanics, complete laws, arbitrary team tactics, learning, unseen transfer and scientific validation of self-organization remain unresolved. Synthetic tests cannot replace owner scene interpretation, coaching interpretation or adoption.
 
-## 攻撃・守備・切替と「記憶」の範囲
+## Attack, defense, transition and memory
 
-研究対象は攻撃に限定しない。保持者と非保持者の攻撃、守備、ボールを失う／奪う切替、保持が不明な局面を扱う。同じ注意・記憶・推定・意図調整を使い、局面により目標と利用可能な技能が変わる設計にする。色をAT/DFへ固定せず、「自分がボールを持っていない」から守備だと決めない。
+Scope includes ball-carrier and supporting attack, defense, loss/gain of possession and unknown possession. Use common attention, memory, inference and intention regulation, with phase-specific goals and skills. Do not bind colors to AT/DF or infer defense merely from not holding the ball.
 
-v1/v2の実行範囲は従来のまま。v3では共通の情報境界を使って守備位置取り・接触要求・捕球による保持切替を扱う。ただしカバーの役割分担やタックル後の競技処理まで妥当と確認したものではない。技能と局面の対応は閉ループ仕様を参照する。
+Legacy v1/v2 execution is unchanged. Version 3 supports defensive positioning, contact requests and possession changes through catching within the same information boundary; coverage allocation and post-tackle rugby procedure are not validated. See the closed-loop skill/phase contract.
 
-「記憶」は三つを区別する。選手のMemoryはその選手が得た観測の保持で、攻撃専用ではない。研究sessionは指導・候補・比較・採否を継続保存する。A/Bの改善は人が検証して採用する版変更であり、指導しただけでモデルが自動学習するわけではない。
+Distinguish player memory (the player's acquired observations), research-session history (coaching, candidates, comparisons and reviews), and model/principle improvement (human-reviewed version changes). Coaching does not automatically train the model.
 
-## 人と道具による研究の進め方
+## Human–tool research loop
 
-1. 調べる判断と機構を一つ選び、状況・対象選手・必要技能を決める。
-2. 生成場面を選手視点で提示し、指導者が場面の意味を確認して会話で指導する。
-3. 原文と参照区間を保存し、何を見て何を推定し、どの条件で判断を変えるという仮説へ整理する。
-4. 違いを識別できる対照場面を用意する。距離、身体方向、支援到達、見える範囲、能力、既知の戦術などを一つずつ変え、成立例と反例を含める。
-5. 指導者はそれらでも選手への指導や評価を行う。解釈が違えば修正し、機構候補とB原則候補を比較する。
-6. 開発で見せた例と、事前に凍結した未使用の評価条件を分ける。新しい指導に使った条件をそのまま未見評価と呼ばない。
-7. 予測通りの違い、反例、適用範囲を確認してA/B別に採否を記録する。別の局面へ転移するかを調べる。
+1. Choose one decision/mechanism, player, situation and required skills.
+2. Present a generated scene in player view; the coach confirms meaning and gives conversational coaching.
+3. Preserve text and interval; formulate what is observed, inferred and capable of changing the decision.
+4. Prepare discriminating controls, varying distance, orientation, support arrival, visibility, ability or known tactics one at a time; include supporting and counterexample conditions.
+5. Obtain coaching/assessment on those conditions, correct interpretations and compare executable and document candidates separately.
+6. Keep coached examples separate from evaluation conditions frozen before exposure. A newly coached condition is no longer unseen.
+7. Examine predictions, counterexamples and scope, record independent adoption decisions and test transfer.
 
-場面を増やすこと自体が目的ではない。ランダムな問題集を正解させるのではなく、仮説のどこが成立し、どこで破れるかを判別するために次の場面を選ぶ。研究者が未来を知る場面作成の会話と、選手役の匿名B評価の会話は分ける。
+More scenes are not the objective. Choose the next scene to distinguish where a hypothesis holds or fails. Keep authoring conversations that know the future separate from anonymous player-role evaluations.

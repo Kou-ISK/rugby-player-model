@@ -1,5 +1,7 @@
 # Orientation and possession hypothesis v1
 
+[English](ORIENTATION_PHASE.md) | [日本語](ORIENTATION_PHASE.ja.md)
+
 This is a versioned engineering hypothesis, not a validated human cognitive mechanism. It supplies observable body orientation and uncertain phase estimation to the existing cognition loop. It does not learn a policy from coaching prose.
 
 ## Version and boundary
@@ -21,7 +23,7 @@ Trace v3 identifies `modelRevision: cognition-orientation-phase-v1` and records 
 - Phase and goal: own possession → `attack-carrier`; a single recent teammate holding cue → `attack-support`; opponent cue → `defense`; missing/conflicting cues → `unknown`. Recent means at most 0.5 simulation seconds and derived confidence at least `minimumConfidence`. These are tunable future hypotheses, currently explicit code constants, not human measurements. Each estimate retains its supporting source/time/confidence.
 - Execution scope: defense/unknown can choose scan or hold; carry/pass/support are ineligible. Non-possession alone no longer triggers support in v2. Existing attacking movement follows the body's heading; it is not a path planner. Backward receiver eligibility uses the known attack direction. Other players' orientation currently affects the recorded relation estimate, **not action scoring or route choice**.
 
-Both legacy and H-WM-1 execution modes accept v2 input. Trace v3 records H-WM-1 deliberation when enabled; its capacity remains receiver-only and does not limit all cognition. The input version, engine source hash, profile and rule configuration together identify behavior. A0 alone is not a complete engine version. A new sensor/engine is a code change requiring review, not an A parameter patch or an adopted coaching principle. B's frozen text and approval state do not change.
+Both legacy and H-WM-1 execution modes accept v2 input. Trace v3 records H-WM-1 deliberation when enabled; its capacity remains receiver-only and does not limit all cognition. The input version, engine source hash, profile and rule configuration together identify behavior. A0 alone is not a complete engine version. A new sensor/engine is a code change requiring review, not a player-model parameter patch or an adopted coaching principle. the judgment document’s frozen text and approval state do not change.
 
 ## Research sequence
 
@@ -29,6 +31,6 @@ Both legacy and H-WM-1 execution modes accept v2 input. Trace v3 records H-WM-1 
 2. Capture through the presentation bridge and attach coaching to that snapshot. Examine sensor evidence and inferred relations separately. Capture another observation after a head turn rather than filling in hidden orientation.
 3. Form a mechanism hypothesis and freeze its predictions and failure conditions. Vary body yaw alone while retaining position, path and visibility where possible; separately vary head yaw, occlusion, possession and attack direction. A hidden-ball condition must be expected to yield uncertain possession.
 4. Compare fixed observations for cognition and action-driven replay for closed-loop behavior. No-op comparisons establish reproducibility, not coaching effectiveness. Software fixtures are known development conditions, not unseen human validation.
-5. Implement the necessary skills before assessing avoidance, covering, tackles or delayed passes. Approve A and B independently only after the owner reviews the relevant candidate/code and counterexamples.
+5. Implement the necessary skills before assessing avoidance, covering, tackles or delayed passes. Approve player model and judgment principles independently only after the owner reviews the relevant candidate/code and counterexamples.
 
 Public synthetic stimuli: `evaluation/fixtures/orientation-{attack,support,defense}.scene.json`. All use the same CLI (`scene-create`, `scene-snapshot`, presentation, `propose`, edit and preview); use a separate synthetic session for software testing. They do not seed or approve an owner's research session. Scene v2 still has one controlled player and scripted others, with a fixed holder: possession changes, autonomous opponent reactions and collective self-organization are future work.
