@@ -259,7 +259,7 @@
     "tools/workbench/tests/artifact-resolver.test.ts": "a24ed330044f3a234d2bd5405c68f3a191a927e26ba6987b320a49f9ba1e67be",
     "tools/workbench/tests/browser/dynamic-scenes.spec.ts": "878555e3b84ddd9f0f74355536c4fb2c7cb0adff7c0ede2d4d385b59e724775b",
     "tools/workbench/tests/browser/p2p-view.spec.ts": "6364fa90536032ce16d924636d620d20adb9627dbc34fd060cb41b6312dd1efd",
-    "tools/workbench/tests/browser/player-look.spec.ts": "dc82ce61f0475e12ba96c4807b35760af04cfc12dcbc432f28522e0b10903eaf",
+    "tools/workbench/tests/browser/player-look.spec.ts": "f46e98cb971c2f7e8b3014e60beb56397c08bdd67f0d2a4f33b7a9bdf2b7480d",
     "tools/workbench/tests/browser/presentation.spec.ts": "54c7a6205834c5ea852be997dece3682e06520899481ab3e51d5b795065c0c7e",
     "tools/workbench/tests/browser/proposal-flow.spec.ts": "a71e95aea9de6de714d1b1af7599bbdef6e3a88f6bb0947ac15622f4e4a9af9e",
     "tools/workbench/tests/browser/research-cycle.spec.ts": "8bbdbdf585cd9adbdf156c2f9cc8a4a64eb492cf6d8c201b22af71185d3e13e8",

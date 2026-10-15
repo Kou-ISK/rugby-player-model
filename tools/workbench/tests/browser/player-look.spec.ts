@@ -88,9 +88,11 @@ test('pointer lock uses mouse motion, releases on Escape/blur and supports unava
 });
 
 test('continuous observation archives without losing poses, time or earlier evidence',async({page})=>{
-  test.setTimeout(60000);await ready(page);const clock=await page.locator('#clock').textContent();
+  // This stresses persistence with 460 rendered poses, not frame-rate performance.
+  // Software WebGL must finish the synchronous input burst before its response is handled.
+  test.setTimeout(120000);await page.setViewportSize({width:800,height:600});await ready(page);const clock=await page.locator('#clock').textContent();
   for(let batch=0;batch<2;batch++){
-    const archived=page.waitForResponse(r=>r.url().endsWith('/api/snapshot')&&!!r.request().postDataJSON()?.requestId,{timeout:20000});
+    const archived=page.waitForResponse(r=>r.url().endsWith('/api/snapshot')&&!!r.request().postDataJSON()?.requestId,{timeout:0});
     await page.evaluate(()=>{const input=document.querySelector<HTMLInputElement>('#head')!;for(let i=0;i<230;i++){input.value=String(i%2?10:20);input.dispatchEvent(new Event('input'));}});
     const response=await archived;expect(response.ok(),await response.text()).toBe(true);
     await expect.poll(async()=>Number((await page.locator('#history-status').textContent())!.match(/観測 (\d+)/)![1])).toBeLessThan(224);
