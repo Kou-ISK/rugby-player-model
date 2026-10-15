@@ -1,6 +1,8 @@
+import { validateEvidence } from '../../../models/player/reference/src/validation.js';
 import playerSchema from '../../../models/player/spec/contracts.schema.json';
 import simulationSchema from '../../simulation/schema/scene.schema.json';
 import recordsSchema from '../schema/records.schema.json';
+import { horizontalFov } from '../../simulation/src/world';
 import { assertDynamicWorld } from '../../simulation/src/scene';
 import Ajv from 'ajv';
 import schema from '../../../schemas/contracts.schema.json';
@@ -17,20 +19,18 @@ export function validate<T>(kind: keyof typeof schema.$defs, value: unknown): as
     if (new Set(rules.map(r => r.id)).size !== rules.length) throw new Error('Duplicate context rule id');
   }
 }
-export function validateEvidence(bundle: Bundle, memory: Memory): void {
-  validate('Bundle', bundle); validate('Memory', memory);
-  if (memory.lastTime > bundle.time) throw new Error('Memory is from the future');
-  for (const p of [...bundle.percepts, ...memory.episodes]) {
-    if (p.observedAt > bundle.time) throw new Error('Future evidence');
-  }
-  for (const p of memory.episodes) if (p.observedAt > memory.lastTime) throw new Error('Evidence is newer than its memory record');
-  if (new Set(bundle.percepts.map(p => p.id)).size !== bundle.percepts.length) throw new Error('Duplicate percept');
-}
+export { validateEvidence } from '../../../models/player/reference/src/validation.js';
 export function validateSnapshot(value: unknown): asserts value is Snapshot {
   validate<Snapshot>('Snapshot', value);
   validateEvidence(value.bundle, value.memoryBefore);
+  if(!!value.observationPredecessor!==!!value.observationAnchor)throw new Error('Observation continuation requires both provenance and a replay anchor');
   if((value.contractVersion===2)!==!!value.world.dynamic || (value.scene==='dynamic')!==!!value.world.dynamic)throw new Error('Snapshot scene/contract mismatch');
   if(!value.world.dynamic&&value.seed===null)throw new Error('Static snapshots require a uint32 seed');
   assertDynamicWorld(value.world);
+  if(value.bundle.vision.horizontalFov!==horizontalFov(value.world))throw new Error('Snapshot field of view differs from the authored optical condition');
+  const observedVersion=value.world.dynamic?.scene.definition.sceneSchemaVersion??1;
+  const v2=observedVersion>=2;
+  if(value.bundle.contractVersion!==observedVersion)throw new Error('Observation contract does not match the authored scene version');
+  if(v2&&value.bundle.context?.ownAttackDirection!==value.world.dynamic!.scene.definition.ownAttackDirection)throw new Error('Known direction differs from authored context');
   if (value.world.time !== value.bundle.time || value.world.seed !== value.seed || value.world.scene !== value.scene || value.world.playerId !== value.bundle.playerId) throw new Error('Snapshot context mismatch');
 }

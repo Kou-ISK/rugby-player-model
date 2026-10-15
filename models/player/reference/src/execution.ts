@@ -8,5 +8,5 @@ export function execute(value:unknown){
  const input=value as ExecutionInput;if(input.executionContractVersion!==2)throw new Error('Unsupported executionContractVersion');validateMode(input.executionMode);
  const trace=thinkWithMode(input.bundle,input.memory,input.profile,input.rules,input.executionMode);
  validate('Trace',trace);
- return {executionContractVersion:2 as const,executionMode:structuredClone(input.executionMode),traceVersion:input.executionMode.mode==='legacy'?1 as const:2 as const,trace,nextMemory:trace.longTermMemory};
+ return {executionContractVersion:2 as const,executionMode:structuredClone(input.executionMode),traceVersion:trace.traceVersion??1 as const,trace,nextMemory:trace.longTermMemory};
 }

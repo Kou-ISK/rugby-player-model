@@ -1,6 +1,8 @@
 # Research architecture
 
-See [dynamic scene contracts, CLI and acceptance scope](../tools/workbench/docs/DYNAMIC_SCENES.md) for the new fixed-step workflow: one A-controlled player and scripted stimuli.
+[ADR-002](decisions/ADR-002-research-boundaries.md) fixes directory ownership, dependency direction, compatibility and publication boundaries.
+
+See [dynamic scene contracts, CLI and acceptance scope](../tools/workbench/docs/DYNAMIC_SCENES.md) for the new fixed-step workflow: one selected player, scripted stimuli, and opt-in v3 autonomous actors.
 Two independent deliverables share research context, not an approval switch:
 
 - **A** is a deterministic executable prototype. The `think(Bundle, Memory, Profile, RulesA)` function accepts a validated observation boundary and returns an inspectable trace and capability-labelled body requests.
@@ -10,7 +12,7 @@ Two independent deliverables share research context, not an approval switch:
 
 `models/player` owns A's observation contracts, schemas, validator, execution modes and pure API. `models/judgment` owns the independent B documents. `tools/simulation` converts synthetic world state into observations and applies supported body requests; `tools/experiments` owns snapshots, cases, comparison records and proposal transport; `tools/workbench` owns UI, renderer, CLI and private persistence. Root compatibility exports remain for existing callers. The emitted A API and the semantic engine source closure are checked by `npm run check:boundaries`.
 
-Legacy `think` is unchanged. Execution contract v2 selects legacy or the optional [H-WM-1 receiver-deliberation hypothesis](../models/player/spec/H-WM-1.md). The legacy trace's `workingMemory` remains a display excerpt. H-WM-1 separately records encoding, retrieval, ranking, selected receiver evidence and exclusion reasons; full retained evidence still supplies risk, orienting and freshness predicates. Finite versus unlimited capacity is a paired intervention; legacy versus unlimited is a policy comparison.
+Scene v1 legacy `think` is unchanged. Execution contract v2 selects legacy or the optional [H-WM-1 receiver-deliberation hypothesis](../models/player/spec/H-WM-1.md). The legacy trace's `workingMemory` remains a display excerpt. H-WM-1 separately records encoding, retrieval, ranking, selected receiver evidence and exclusion reasons; full retained evidence still supplies risk, orienting and freshness predicates. Finite versus unlimited capacity is a paired intervention; legacy versus unlimited is a policy comparison.
 
 The [first-run guide](../tools/workbench/docs/FIRST_RUN.md) documents the versioned, inert proposal transport. Its manifest lists permitted synthetic entries and complete immutable references; strict raw JSON validation rejects duplicate decoded keys before parsing. Import does not inherit approval. Reproduction executes a new local run with a semantic digest, and presents independent A/B before/after material for explicit review. An unavailable exact A engine blocks A execution while leaving B's text rendering independent. New B baselines and ordered amendments remain independently versioned through undo and restart. The small evidence graph retains hypotheses, counterexamples, runs, reviews, artifact links and withdrawal events.
 
@@ -34,11 +36,11 @@ flowchart LR
   O --> R[Player evidence panel]
 ```
 
-Only `src/simulation.ts::sense` reads simulation truth to construct observations. `src/cognition.ts` is a compatibility export. The A implementation in `models/player/reference/src/` owns observation-only contracts, validation and schema, with no transitive world/simulation/renderer dependency. JSON Schema rejects unknown fields; an opponent's internal state cannot enter through extra properties. Vision gives currently visible positions; audio gives a coarse body-relative bearing and a cue, not a source's exact coordinates, identity or intent. Own position, heading, head angle and ball possession are synthetic proprioceptive inputs, explicitly assumed accurate in v1.
+Only the simulation sensor boundary (`sense` and the per-actor `senseActor` adapter) reads simulation truth to construct observations. `src/cognition.ts` is a compatibility export. The A implementation in `models/player/reference/src/` owns observation-only contracts, validation and schema, with no transitive world/simulation/renderer dependency. JSON Schema rejects unknown fields; an opponent's internal state cannot enter through extra properties. Vision gives currently visible positions; audio gives a coarse body-relative bearing and a cue, not a source's exact coordinates, identity or intent. Own position, heading, head angle and ball possession are synthetic proprioceptive inputs, explicitly assumed accurate in v1 and v2.
 
 `Snapshot` is a **research envelope** and deliberately contains world truth for reproduction/spectator use. A receives only `snapshot.bundle`, `memoryBefore`, `profile` and `rulesA`. `bridge context` omits the world, while the private snapshot remains available for explicit experimental inspection. Do not give the full world envelope to an AI asked to reason from the player's perspective. Tests alter occluded or behind-player state and require complete A traces to remain identical.
 
-## Cognition and evidence status
+## Legacy cognition and evidence status
 
 | Stage | Prototype behavior | Status |
 | --- | --- | --- |
@@ -85,4 +87,22 @@ UI snapshots now retain ordered observation events with head/body orientation, s
 
 ## Scope of extensibility
 
-[JSON Schema](../schemas/contracts.schema.json) is language-independent. Units: meters, radians, seconds; +z is the synthetic attacking direction. A later Python/Rust model can consume the same observation contract without importing Three.js. Only the byte-preserved P2P procedural models and minimal ContactPose presentation type are included behind the view adapter. No P2P compiler, core types, BoardDocument, authentication, Blob, GLB or external asset is included. The first-person camera still uses body position, eye height and head/body yaw; it does not use P2P bones or world-ball tracking. The skinned self-model is hidden in first person to avoid clipping. Geometry is display-only, with no new physical capabilities. Paused views render on demand; dispose releases textures, materials, geometry, skeleton resources and the WebGL context. Supporting real match rules, agent interaction, biomechanics, speech production or learned behavior requires new validated implementations and tests.
+[JSON Schema](../schemas/contracts.schema.json) is language-independent. Units: meters, radians, seconds; +z is the synthetic attacking direction. A later Python/Rust model can consume the same observation contract without importing Three.js. Only the byte-preserved P2P procedural models and minimal ContactPose presentation type are included behind the view adapter. No P2P compiler, core types, BoardDocument, authentication, Blob, GLB or external asset is included. The first-person camera still uses body position, eye height and head/body yaw; it does not use P2P bones or world-ball tracking. The skinned self-model is hidden in first person to avoid clipping. Geometry is display-only, with no new physical capabilities. Paused views render on demand; dispose releases textures, materials, geometry, skeleton resources and the WebGL context. Full match rules, biomechanics, speech production and learned behavior remain unsupported.
+
+## Research target and presentation transport
+
+[The cognitive research contract](COGNITIVE_RESEARCH.md) separates mechanism hypotheses, software checks and human research validation. [The local presentation protocol](../tools/workbench/docs/PRESENTATION.md) binds conversation to a live browser capture. Commands are ephemeral and cannot approve A/B. Captured snapshots use existing durable storage; read-only observation contexts omit world truth.
+
+## Versioned orientation and phase input
+
+[Orientation/phase v1](../models/player/spec/ORIENTATION_PHASE.md) defines explicit Scene v2 → Bundle v2 → Trace v3. Visible orientation and possession cues pass through the sensor whitelist, attention and immutable memory before situation inference. Known own attack direction is prior context. New scenes opt in; old scene inputs and legacy traces remain unchanged. For v2, defense/unknown restrict execution to scan/hold; those scenes do not execute v3 skills. Engine hashes include the pure situation module, schemas and replay contract. Shared proposal validation/reproduction accepts these observation-only cases without a simulator or AI API.
+
+## Opt-in closed loop and independent actors
+
+[Closed-loop v1](../models/player/spec/CLOSED_LOOP.md) specifies Scene 3 → Bundle 3 → Trace 4. Pure A owns observation-derived motion estimates and persistent intent. Simulation owns bounded motor execution, ball state and synchronous independent actors. Experiments own frozen runtime frames and six-arm ablations, with evaluator-only outcome measures. The workbench owns durable display receipts and snapshot/candidate links. No new top-level application or AI API is introduced. Legacy branches and frozen B bytes remain separate.
+
+Successful capture/present/return receipts and comparison frame references persist in `state.json`; requests remain ephemeral and never replay after restart. Snapshot and receipt writes are separate locked transactions: interruption can leave a snapshot without an acknowledged receipt. The receipt is not evidence of human viewing or approval. `research-log` exposes provenance without changing A/B. See [presentation protocol](../tools/workbench/docs/PRESENTATION.md).
+
+## Continuous manual observation storage
+
+Bridge API 11 archives acquired observations before the 256-event per-record bound and continues with the same world, clock and cognition. A continuation overlaps the final acquired event and starts from its unchanged memory-before, rather than refreshing observation timestamps or discarding evidence. Snapshot-only `observationPredecessor` binds the immutable parent by ID and hash; evaluator-only `observationAnchor` retains its exact motor world for interval replay. Neither supplies hidden state to cognition. Store validation checks the boundary against the saved parent. Snapshot request IDs make interrupted-save retries idempotent. Older snapshots remain readable and retain their bytes. Current-segment replay and prior saved segments are distinct; a long span is not silently substituted with a newly generated trajectory.
