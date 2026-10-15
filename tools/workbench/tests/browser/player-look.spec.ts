@@ -62,13 +62,18 @@ test('mouse/shift turns record exactly the displayed pose, pause time and replay
 test('pointer lock uses mouse motion, releases on Escape/blur and supports unavailable-lock fallback',async({page})=>{
   await ready(page);const canvas=page.locator('canvas');
   await page.locator('#look-start').click();await expect(canvas).toHaveAttribute('data-look-mode','locked');
+  // A headless OS may emit cursor-warp motion when granting the lock. Let that
+  // acquisition settle, then measure the injected relative turn from its actual pose.
+  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
+  const initialHeading=Number(await canvas.getAttribute('data-heading'));
+  const headingChange=async()=>{const delta=Number(await canvas.getAttribute('data-heading'))-initialHeading;return Math.atan2(Math.sin(delta),Math.cos(delta));};
   // Pointer-lock motion is relative to the frozen cursor. Browser-event injection avoids
   // a headless driver's own absolute-cursor bookkeeping, while using the real lock API.
   await page.evaluate(()=>document.dispatchEvent(new PointerEvent('pointermove',{movementX:100})));
-  await expect.poll(async()=>Number(await canvas.getAttribute('data-heading'))).toBeCloseTo(-.6);
+  await expect.poll(headingChange).toBeCloseTo(-.6);
   await page.keyboard.down('Shift');
   await page.evaluate(()=>document.dispatchEvent(new PointerEvent('pointermove',{movementX:100,shiftKey:true})));
-  await expect.poll(async()=>Number(await canvas.getAttribute('data-heading'))).toBeCloseTo(-1.2);
+  await expect.poll(headingChange).toBeCloseTo(-1.2);
   await page.keyboard.up('Shift');await page.keyboard.press('Escape');await expect(canvas).toHaveAttribute('data-look-mode','ready');
   const stopped=await canvas.getAttribute('data-heading');
   await page.evaluate(()=>document.dispatchEvent(new PointerEvent('pointermove',{movementX:100})));
@@ -85,7 +90,9 @@ test('pointer lock uses mouse motion, releases on Escape/blur and supports unava
 test('continuous observation archives without losing poses, time or earlier evidence',async({page})=>{
   test.setTimeout(60000);await ready(page);const clock=await page.locator('#clock').textContent();
   for(let batch=0;batch<2;batch++){
+    const archived=page.waitForResponse(r=>r.url().endsWith('/api/snapshot')&&!!r.request().postDataJSON()?.requestId,{timeout:20000});
     await page.evaluate(()=>{const input=document.querySelector<HTMLInputElement>('#head')!;for(let i=0;i<230;i++){input.value=String(i%2?10:20);input.dispatchEvent(new Event('input'));}});
+    const response=await archived;expect(response.ok(),await response.text()).toBe(true);
     await expect.poll(async()=>Number((await page.locator('#history-status').textContent())!.match(/観測 (\d+)/)![1])).toBeLessThan(224);
   }
   await expect(page.locator('#look-start')).toBeEnabled();await expect(page.locator('#clock')).toHaveText(clock!);
@@ -104,11 +111,14 @@ test('continuous observation archives without losing poses, time or earlier evid
 
 test('a lost save response retries the same archive without reset or duplicate evidence',async({page})=>{
   test.setTimeout(60000);await ready(page);let lost=false;
+  let archivePersisted!:()=>void;
+  const persisted=new Promise<void>(resolve=>{archivePersisted=resolve;});
   await page.route('**/api/snapshot',async route=>{
     const data=route.request().postDataJSON();
-    if(data.requestId&&!lost){lost=true;await route.fetch();await route.abort('failed');}else await route.continue();
+    if(data.requestId&&!lost){lost=true;const response=await route.fetch();expect(response.ok(),await response.text()).toBe(true);await route.abort('failed');archivePersisted();}else await route.continue();
   });
   await page.evaluate(()=>{const input=document.querySelector<HTMLInputElement>('#head')!;for(let i=0;i<255;i++){input.value=String(i%2?10:20);input.dispatchEvent(new Event('input'));}});
+  await persisted;
   await expect(page.locator('#history-retry')).toBeVisible();await expect(page.locator('#look-start')).toBeDisabled();
   const before=await save(page),heading=await page.locator('canvas').getAttribute('data-heading');
   const requestsBefore=Object.keys((await (await page.request.get('/api/state')).json()).state.snapshotRequests).length;
