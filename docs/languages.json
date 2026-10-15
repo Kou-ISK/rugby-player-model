@@ -1,0 +1,307 @@
+{
+  "schemaVersion": 1,
+  "pairs": [
+    {
+      "en": "AGENTS.md",
+      "ja": "AGENTS.ja.md",
+      "titleEn": "Research workflow instructions",
+      "titleJa": "研究ワークフローの指示"
+    },
+    {
+      "en": "CONTRIBUTING.md",
+      "ja": "CONTRIBUTING.ja.md",
+      "titleEn": "Research and contribute",
+      "titleJa": "研究と改善への参加"
+    },
+    {
+      "en": "LICENSE-SCOPE.md",
+      "ja": "LICENSE-SCOPE.ja.md",
+      "titleEn": "License scope — 2026-10-12",
+      "titleJa": "MITの適用範囲"
+    },
+    {
+      "en": "README.md",
+      "ja": "README.ja.md",
+      "titleEn": "Rugby Player Model",
+      "titleJa": "Rugby Player Model"
+    },
+    {
+      "en": "RUGBY_JUDGMENT.md",
+      "ja": "RUGBY_JUDGMENT.ja.md",
+      "titleEn": "Rugby judgment principles",
+      "titleJa": "ラグビーの判断原則"
+    },
+    {
+      "en": "docs/ARCHITECTURE.md",
+      "ja": "docs/ARCHITECTURE.ja.md",
+      "titleEn": "Research architecture",
+      "titleJa": "研究アーキテクチャ"
+    },
+    {
+      "en": "docs/COGNITIVE_RESEARCH.md",
+      "ja": "docs/COGNITIVE_RESEARCH.ja.md",
+      "titleEn": "Cognitive model and research-tool requirements",
+      "titleJa": "認知モデルと研究道具の要件"
+    },
+    {
+      "en": "docs/LIMITATIONS.md",
+      "ja": "docs/LIMITATIONS.ja.md",
+      "titleEn": "Reproducibility and limitations",
+      "titleJa": "再現性と限界"
+    },
+    {
+      "en": "docs/NAMING.md",
+      "ja": "docs/NAMING.ja.md",
+      "titleEn": "Names and compatibility",
+      "titleJa": "命名と互換性"
+    },
+    {
+      "en": "docs/README.md",
+      "ja": "docs/README.ja.md",
+      "titleEn": "Documentation",
+      "titleJa": "文書一覧"
+    },
+    {
+      "en": "docs/REPRODUCTION.md",
+      "ja": "docs/REPRODUCTION.ja.md",
+      "titleEn": "Reproduction manifest",
+      "titleJa": "再現manifest"
+    },
+    {
+      "en": "docs/decisions/ADR-002-research-boundaries.md",
+      "ja": "docs/decisions/ADR-002-research-boundaries.ja.md",
+      "titleEn": "ADR-002: Model, research and publication boundaries",
+      "titleJa": "ADR-002：モデル、研究、公開の境界"
+    },
+    {
+      "en": "docs/provenance/PROVENANCE.md",
+      "ja": "docs/provenance/PROVENANCE.ja.md",
+      "titleEn": "Provenance and authorized publication",
+      "titleJa": "来歴と公開許諾"
+    },
+    {
+      "en": "docs/provenance/PUBLICATION_SCOPE.md",
+      "ja": "docs/provenance/PUBLICATION_SCOPE.ja.md",
+      "titleEn": "Authorized publication scope",
+      "titleJa": "許諾された公開範囲"
+    },
+    {
+      "en": "evaluation/DATA_CARD.md",
+      "ja": "evaluation/DATA_CARD.ja.md",
+      "titleEn": "Data card — synthetic fixtures and private records",
+      "titleJa": "データカード — 合成fixtureと私的記録"
+    },
+    {
+      "en": "evaluation/PROTOCOL.md",
+      "ja": "evaluation/PROTOCOL.ja.md",
+      "titleEn": "Frozen evaluation conditions, anonymous judgment inputs and observation history",
+      "titleJa": "評価条件の事前凍結・匿名判断原則入力・首振り履歴"
+    },
+    {
+      "en": "evaluation/baselines/LEGACY_SESSION.md",
+      "ja": "evaluation/baselines/LEGACY_SESSION.ja.md",
+      "titleEn": "Legacy session fixture",
+      "titleJa": "旧sessionのfixture"
+    },
+    {
+      "en": "models/judgment/PLAYER_GUIDE.md",
+      "ja": "models/judgment/PLAYER_GUIDE.ja.md",
+      "titleEn": "Input guide for reasoning as one rugby player",
+      "titleJa": "一人のラグビー選手として判断するための入力ガイド"
+    },
+    {
+      "en": "models/judgment/README.md",
+      "ja": "models/judgment/README.ja.md",
+      "titleEn": "Judgment principles",
+      "titleJa": "判断原則"
+    },
+    {
+      "en": "models/judgment/RUGBY_JUDGMENT.md",
+      "ja": "models/judgment/RUGBY_JUDGMENT.ja.md",
+      "titleEn": "Rugby judgment principles — judgment draft 0.1",
+      "titleJa": "ラグビー判断原則 — ドラフト0.1"
+    },
+    {
+      "en": "models/judgment/archive/README.md",
+      "ja": "models/judgment/archive/README.ja.md",
+      "titleEn": "Archived judgment research sources",
+      "titleJa": "判断研究の原資料"
+    },
+    {
+      "en": "models/judgment/docs/EVALUATION_SCENES.md",
+      "ja": "models/judgment/docs/EVALUATION_SCENES.ja.md",
+      "titleEn": "Standalone judgment evaluation: synthetic scenes v1",
+      "titleJa": "判断原則単独評価：最小手順と合成シーン v1"
+    },
+    {
+      "en": "models/judgment/docs/REVIEW.md",
+      "ja": "models/judgment/docs/REVIEW.ja.md",
+      "titleEn": "Standalone judgment principles review pack",
+      "titleJa": "判断原則の単独レビュー"
+    },
+    {
+      "en": "models/player/MODEL_CARD.md",
+      "ja": "models/player/MODEL_CARD.ja.md",
+      "titleEn": "Model card — provisional research foundation",
+      "titleJa": "モデルカード — 暫定的な研究基盤"
+    },
+    {
+      "en": "models/player/README.md",
+      "ja": "models/player/README.ja.md",
+      "titleEn": "Player model",
+      "titleJa": "選手モデル"
+    },
+    {
+      "en": "models/player/spec/CLOSED_LOOP.md",
+      "ja": "models/player/spec/CLOSED_LOOP.ja.md",
+      "titleEn": "Closed-loop hypothesis v1",
+      "titleJa": "閉ループ仮説 v1"
+    },
+    {
+      "en": "models/player/spec/H-WM-1.md",
+      "ja": "models/player/spec/H-WM-1.ja.md",
+      "titleEn": "H-WM-1: receiver deliberation research mode",
+      "titleJa": "H-WM-1：受け手検討の研究モード"
+    },
+    {
+      "en": "models/player/spec/ORIENTATION_PHASE.md",
+      "ja": "models/player/spec/ORIENTATION_PHASE.ja.md",
+      "titleEn": "Orientation and possession hypothesis v1",
+      "titleJa": "身体方向と保持局面の仮説 v1"
+    },
+    {
+      "en": "tools/simulation/README.md",
+      "ja": "tools/simulation/README.ja.md",
+      "titleEn": "Synthetic simulation",
+      "titleJa": "合成シミュレーション"
+    },
+    {
+      "en": "tools/workbench/docs/DYNAMIC_SCENES.md",
+      "ja": "tools/workbench/docs/DYNAMIC_SCENES.ja.md",
+      "titleEn": "Research with dynamic scenes",
+      "titleJa": "動的な場面で研究する"
+    },
+    {
+      "en": "tools/workbench/docs/FIRST_RUN.md",
+      "ja": "tools/workbench/docs/FIRST_RUN.ja.md",
+      "titleEn": "First research session with synthetic data",
+      "titleJa": "初めての研究loop（公開合成チュートリアル）"
+    },
+    {
+      "en": "tools/workbench/docs/JUDGMENT_EVALUATION.md",
+      "ja": "tools/workbench/docs/JUDGMENT_EVALUATION.ja.md",
+      "titleEn": "Compare judgment principles without running the player model",
+      "titleJa": "選手モデルを実行せず判断原則を比較する"
+    },
+    {
+      "en": "tools/workbench/docs/LOCAL_BRIDGE.md",
+      "ja": "tools/workbench/docs/LOCAL_BRIDGE.ja.md",
+      "titleEn": "Local file/CLI bridge for conversational research",
+      "titleJa": "Codexと使うローカルfile/CLI bridge"
+    },
+    {
+      "en": "tools/workbench/docs/LOCAL_STORAGE.md",
+      "ja": "tools/workbench/docs/LOCAL_STORAGE.ja.md",
+      "titleEn": "Current Mac storage, startup and recovery",
+      "titleJa": "Macの保存先、起動、回復"
+    },
+    {
+      "en": "tools/workbench/docs/MAC_START.md",
+      "ja": "tools/workbench/docs/MAC_START.ja.md",
+      "titleEn": "Start research on Mac with generated 3D scenes and conversation",
+      "titleJa": "Macで生成3Dと会話から研究を始める"
+    },
+    {
+      "en": "tools/workbench/docs/PLAYER_VIEW.md",
+      "ja": "tools/workbench/docs/PLAYER_VIEW.ja.md",
+      "titleEn": "Looking around in player view",
+      "titleJa": "選手視点での見回し"
+    },
+    {
+      "en": "tools/workbench/docs/PRESENTATION.md",
+      "ja": "tools/workbench/docs/PRESENTATION.ja.md",
+      "titleEn": "Local connection between conversation and browser display",
+      "titleJa": "会話とブラウザ表示を結ぶローカル接続"
+    },
+    {
+      "en": "tools/workbench/docs/RESEARCH_LOOP.md",
+      "ja": "tools/workbench/docs/RESEARCH_LOOP.ja.md",
+      "titleEn": "Conduct a conversational research experiment",
+      "titleJa": "本人とCodexの最初の研究実験"
+    }
+  ],
+  "originals": [
+    {
+      "path": "docs/decisions/ADR-001-runtime.md",
+      "kind": "historical"
+    },
+    {
+      "path": "tools/workbench/docs/LOCAL_STORAGE_HISTORY.md",
+      "kind": "historical"
+    },
+    {
+      "path": "docs/verification/MAC_ACCEPTANCE.md",
+      "kind": "historical"
+    },
+    {
+      "path": "docs/verification/MAC_HEADLESS.md",
+      "kind": "historical"
+    },
+    {
+      "path": "docs/verification/MAC_RESEARCH_CYCLE.md",
+      "kind": "historical"
+    },
+    {
+      "path": "docs/verification/RESEARCH_READINESS.md",
+      "kind": "historical"
+    },
+    {
+      "path": "docs/verification/VERIFICATION.md",
+      "kind": "historical"
+    },
+    {
+      "path": "models/judgment/archive/judgment-principles-0.1-draft.md",
+      "kind": "frozen"
+    },
+    {
+      "path": "models/judgment/archive/judgment-principles-initial.md",
+      "kind": "frozen"
+    },
+    {
+      "path": "models/judgment/archive/review-protocol.md",
+      "kind": "frozen"
+    },
+    {
+      "path": "models/judgment/archive/evaluation-scenes.md",
+      "kind": "frozen"
+    },
+    {
+      "path": "LICENSE",
+      "kind": "legal-original"
+    },
+    {
+      "path": "models/player/LICENSE",
+      "kind": "legal-original"
+    },
+    {
+      "path": "models/judgment/LICENSE",
+      "kind": "legal-original"
+    },
+    {
+      "path": "THIRD-PARTY-NOTICES.md",
+      "kind": "legal-original"
+    },
+    {
+      "path": "tools/workbench/src/rendering/vendor/phrase2play/REUSE-NOTICE.md",
+      "kind": "legal-original"
+    },
+    {
+      "path": "tools/workbench/src/rendering/vendor/phrase2play/CURRENT-RIGHTS.md",
+      "kind": "legal-original"
+    },
+    {
+      "path": "models/player/spec/archive/receiver-deliberation-v1.md",
+      "kind": "frozen"
+    }
+  ]
+}

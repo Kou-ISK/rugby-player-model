@@ -99,3 +99,18 @@ test('R1: prefix reconstruction retains only calls actually applied before the r
  assert.deepEqual(initial.world.emittedCalls,at6.world.emittedCalls);assert.ok(initial.world.emittedCalls!.length>0);
  assert.ok(initial.world.emittedCalls!.every(call=>call.at<initial.world.time));assert.notDeepEqual(initial.world.emittedCalls,end.world.emittedCalls);
 });
+
+
+test('explicit snapshot continuation preserves acquired memory and leaves coaching replay and approvals unchanged',t=>{
+ const store=fixture(t),scene=store.createScene(definition()),at6=captureSceneAt(scene,defaultRulesA(),'B0',6),c=candidate(store,at6,undefined,2);
+ const original=JSON.stringify(store.read().candidates[c.id]),active=store.active();
+ const e=store.runExperiment(c.id,c.revision,5,'preview','snapshot');
+ assert.equal(e.results.recordedInput.source,'captured-snapshot');assert.equal(e.results.recordedInput.window,null);
+ assert.deepEqual(e.results.recordedInput.snapshot,at6);
+ for(const run of [e.results.recorded.before,e.results.recorded.after]){
+  assert.equal(run.frames[0].time,1.2);assert.equal(run.frames[1].time,1.4);assert.equal(run.finalTick,11);assert.equal(run.termination,'step-budget');
+ }
+ assert.deepEqual(e.candidate.coaching,c.coaching);assert.equal(JSON.stringify(store.read().candidates[c.id]),original);assert.deepEqual(store.active(),active);
+ assert.deepEqual(new Store(store.dir).read().experiments[e.id].results.recordedInput,e.results.recordedInput);
+ assert.throws(()=>store.runExperiment(c.id,c.revision,5,'preview','invalid' as any),/Invalid experiment start/);
+});

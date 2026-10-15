@@ -1,3 +1,4 @@
+import { openResearchTools } from './ui-helpers';
 import { test, expect } from '@playwright/test';
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -34,13 +35,14 @@ function cli(...args:string[]){
 }
 test.beforeAll(start);
 test.afterAll(async()=>{await stop();rmSync(session,{recursive:true,force:true});});
-test('synthetic coaching → return/revise → conditional transfer → independent A/B → two real server restarts → undo',async({page,request},info)=>{
- test.setTimeout(90000);
+test('synthetic coaching → return/revise → conditional transfer → independent model and principles → two real server restarts → undo',async({page,request},info)=>{
+ // This end-to-end flow starts three real servers and runs synchronous CLI checks.
+ test.setTimeout(180000);
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  const edit=JSON.parse(readFileSync(resolve(repo,'tools/workbench/examples/conditional-coaching-edit.json'),'utf8'));
  const draft={criteria:'SYNTHETIC ONLY: check evidence bounds and exceptions',noveltyAttestation:'not-used-for-coaching',cases:[{label:'EVALUATOR_ONLY_AUDIO',snapshot:cli('snapshot-export',cli('snapshot','--scene','audio','--seed','8123').snapshotId)},{label:'EVALUATOR_ONLY_OCCLUDED',snapshot:cli('snapshot-export',cli('snapshot','--scene','occluded','--seed','7181').snapshotId)}]};
  writeFileSync(join(session,'frozen.json'),JSON.stringify(draft));const frozen=cli('freeze-evaluation','--file',join(session,'frozen.json'));
- await page.goto(base);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
+ await page.goto(base);await openResearchTools(page);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
  await expect(page.locator('canvas')).toHaveAttribute('data-mode','first-person');
  await page.locator('#head').fill('-110');await page.locator('#head').dispatchEvent('input');
  await expect(page.locator('#beliefs')).toContainText('support-1');
@@ -62,7 +64,7 @@ test('synthetic coaching → return/revise → conditional transfer → independ
  writeFileSync(join(session,'edit.json'),JSON.stringify(edit));cli('edit',parent,'--file',join(session,'edit.json'),'--revision','1');
  await expect(page.locator('#candidate-context')).toContainText('revision 2',{timeout:10000});
  await page.locator('#review-reason').fill('SYNTHETIC: 近い脅威は例外にして対照を残す');
- await page.locator('#owner').check();await page.locator('#return-a').click();await expect(page.locator('#candidate-context')).toContainText('A: returned');
+ await page.locator('#owner').check();await page.locator('#return-a').click();await expect(page.locator('#candidate-context')).toContainText('選手モデル: returned');
  await expect(page.locator('#versions')).toHaveText('A0 / B0');
  await page.locator('#revise').click();await expect(page.locator('#candidate-context')).toContainText('親候補 '+parent);
  const child=await page.locator('#candidates').inputValue();expect(child).not.toBe(parent);
@@ -92,7 +94,7 @@ test('synthetic coaching → return/revise → conditional transfer → independ
  expect(packet.structuredAmendments).toHaveLength(1);
  await page.locator('#b-arm').selectOption('after');await page.locator('#b-cases').selectOption('frozen');
  const downloadPromise=page.waitForEvent('download');await page.locator('#b-packet').click();const download=await downloadPromise;
- expect(download.suggestedFilename()).toBe('B-anonymous-input.json');
+ expect(download.suggestedFilename()).toBe('judgment-input.json');
  expect(JSON.parse(readFileSync((await download.path())!,'utf8'))).toEqual(packet);
  await page.locator('#b-model').fill('Synthetic mock; no external AI called');
  await page.locator('#b-output').fill('Synthetic response: re-observe, except under nearby pressure.');
@@ -100,15 +102,16 @@ test('synthetic coaching → return/revise → conditional transfer → independ
  await page.locator('#save-b-review').click();await expect(page.locator('#b-review-status')).toContainText('1件');
  const approved=JSON.parse(readFileSync(join(session,'state.json'),'utf8'));
  expect(approved.bReviews[0].humanValidated).toBe(false);expect(approved.bReviews[0].arm).toBe('after');expect(approved.bReviews[0].group).toBe('frozen');expect(approved.bReviews[0].inputSha256).toMatch(/^[0-9a-f]{64}$/);
- await stop();await start();expect(JSON.parse(readFileSync(join(session,'state.json'),'utf8'))).toEqual(approved);
- await page.reload();await expect(page.locator('#versions')).toHaveText('A1 / B1');
+ // Detach the old Vite client before restart so its automatic reload cannot abort our navigation.
+ await page.goto('about:blank');await stop();await start();expect(JSON.parse(readFileSync(join(session,'state.json'),'utf8'))).toEqual(approved);
+ await page.goto(base);await openResearchTools(page);await expect(page.locator('#versions')).toHaveText('A1 / B1');
  await page.locator('#candidates').selectOption(child);await page.locator('#restore-candidate').click();await expect(page.locator('#intention')).toHaveText('scan');
  await page.locator('#experiments').selectOption(experimentId);await page.locator('#load-experiment').click();await expect(page.locator('#experiment-report')).toContainText(active.engineFingerprint);
  await page.locator('#owner').check();await page.locator('#undo-a').click();await expect(page.locator('#versions')).toHaveText('A0 / B1');
  await page.locator('#owner').check();await page.locator('#undo-b').click();await expect(page.locator('#versions')).toHaveText('A0 / B0');
  await page.locator('#restore-candidate').click();await expect(page.locator('#intention')).toHaveText('carry');
  const undone=JSON.parse(readFileSync(join(session,'state.json'),'utf8'));
- await stop();await start();await page.reload();await expect(page.locator('#versions')).toHaveText('A0 / B0');
+ await page.goto('about:blank');await stop();await start();await page.goto(base);await openResearchTools(page);await expect(page.locator('#versions')).toHaveText('A0 / B0');
  expect(JSON.parse(readFileSync(join(session,'state.json'),'utf8'))).toEqual(undone);
  expect(cli('experiment',experimentId)).toEqual(active);expect(cli('context',parent).decisions.A).toBe('returned');
  expect(errors).toEqual([]);

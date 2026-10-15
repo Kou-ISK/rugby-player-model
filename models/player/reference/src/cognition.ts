@@ -1,3 +1,5 @@
+import { enhanceLoop } from './loop.js';
+import { assessSituation } from './situation.js';
 import { validateMode, selectDeliberation, type ExecutionMode } from './execution-mode.js';
 import type { Action, Belief, BodyCommand, Bundle, Evaluation, Memory, Profile, RulesA, Trace } from './contracts.js';
 import { validate, validateEvidence } from './validation.js';
@@ -27,6 +29,8 @@ function evaluate(bundle:Bundle,memory:Memory,profile:Profile,rules:RulesA,mode?
     if (!latest.has(key) || latest.get(key)!.observedAt < p.observedAt) latest.set(key, belief);
   }
   const beliefs = [...latest.values()].filter(b => b.currentConfidence >= rules.minimumConfidence);
+  const situation=bundle.contractVersion>=2?assessSituation(bundle,beliefs,rules):undefined;
+  const attackDirection=situation?.ownAttackDirection??1;
   const deliberation=mode?selectDeliberation(beliefs,attended,mode):undefined;
   const predictions: Trace['predictions'] = beliefs.map(b => ({ entityId: b.entityId, basisObservedAt: b.observedAt,
     ...(b.position ? { position: { ...b.position } } : {}), uncertaintyRadius: b.uncertaintyRadius, method: 'last-observation' }));
@@ -59,9 +63,9 @@ function evaluate(bundle:Bundle,memory:Memory,profile:Profile,rules:RulesA,mode?
   const assessment: Trace['assessment'] = { uncertainThreat, informationValue: selectedScan?.value ?? 0,
     ...(selectedScan ? { scanTarget: selectedScan.target } : {}) };
   const fresh = beliefs.filter(b => b.modality === 'vision' && b.age <= .5 && b.position);
-  const legacyReceiver = fresh.filter(b => b.relation === 'teammate' && b.position!.z < bundle.self.position.z - .5 &&
+  const legacyReceiver = fresh.filter(b => b.relation === 'teammate' && (b.position!.z-bundle.self.position.z)*attackDirection < -.5 &&
     dist(b.position!, bundle.self.position) <= profile.ability.passRange).sort((a, b) => a.entityId.localeCompare(b.entityId))[0];
-  const receiver=deliberation?deliberation.selected.find(b=>b.modality==='vision'&&b.age<=.5&&b.position&&b.relation==='teammate'&&b.position.z<bundle.self.position.z-.5&&dist(b.position,bundle.self.position)<=profile.ability.passRange):legacyReceiver;
+  const receiver=deliberation?deliberation.selected.find(b=>b.modality==='vision'&&b.age<=.5&&b.position&&b.relation==='teammate'&&(b.position.z-bundle.self.position.z)*attackDirection<-.5&&dist(b.position,bundle.self.position)<=profile.ability.passRange):legacyReceiver;
   const threat = fresh.some(b => b.relation === 'opponent' && dist(b.position!, bundle.self.position) < 4);
   const unknown = fresh.filter(b => b.kind === 'player').length === 0;
   const signals = {
@@ -73,7 +77,7 @@ function evaluate(bundle:Bundle,memory:Memory,profile:Profile,rules:RulesA,mode?
   const appliedRules = (rules.contextRules ?? []).filter(rule =>
     (rule.when.possession === 'any' || (rule.when.possession === 'has-ball') === bundle.self.hasBall) &&
     signals[rule.when.evidence] && !(rule.when.unlessCloseThreat && threat));
-  const personal: Record<Action, number> = {
+  const personal: Record<string, number> = {
     scan: (unknown ? .85 : .25) + rules.scanBias + assessment.informationValue - (threat ? .8 : 0),
     hold: threat ? .9 : .1 + uncertainThreat * .6,
     carry: profile.preference.carry + rules.carryBias - (threat ? .5 : 0) - uncertainThreat * 1.2,
@@ -81,15 +85,16 @@ function evaluate(bundle:Bundle,memory:Memory,profile:Profile,rules:RulesA,mode?
     support: profile.preference.support - uncertainThreat * .8,
   };
   // Declared conditional preferences cannot change evidence or bypass hard eligibility.
-  for (const rule of appliedRules) personal[rule.action] += rule.weight;
-  const allowed: Record<Action, boolean> = { scan: true, hold: true, carry: bundle.self.hasBall && !threat,
-    pass: bundle.self.hasBall && !!receiver, support: !bundle.self.hasBall };
-  const reason: Record<Action, string> = {
+  for (const rule of appliedRules) if(rule.action in personal)personal[rule.action] += rule.weight;
+  const allowed: Record<string, boolean> = { scan: true, hold: true, carry: bundle.self.hasBall && !threat,
+    pass: bundle.self.hasBall && !!receiver, support: !bundle.self.hasBall && (!situation||situation.phase==='attack-support') };
+  if(situation?.actionScope==='confirmation-and-hold-only'){allowed.carry=false;allowed.pass=false;allowed.support=false;}
+  const reason: Record<string, string> = {
     scan: selectedScan ? `Seek new evidence toward ${selectedScan.target.modality} cue ${selectedScan.target.sourceId} observed at ${selectedScan.target.observedAt}s; location remains uncertain.` : 'Reduce uncertainty by changing head direction; do not assume unseen space is clear.',
     hold: 'Preserve current body state while obtaining evidence.',
     carry: threat ? 'Close observed opponent: contact skill unsupported.' : `Proprioceptive possession; remembered uncertainty risk ${uncertainThreat.toFixed(3)} penalizes progress. Unseen threats remain possible.`,
     pass: deliberation ? (receiver ? 'Selected fresh backward receiver within ability range; receiver deliberation only, pass execution unsupported.' : 'No eligible receiver in the deliberation set; retained evidence may exist outside capacity.') : receiver ? 'Fresh observed backward receiver within ability range; pass execution unsupported.' : 'No fresh observed backward receiver within range.',
-    support: 'No proprioceptive possession; move slowly along own heading, not toward hidden ball.',
+    support: situation?`Phase ${situation.phase}: support requires recent teammate possession evidence. Defense and unknown possession only permit confirmation/hold; defense skills are not implemented.`:'No proprioceptive possession; move slowly along own heading, not toward hidden ball.',
   };
   const evaluation: Evaluation[] = (['scan', 'hold', 'carry', 'pass', 'support'] as Action[]).map(action => ({
     action, allowed: allowed[action], reason: reason[action] + appliedRules.filter(r => r.action === action).map(r => ` Conditional principle ${r.id}: ${r.weight}.`).join(''),
@@ -106,9 +111,10 @@ function evaluate(bundle:Bundle,memory:Memory,profile:Profile,rules:RulesA,mode?
   if (intention.action === 'pass') output.push({ channel: 'pass', status: 'unsupported', value: intention.targetId!, reason: 'Ball release/catch mechanics not implemented; intention only.' });
   const call = [...appliedRules].filter(r => r.action === intention.action && r.call).sort((a,b) => b.weight-a.weight || a.id.localeCompare(b.id))[0];
   if (call) output.push({ channel: 'call', status: 'supported', value: call.call!, reason: `Semantic simulated event from ${call.id}; no acoustic voice or teammate response is implemented.` });
-  return { sensation: structuredClone(bundle), attention: attended.map(p => p.id),
+  const result:Trace={ sensation: structuredClone(bundle), attention: attended.map(p => p.id),
     workingMemory: beliefs.slice(-4), longTermMemory: { episodes, lastTime: bundle.time }, beliefs,
-    predictions, assessment, modelRevision: mode?'cognition-h-wm-1-v1':'cognition-0.3', ...(deliberation?{traceVersion:2 as const,deliberation}:{}), appliedRules: appliedRules.map(({id,action,weight,call})=>({id,action,weight,...(call?{call}:{})})), evaluation, intention, output, rulesVersion: rules.version };
+    predictions, assessment, modelRevision: situation?'cognition-orientation-phase-v1':mode?'cognition-h-wm-1-v1':'cognition-0.3', ...(deliberation?{traceVersion:2 as const,deliberation}:{}), ...(situation?{traceVersion:3 as const,situation}:{}), appliedRules: appliedRules.map(({id,action,weight,call})=>({id,action,weight,...(call?{call}:{})})), evaluation, intention, output, rulesVersion: rules.version };
+  return bundle.contractVersion===3?enhanceLoop(result,memory,profile,rules):result;
 }
 export const capabilities = {
   locomotion: 'supported', headYaw: 'supported', call: 'supported', gaze: 'unsupported', voice: 'unsupported',

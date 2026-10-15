@@ -98,7 +98,13 @@ export function validateProposal(raw:string|Uint8Array,currentEngine:EngineDescr
     if(!a||run.semantic.cases.length!==m.caseRefs.length)throw new Error('Run case coverage mismatch');const proposed=read<AArtifact>(a.proposedArtifact);
     for(const [index,c] of run.semantic.cases.entries()){const input=read<ProposalCase>(m.caseRefs[index]);if(c.caseId!==input.id)throw new Error('Run case identity mismatch');
      for(const [arm,mode,rules] of [[c.before,input.input.executionMode,input.input.rules],[c.after,read<Config>(proposed.config).executionMode,read<RulesA>(proposed.rules)]] as const){if(canonicalWire(arm.trace.sensation)!==canonicalWire(input.input.bundle)||canonicalWire(arm.nextMemory)!==canonicalWire(arm.trace.longTermMemory)||canonicalWire(arm.executionMode)!==canonicalWire(mode)||arm.trace.rulesVersion!==rules.version)throw new Error('Run permitted input/config mismatch');
+      if(input.input.bundle.contractVersion===3){
+       if(arm.traceVersion!==4||arm.trace.traceVersion!==4||arm.trace.modelRevision!=='cognition-loop-v1'||!arm.trace.loop||canonicalWire(arm.trace.loop.ability)!==canonicalWire(input.input.profile.ability)||(mode.mode==='legacy'?arm.trace.deliberation!==undefined:canonicalWire(arm.trace.deliberation?.executionMode)!==canonicalWire(mode))||canonicalWire(arm.trace.loop.configuration)!==canonicalWire(rules))throw new Error('Run loop contract/config mismatch');
+      }else if(input.input.bundle.contractVersion===2){
+       if(arm.traceVersion!==3||arm.trace.traceVersion!==3||arm.trace.modelRevision!=='cognition-orientation-phase-v1'||!arm.trace.situation||(mode.mode==='legacy'?arm.trace.deliberation!==undefined:canonicalWire(arm.trace.deliberation?.executionMode)!==canonicalWire(mode)))throw new Error('Run trace contract/mode mismatch');
+      }else {
       if(mode.mode==='legacy'?(arm.traceVersion!==1||arm.trace.modelRevision!=='cognition-0.3'||arm.trace.deliberation!==undefined||arm.trace.traceVersion!==undefined):(arm.traceVersion!==2||arm.trace.modelRevision!=='cognition-h-wm-1-v1'||arm.trace.traceVersion!==2||canonicalWire(arm.trace.deliberation?.executionMode)!==canonicalWire(mode)))throw new Error('Run trace contract/mode mismatch');
+      }
      }
     }
    }else if(run.semantic.cases.length)throw new Error('Undeclared A results');

@@ -6,6 +6,9 @@ import { fileURLToPath } from 'node:url';
 import { createServer } from 'node:http';
 import { createServer as createViteServer } from 'vite';
 import { Store, ConflictError } from './store';
+import { PresentationHub } from './presentation';
+const presentation = new PresentationHub();
+import { digest } from '../../experiments/src/evaluation';
 import { experimentSummary } from '../../experiments/src/records';
 if(Number(process.versions.node.split('.')[0])!==24)throw new Error('Node 24 is required by the pinned research runtime');
 const port = Number(process.env.PORT || 5173);
@@ -24,7 +27,7 @@ server.on('request', async (req, res) => {
   try {
     if (req.headers.origin && !hosts.map(h => `http://${h}`).includes(req.headers.origin)) throw new Error('Invalid Origin');
     if (req.method === 'GET') {
-      if (req.url === '/api/state') { const state = store.read(); res.end(JSON.stringify({ apiVersion: 7, state:{...state,evidenceGraph:{nodeCount:state.evidenceGraph.nodes.length,linkCount:state.evidenceGraph.links.length,decisionCount:state.evidenceGraph.decisions.length},publicExports:state.publicExports.map(({package:pkg,...entry})=>({...entry,proposalId:pkg.manifest.proposalId})),importedProposals:Object.fromEntries(Object.entries(state.importedProposals).map(([id,{package:pkg,runs,...entry}])=>[id,{...entry,title:pkg.manifest.title,targets:pkg.manifest.targets.map(t=>t.kind),runs:runs.map(r=>({id:r.run.id,matches:r.matches,resultDigest:r.run.resultDigest}))}])),scenes:Object.fromEntries(Object.entries(state.scenes).map(([id,versions])=>[id,versions.map(({definition,trackingIds,...ref})=>({...ref,durationTicks:definition.durationTicks,actorCount:definition.actors.length}))])),evaluationSets:Object.fromEntries(Object.entries(state.evaluationSets).map(([id,set])=>[id,{id,at:set.at,digest:set.digest,caseCount:set.draft.cases.length}])),experiments:Object.fromEntries(Object.entries(state.experiments).map(([id,e])=>[id,experimentSummary(e)]))}, active: store.active(state) })); }
+      if (req.url === '/api/state') { const state = store.read(); res.end(JSON.stringify({ apiVersion: 11, state:{...state,evidenceGraph:{nodeCount:state.evidenceGraph.nodes.length,linkCount:state.evidenceGraph.links.length,decisionCount:state.evidenceGraph.decisions.length},publicExports:state.publicExports.map(({package:pkg,...entry})=>({...entry,proposalId:pkg.manifest.proposalId})),importedProposals:Object.fromEntries(Object.entries(state.importedProposals).map(([id,{package:pkg,runs,...entry}])=>[id,{...entry,title:pkg.manifest.title,targets:pkg.manifest.targets.map(t=>t.kind),runs:runs.map(r=>({id:r.run.id,matches:r.matches,resultDigest:r.run.resultDigest}))}])),scenes:Object.fromEntries(Object.entries(state.scenes).map(([id,versions])=>[id,versions.map(({definition,trackingIds,...ref})=>({...ref,durationTicks:definition.durationTicks,actorCount:definition.actors.length}))])),evaluationSets:Object.fromEntries(Object.entries(state.evaluationSets).map(([id,set])=>[id,{id,at:set.at,digest:set.digest,caseCount:set.draft.cases.length}])),experiments:Object.fromEntries(Object.entries(state.experiments).map(([id,e])=>[id,experimentSummary(e)]))}, active: store.active(state) })); }
       else if (req.url === '/api/export-b') res.end(JSON.stringify(store.exportBData()));
       else { res.writeHead(404).end('{}'); }
       return;
@@ -34,6 +37,22 @@ server.on('request', async (req, res) => {
     for await (const chunk of req) { bytes+=chunk.length;if(bytes>limit)throw new Error('Request too large');chunks.push(chunk); }
     const data = parseStrict(Buffer.concat(chunks)) as Record<string,any>; let result: unknown;
     switch (req.url) {
+      case '/api/display-poll': {
+        const command=presentation.poll(data.clientId,data.display);
+        result={command,...(command?.kind==='present'?{snapshot:store.read().snapshots[command.snapshotId!]}:{})};break;
+      }
+      case '/api/display-complete': {
+        const old=store.read().presentationReceipts?.[data.id];if(old){if(old.clientId!==data.clientId)throw new Error('Receipt client mismatch');result=old;break;}
+        if(data.comparison){const c=data.comparison,e=store.read().experiments[c.experimentId],frame=e?.results.recorded[c.arm as 'before'|'after']?.frames[c.frame];if(!frame||data.display?.time!==frame.time)throw new Error('Comparison frame mismatch');}
+        result=presentation.complete(data,snapshot=>store.saveSnapshot(snapshot));if((result as any).status==='completed')store.recordPresentation(result as any);break;
+      }
+      case '/api/display-control': {
+        if(data.token!==instanceToken)throw new Error('Wrong session instance');
+        if(data.action==='views')result=presentation.list();
+        else if(data.action==='request'){const old=store.read().presentationReceipts?.[data.request?.id];if(old){for(const key of ['clientId','expectedRevision','kind','snapshotId','experimentId','arm','frame'] as const)if(old[key]!==data.request[key])throw new Error('Request ID already used with different input');result=old;}else result=presentation.request(data.request,id=>!!store.read().snapshots[id],(id,arm,index)=>!!store.read().experiments[id]?.results.recorded[arm as 'before'|'after']?.frames[index]);}
+        else if(data.action==='result')result=store.read().presentationReceipts?.[data.id]??presentation.result(data.id);
+        else throw new Error('Unknown display control');break;
+      }
       case '/api/stop': if(data.token!==instanceToken)throw new Error('Wrong session instance');result={status:'stopping'};setImmediate(()=>void stop());break;
       case '/api/proposal-export': result=store.exportProposal(data.id,data.expectedRevision,data.scope);break;
       case '/api/proposal-validate': result=store.validateProposal(data.packageText);break;
@@ -51,7 +70,7 @@ server.on('request', async (req, res) => {
       case '/api/scene-create': result=store.createScene(data.definition,data.generationSeed??null);break;
       case '/api/scene-revise': result=store.reviseScene(data.id,data.expectedRevision,data.definition);break;
       case '/api/application': result=store.recordApplication(data.point);break;
-      case '/api/snapshot': result = { id: store.saveSnapshot(data.snapshot) }; break;
+      case '/api/snapshot': result = { id: store.saveSnapshot(data.snapshot,data.requestId), sha256:digest(data.snapshot) }; break;
       case '/api/propose': result = store.propose(data.snapshotId, data.feedback,data.evaluationSetId,data.window); break;
       case '/api/edit': result = store.edit(data.id, data.patchA, data.principle, data.expectedRevision,data.notes,data.executionMode,data.replaceB); break;
       case '/api/review': store.review(data.id, data.target, data.decision, data.actor, data.expectedRevision,data.reason); result = store.active(); break;

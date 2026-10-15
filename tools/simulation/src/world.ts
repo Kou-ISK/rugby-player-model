@@ -4,6 +4,11 @@ export const distance = (a: Vec, b: Vec) => Math.hypot(a.x - b.x, a.z - b.z);
 export const angle = (v: number) => Math.atan2(Math.sin(v), Math.cos(v));
 export const bearing = (a: Vec, b: Vec) => Math.atan2(b.x - a.x, b.z - a.z);
 export const HORIZONTAL_FOV = Math.PI / 2;
+/** Authored optical condition, shared by sensing and rendering. Absent = legacy 90°. */
+export const horizontalFov = (world:World):number => {
+  const degrees=world.dynamic?.scene.definition.horizontalFovDegrees;
+  return degrees===undefined?HORIZONTAL_FOV:degrees*Math.PI/180;
+};
 export function makeWorld(scene: SceneId, seed: number): World {
   if(scene==='dynamic')throw new Error('Dynamic scenes require an imported scene revision');
   if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) throw new Error('seed must be uint32');
@@ -20,6 +25,9 @@ export function makeWorld(scene: SceneId, seed: number): World {
     entities[0].position = { x: 5 + jitter(), z: -3 + jitter() };
     entities.push(player('wide-threat', -9 + jitter(), 7 + jitter(), 'red'));
   }
+  // Default authored setup: opponents face this initial observer; teammates face the attack.
+  // Dynamic scenes retain their explicit body yaw, including deliberate back-facing poses.
+  for (const entity of entities) entity.yaw = entity.team === 'red' ? bearing(entity.position, body.position) : body.yaw;
   entities.push({ id: 'ball', position: body.hasBall ? { x: 0, z: .4 } : { x: 2, z: 9 }, kind: 'ball', team: 'none', radius: .18 });
   return { scene, seed, time: 0, playerId: 'self', body, entities,
     calls: scene === 'audio' ? [{ id: 'call-left', position: { x: -8, z: -4 }, cue: 'support-call' }] : [] };

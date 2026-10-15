@@ -1,4 +1,4 @@
-import type {StandaloneBPacket,BTextReference,BAssessment} from './b-standalone';
+import type {StandaloneBPacket,BTextReference,BAssessment} from './judgment-evaluation';
 import type {ProposalPackage,ProposalRun,ContentRef} from './proposal-types';
 export type ImportedProposal={localCandidateId:string;proposalId:string;revision:number;manifestSha256:string;status:'import-inert';package:ProposalPackage;decisions:{A:'pending'|'approved'|'rejected';B:'pending'|'approved'|'rejected'};runs:{run:ProposalRun;matches:boolean|null}[]};
 export type PublicExport={candidateId:string;candidateRevision:number;scopeHash:string;package:ProposalPackage};

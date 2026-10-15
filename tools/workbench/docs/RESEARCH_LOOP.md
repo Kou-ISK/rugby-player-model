@@ -1,39 +1,50 @@
-# 本人とCodexの最初の研究実験
+# Conduct a conversational research experiment
 
-このloopの目的は、本人の指導を条件付き仮説として明示し、適用場面と反例の両方で試して残すことです。動作が変わるだけでは改善とは判定しません。本人が画面を見て行う最初の実験は未実施です。
+[English](RESEARCH_LOOP.md) | [日本語](RESEARCH_LOOP.ja.md)
 
-事前凍結・匿名B比較・首振り履歴の現行手順は [EVALUATION_PROTOCOL.md](../../../evaluation/PROTOCOL.md)。未使用条件で試す場合、指導を入力する前にfreezeします。固定8ケースだけでは未知への転用評価を完了した扱いにしません。
+The purpose is to turn coaching into a conditional hypothesis, test both supporting conditions and counterexamples, and preserve the evidence. Changed behavior alone is not improvement. Session records establish actual execution, human assessment and adoption status.
 
-## 1. 場面と指導を保存
+## Facilitation and handoffs
 
-一人称で首を振る／再生／停止し、短い指導を入力して候補を保存します。scene・seed・time・player、身体／首、観測と履歴、profile、A/B基準版を記録します。`context CANDIDATE_ID` または「Codex用の観測contextを保存」でCodexへ渡します。世界真値のenvelopeは含まれません。
+Research concerns how limited perception and memory support relational/affordance inference, goal-directed choice and revision after new observations. Generated scenes discriminate mechanisms; a coach's explanation alone does not measure human cognition.
 
-本人への聞き返しが必要なのは、指導がどの観測条件に適用され、何を変えずに残すかが不明なときです。Codexは候補を編集できますが、本当の研究原則の採用を代行しません。
+The owner confirms scene meaning and supplies coaching, decisive cues and exceptions. Codex facilitates, prepares/presents scenes, separates original wording from interpretation, and records hypotheses, controls and outcomes. Do not stop the conversation by asking the owner to select CLI procedures.
 
-## 2. 条件・例外・予測・反例を書く
+1. State the current question, stage and one requested owner action. Label the display as a motor trial, hypothesis-forming layout comparison or model evaluation.
+2. Confirm meaning before coaching; fix ambiguous teams, target or body direction. Save displayed inputs and normally ask one concrete question. Do not score control mistakes as cognitive decisions.
+3. Restate the hypothesis as information → predicted relation → selection/continuation/cancellation conditions. Separate explicit coaching, assistant interpretation and unresolved points. Ask only about ambiguities that affect the decision.
+4. Continue to a discriminating comparison rather than ending after saving text. Choose one variation in distance, orientation, motion or observation freshness; record fixed/changed quantities and the question before presenting. Never invent the owner's answer or acceptance.
+5. Separate executable mechanisms from judgment-text candidates. Unsupported mechanisms require code proposals. Weight changes, forced actions and successful rendering are not cognitive learning. Evaluate documents with identical observations in independent no-principles/previous/proposed arms.
+6. State findings, remaining counterexamples and the next comparison/question. Wait for the owner's independent target/version decisions when adopting. Scene counts and success counts alone do not end research.
 
-[合成例](../examples/conditional-coaching-edit.json)は「保持中で新鮮な受け手情報がなければ再観測する。ただし観測上の近い脅威は例外」です。`notes.rationale` に指導から変更案への理由、`expectedEffect` に対象場面の予測、`counterexample` に変えてはいけない条件を書きます。Bの条件・判断基準・優先度・例外・不明時・根拠は独立に編集します。
+Keep a private `work/` checkpoint with question/stage, source snapshots and receipts, original coaching and interpretation, hypothesis/counterexamples, next scene/question and limitations. Preserve the distinction between forced motor previews and autonomous mechanism evaluation. For a configured Mac use [MAC_START](MAC_START.md); replace development `.rpm/` paths below with absolute private-session paths. For a new installation use [FIRST_RUN](FIRST_RUN.md).
+
+## 1. Capture coaching and acquired evidence
+
+Look, play and pause in first person; capture through [presentation transport](PRESENTATION.md) or save manual feedback in the UI. Preserve scene/seed/time/player, body/head, observations/history, profile and both baseline versions. `context CANDIDATE_ID` exports player-available evidence without world truth. Clarify unclear application conditions and invariants; Codex may edit candidates but cannot make real adoption decisions for the owner.
+
+## 2. Write conditions, exceptions, predictions and counterexamples
+
+The [synthetic example](../examples/conditional-coaching-edit.json) requests reobservation when holding the ball without fresh receiver evidence, except under an observed close threat. Fill `notes.rationale`, `expectedEffect` and `counterexample`; independently fill principle conditions, criteria, priority, exceptions, uncertainty and evidence.
 
 ```sh
 npm run --silent bridge -- context CANDIDATE_ID > .rpm/context.json
 npm run bridge -- edit CANDIDATE_ID --file .rpm/edit.json --revision CONFIRMED_REVISION
 ```
 
-Aの限定的な宣言ルールは次の語彙を使います。scene・seed・見えない選手・将来の真値で分岐する欄はありません。新しい機構が必要なら、候補JSONで表現したふりをせずコード差分として研究します。
-
-| 欄 | 選択肢／意味 |
+| Field | Meaning |
 |---|---|
-| `when.possession` | `any` / `has-ball` / `no-ball`。自己の合成保持感覚 |
-| `when.evidence` | `no-fresh-receiver` / `fresh-receiver` / `stale-player` / `heard-call` / `missing-player-vision` / `observed-ball`。現在の観測と記憶に由来 |
-| `when.unlessCloseThreat` | 観測上の近い脅威があるなら適用しない。隠れた脅威が不存在という意味ではない |
-| `action` / `weight` | scan・hold・carry・pass・supportのスコアへ−2〜2を加算。戦術との混合前で、硬い実行資格は変更しない |
-| `call`（任意） | `support-call` / `warning-call`。その規則の行動が選ばれた場合だけ意味的イベントを出す |
+| `when.possession` | `any`, `has-ball`, `no-ball`: synthetic self possession |
+| `when.evidence` | `no-fresh-receiver`, `fresh-receiver`, `stale-player`, `heard-call`, `missing-player-vision`, `observed-ball`: acquired evidence only |
+| `when.unlessCloseThreat` | Skip under an observed close threat; does not prove unseen threats absent |
+| `action` / `weight` | Add −2 to 2 to scan/hold/carry/pass/support scores before tactical mixing; cannot override eligibility |
+| Optional `call` | `support-call` / `warning-call`, emitted only if the rule's action is selected |
 
-`contextRules` は最大32個・一意IDの配列です。編集は配列全体を置換するので、残す既存原則も含めてください。複数の該当規則は加算されるため、重複した意味の規則が過大な重みを作らないかレビューします。個人選好や戦術遵守が強ければ予想と違う行動になることも試験対象です。callは音声合成でも他選手の反応でもなく、自己の新しい聴覚証拠へ戻しません。
+`contextRules` holds at most 32 unique IDs; editing replaces the entire list. Retain existing rules and review overlapping additive weights. Strong preferences/tactical adherence can change results and must be tested. Calls are semantic events, not voice, teammate response or new self-hearing. There is no scene/seed/hidden-player/future-truth predicate. A new mechanism needs a code change, not an invented JSON patch.
 
-## 3. 未採用のまま実験を記録
+## 3. Record before adoption
 
-「未採用候補で再実行・記録」で1〜20stepを実行します。1stepは0.2秒。記録場面と8つの固定回帰ケースを、指導候補のprofileを全てへ固定してbefore/afterで再生します。事前凍結setを候補作成時に選んだ場合は、別のfrozenTrialsも保存します。行動が違えば、その後の観測が異なることはあります。
+Run 1–20 steps of 0.2 seconds for the captured scene and eight fixed regressions, using the candidate's entire profile in both arms. Frozen sets selected before coaching add separate `frozenTrials`. Later observations may diverge after different actions.
 
 ```sh
 npm run --silent bridge -- run CANDIDATE_ID --revision CONFIRMED_REVISION --steps 5 --mode preview > .rpm/experiment-preview.json
@@ -41,61 +52,51 @@ npm run bridge -- experiments
 npm run --silent bridge -- experiment EXPERIMENT_ID > .rpm/experiment.json
 ```
 
-`preview` 簡易比較は保存ファイル自体を変えません。`run --mode preview` は実験記録だけを保存し、active A/Bや採用状態を変えません。各実験は候補全文・revision・理由・初期入力・before/after A・B文書／構造化追加原則・各step trace・coreソース識別を固定します。Node/platform/arch、Git commitとdirty状態、lock・snapshot・結果・B文書のSHA256も保存します。snapshotと結果のhashは保存オブジェクトの `JSON.stringify` UTF-8に対するSHA256です。Git情報を取得できないコピー配布ではnullと記録し、成功を推測しません。保存結果の表示は再計算しません。ソースを書き換えた場合はserverを再起動してから記録します。
+Quick `preview` does not change session files. `run --mode preview` stores an experiment without changing adoption/active versions. It freezes candidate/revision/notes, initial input, both rule sets, judgment Markdown/amendments, traces and engine identity. Runtime/platform/architecture, Git commit/dirty status and lock/snapshot/result/document hashes accompany it. Snapshot/result SHA256 uses UTF-8 `JSON.stringify` of the saved object. Unavailable Git metadata is null. Viewing results does not recompute them; restart after source changes before recording.
 
-合成例の期待差分は記録場面carry→scan、別場面carrier-openもcarry→scan。一方、圧力下hold、新鮮な受け手pass、非保持supportは維持します。5種類すべての定数行動stubと旧 `scanBias:2` はこの受入条件に失敗します。これは仕組みを確認する回帰試験であり、公開された8ケースを将来も「未知」と呼べません。実研究では本人が未使用の場面・条件を別途選び、候補作成前に予測と失敗条件を記録します。
+The example expects carry → scan in the recorded and carrier-open conditions while retaining hold under pressure, pass with a fresh receiver and support without possession. All five constant-action controls and the old `scanBias:2` change fail this acceptance condition. This is a regression of the mechanism, not unseen validation. Real research requires separately chosen unused conditions, predictions and failure criteria before proposing.
 
-## 4. 本人が差戻し／採用する
+## 4. Owner return and adoption
 
-差戻しには理由が必要です。いずれかのA/Bがレビュー済みになると元候補は不変です。「同場面で新候補」は観測・記憶・profileを保持し、現在の承認A/Bを基準として親ID付きの新しいpending候補を作ります。コピーされた差分は新しい基準に対して再点検します。特にcontextRulesの全置換による既存原則の消去に注意します。
-
-```sh
-# このreturnは本人が意図して実行する操作
-npm run bridge -- return CANDIDATE_ID --target A --by owner --revision CONFIRMED_REVISION --reason "差戻し理由"
-# 派生候補を作るだけでは採用されない
-npm run bridge -- revise CANDIDATE_ID --revision CONFIRMED_REVISION --reason "修正方針"
-```
-
-内容を確認した本人がAとBを別々に採用します。Aだけ採用してBを保留することも可能です。同じB原則IDを改訂すると現行文書では置換し、旧版には旧文章を残します。別クライアントが候補を編集するとrevision競合409で拒否し、再確認が必要です。最新revisionを自動取得して承認する処理を作りません。
-
-採用後は `run --mode active` または「現在の承認版で再実行・記録」を実行し、採用前の記録と比べます。合成試験のowner操作は実研究原則への本人承認ではありません。
-
-## 5. Bを独立に試す
-
-保存した実験を選び「匿名B入力」。または以下を実行します。
+Return requires a reason. Once either target is reviewed the original candidate becomes immutable. `revise` creates a pending child with the same evidence/profile and current bases, retaining the parent ID. Recheck copied patches against new bases, especially whole-list rules.
 
 ```sh
-npm run --silent bridge -- b-packet EXPERIMENT_ID --arm after --cases frozen > .rpm/B-after.json
-npm run --silent bridge -- b-evaluator-map EXPERIMENT_ID > .rpm/B-evaluator-only.json
-npm run --silent bridge -- export-b-json > .rpm/B-current.json
-npm run bridge -- b-review EXPERIMENT_ID --file .rpm/B-response.json
+# Only when the owner explicitly requests this review action:
+npm run bridge -- return CANDIDATE_ID --target player --by owner --revision CONFIRMED_REVISION --reason "Reason for return"
+npm run bridge -- revise CANDIDATE_ID --revision CONFIRMED_REVISION --reason "Revision plan"
 ```
 
-model用入力は指定した一群のB文書／構造化追加原則と匿名ケースだけです。原則なし群は --arm none、before群は --arm before。固定回帰には --cases regression を指定し、未見と呼びません。評価用ラベル・scene・seed・採点基準・A結果・worldは別の評価側対応表に残し、モデルへ渡しません。構造化JSONは追加原則であり、baseline全文の機械構造化を主張しません。
+The owner may adopt the player model while leaving principles pending. A revised principle ID replaces text in the active document while old versions retain old text. Revision conflicts reject with 409 and require renewed review; never fetch latest automatically for adoption. After adoption, use `run --mode active` and compare with preview. Synthetic owner flags do not approve actual research principles.
 
-本人が原則なし／before B／after Bそれぞれの新しい会話を作り、その群に割り当てたB文書（原則なし群には無し）と共通の観測ケースだけを渡します。それぞれの新しい会話へ対応する一群の匿名入力だけを渡し、他群の回答・評価側対応表・A結果は持ち込みません。[B評価手順](../../../models/judgment/docs/B_REVIEW.md)に沿い、判断・使った原則・不確実性・反例・自己レビューを求めます。UIまたは以下のJSONで回答を保存します。
+## 5. Evaluate judgment principles independently
+
+```sh
+npm run --silent bridge -- judgment-packet EXPERIMENT_ID --arm after --cases frozen > .rpm/judgment-after.json
+npm run --silent bridge -- judgment-evaluator-map EXPERIMENT_ID > .rpm/judgment-evaluator-only.json
+npm run --silent bridge -- export-judgment-json > .rpm/judgment-current.json
+npm run bridge -- judgment-review EXPERIMENT_ID --file .rpm/judgment-response.json
+```
+
+Send only one arm's document/amendments and anonymous cases. Use `--arm none` or `before` for controls, `--cases regression` for known regressions. Keep labels, scene/seed, criteria, model outputs and world truth in the evaluator-only map. Structured amendments do not imply the entire baseline has been structured.
+
+Use separate fresh conversations with identical observations and settings. Do not share other-arm answers, coaching, evaluator maps or executable traces. Follow [review protocol](../../../models/judgment/docs/REVIEW.md) for decisions, cited principles, uncertainty, counterexamples and self-review. Save responses through UI or JSON:
 
 ```json
-{"arm":"after","group":"frozen","model":"実際のモデル名・設定・実行日","output":"回答全文（条件名を含む）","assessment":"本人の採点、未確認事項、反例"}
+{"arm":"after","group":"frozen","model":"Actual model/settings/date","output":"Full answer with case IDs","assessment":"Owner scores, unresolved points and counterexamples"}
 ```
 
-保存は実験への紐付けであり、正しさを承認する機能ではありません。記録は常に `unverified-external-response` / `humanValidated:false`。原則準拠とラグビー上の妥当性を分けて本人が判断します。API・課金・外部自動送信は追加していません。今回の合成mockはBの実際の生成AI評価ではありません。
+Saving links a response; it does not certify correctness. Records remain `unverified-external-response` / `humanValidated:false`. Score compliance and rugby validity separately. No API/payment/submission is added; synthetic mocks are not real AI evaluation.
 
-## 6. 復元して次の仮説へ
+## 6. Restore and continue
 
-本人がA/Bごとにundoします。承認・差戻し・親候補・保存実験・B回答は消えません。Control-Cで停止して再起動し、「候補の場面を復元」で記録時の身体／首／履歴／profileへ戻します。実行ルールは現在activeの承認版です。古い実験結果はそのまま読み、旧エンジンの再実行にはそのGit版を使います。
+Independent owner undo retains review history, parents, experiments and responses. After restart, restore the candidate scene to its body/head/history/profile with current approved rules. Saved old results remain unchanged; rerunning an old engine requires its recorded source version. Back up private state before long-term use and consider storage capacity. Record actual viewing, coaching meaning, conditions/counterexamples, independent reviews and restoration in private acceptance records; [Mac acceptance](../../../docs/verification/MAC_ACCEPTANCE.md) is the historical template/evidence boundary.
 
-状態は私的な `.rpm/` に保存します。長い履歴を蓄積する本格運用の前にはバックアップとストレージ拡張を検討します。初回の本人受入では「画面で見えた情報」「指導の意図」「適用条件と反例」「独立A/Bの判断」「復元できたか」を [Mac受入記録](../../../docs/verification/MAC_ACCEPTANCE.md) に残してください。
+## Historical compatibility checkpoint
 
-## 現行0.3.0への互換性と移行
+The 0.3.0 change retained observation contract 1 and three original fixtures, added cognition-0.3/appliedRules while reading cognition-0.2, and read missing experiments/bReviews/evaluationSets as empty in format 1. Bridge API moved from 2/3 to 4 and required server restart. Frozen baseline and approved amendments remained separate from repository draft 0.1. These are historical milestones, not today's package/API versions; current storage is described in [LOCAL_STORAGE](LOCAL_STORAGE.md), with API 11 observation continuation in [LOCAL_BRIDGE](LOCAL_BRIDGE.md). Research undo is distinct from code downgrade; preserve newer records and backups.
 
-| 対象 | 互換性／操作 |
-|---|---|
-| package | 0.1.0／0.2.0→0.3.0。依存version／解決先は不変、lockのpackage版だけ更新 |
-| 観測／snapshot | contractVersion 1を維持。旧3fixtureをそのまま読み、通常の数値ルールは同じ判定を返す |
-| A trace | 新規実行はcognition-0.3／appliedRules付き。JSON Schemaは旧cognition-0.2 traceも読む |
-| 私的session | format 1の旧候補・版・履歴を保持。experiments／bReviews／evaluationSetsが無ければ空として読む。原則を自動採用しない |
-| bridge | API 2／3→4。旧serverを止めて新しいコードで再起動。旧serverへの新UIの書き込みは拒否 |
-| B | 凍結B0＋明示採用した追加原則。既存B評価baselineとroot B0.1-draftは今回変更しない |
+## Try forward from the captured point
 
-コードを戻す際はsessionも更新前バックアップへ戻す別作業です。新形式で書いたsessionを旧コードへ上書きで読み込ませる前方互換性は保証しません。A/Bの研究上のundoはコードのdowngradeとは別操作です。
+`run CANDIDATE_ID --revision N --steps 7 --mode preview --start snapshot` starts at the candidate snapshot's position/time/acquired memory. Default `--start coaching` rewinds to the coaching start and stops at its end. Keep future trials distinct from historical revalidation.
+
+The record uses `recordedInput.source: captured-snapshot` and `window: null`, retaining the original interval in the candidate. Use existing `view-request compare` for presentation. Temporary weights or forced-action assistance must be labeled in notes; they do not establish general principles or owner acceptance.

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import frozen from '../../../evaluation/baselines/b-evaluation-baseline.v1.json';
+import frozen from '../../../evaluation/baselines/judgment-evaluation.v1.json';
 import { readJudgmentBaseline, resolveLegacyArtifact, resolveJudgmentLink, engineSourceFiles, engineFingerprint } from '../server/artifact-resolver';
 
 test('relocation preserves all four frozen B byte hashes and the original baseline commit', () => {

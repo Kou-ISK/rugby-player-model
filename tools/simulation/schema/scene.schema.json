@@ -182,6 +182,9 @@
             "scene",
             "tick"
           ]
+        },
+        "runtime": {
+          "$ref": "#/$defs/MotorRuntime"
         }
       },
       "required": [
@@ -199,7 +202,11 @@
       "additionalProperties": false,
       "properties": {
         "sceneSchemaVersion": {
-          "const": 1
+          "enum": [
+            1,
+            2,
+            3
+          ]
         },
         "tickSeconds": {
           "const": 0.2
@@ -338,6 +345,22 @@
                       "kind",
                       "keyframes"
                     ]
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "kind": {
+                        "const": "autonomous"
+                      },
+                      "profile": {
+                        "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Profile"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "profile"
+                    ]
                   }
                 ]
               }
@@ -470,6 +493,18 @@
           },
           "minItems": 0,
           "maxItems": 128
+        },
+        "ownAttackDirection": {
+          "enum": [
+            1,
+            -1
+          ]
+        },
+        "horizontalFovDegrees": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 120,
+          "description": "Authored horizontal camera and sensor angle; omitted means 90 degrees. Engineering condition, not a validated human peripheral-vision model."
         }
       },
       "required": [
@@ -480,6 +515,32 @@
         "actors",
         "ball",
         "calls"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "sceneSchemaVersion": {
+                "enum": [
+                  2,
+                  3
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "ownAttackDirection"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "ownAttackDirection"
+              ]
+            }
+          }
+        }
       ]
     },
     "SceneRef": {
@@ -553,6 +614,166 @@
         "generationSeed",
         "trackingIds",
         "createdAt"
+      ]
+    },
+    "MotorRuntime": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "actors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "body": {
+                "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Body"
+              },
+              "memory": {
+                "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Memory"
+              },
+              "profile": {
+                "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Profile"
+              }
+            },
+            "required": [
+              "id",
+              "body",
+              "memory",
+              "profile"
+            ]
+          },
+          "maxItems": 32
+        },
+        "ball": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "enum": [
+                "held",
+                "flight",
+                "loose"
+              ]
+            },
+            "position": {
+              "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Vec"
+            },
+            "velocity": {
+              "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Vec"
+            },
+            "carrierId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            },
+            "releasedAt": {
+              "type": "number"
+            },
+            "pending": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "at": {
+                  "type": "number"
+                },
+                "actorId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                },
+                "target": {
+                  "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Vec"
+                }
+              },
+              "required": [
+                "at",
+                "actorId",
+                "target"
+              ]
+            }
+          },
+          "required": [
+            "mode",
+            "position",
+            "velocity",
+            "releasedAt"
+          ]
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "at": {
+                "type": "number"
+              },
+              "actorId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "kind": {
+                "enum": [
+                  "release",
+                  "catch",
+                  "contact",
+                  "failure"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            },
+            "required": [
+              "at",
+              "actorId",
+              "kind",
+              "reason"
+            ]
+          },
+          "maxItems": 128
+        },
+        "decisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "trace": {
+                "$ref": "https://rugby-player-model.local/schema/player-v1#/$defs/Trace"
+              }
+            },
+            "required": [
+              "id",
+              "trace"
+            ]
+          },
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "version",
+        "actors",
+        "ball",
+        "events",
+        "decisions"
       ]
     }
   }

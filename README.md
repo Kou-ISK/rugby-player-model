@@ -1,15 +1,28 @@
 # Rugby Player Model
 
-Study how a rugby player could make decisions from limited observations. This project has two independent outputs:
+[English](README.md) | [日本語](README.ja.md)
 
-- **A — an executable player model.** Given observations, remembered observations, a player profile and decision rules, it returns beliefs, scores, an intention and supported body requests.
-- **B — a document of judgment principles.** A person or any general-purpose AI can use it without installing or running A.
+Research how a rugby player perceives, remembers, predicts and chooses actions from limited information. The project develops two independently usable research outputs:
 
-Both are research hypotheses. Passing the software tests does not establish human cognition or better rugby performance.
+- **Player model** — executable cognition. Observations, prior memory, player characteristics and decision rules produce beliefs, action evaluations, an intention and supported body requests.
+- **Judgment principles** — a standalone document describing the decision process, conditions, exceptions and uncertainty. A person or general-purpose AI can use it without running the player model.
 
-## Use the models
+The workbench supports the research: it presents synthetic scenes, records observations and coaching, and compares proposed changes. The outputs are research hypotheses; passing software tests does not establish human cognitive validity or improved rugby performance.
 
-**Run A on observations.** With Node.js 24, install the pinned dependencies and run the bundled example:
+## Start here
+
+| Purpose | Guide |
+| --- | --- |
+| Run the player model on observations | [Player model](models/player/README.md) |
+| Use the principles or give an LLM a player role | [Judgment principles](models/judgment/README.md) |
+| Run a local research session | [First-run tutorial](tools/workbench/docs/FIRST_RUN.md) |
+| Understand the research method | [Cognitive research](docs/COGNITIVE_RESEARCH.md) |
+| Contribute or reproduce an experiment | [Contributing](CONTRIBUTING.md), [reproduction](docs/REPRODUCTION.md) |
+| Browse specifications and operating guides | [Documentation](docs/README.md) |
+
+## Run the player model
+
+With Node.js 24, install the locked dependencies and run the example:
 
 ```sh
 npm ci
@@ -17,36 +30,34 @@ npm run build:player
 node models/player/dist/reference/cli.js --input models/player/examples/observations.json
 ```
 
-The [A guide](models/player/README.md) explains the standalone package, input contract and optional research modes. A needs no simulated world, principle document, viewer or private session.
+The player package needs no simulated world, viewer, private session or judgment document. Its input contract is portable to other implementations.
 
-**Read or evaluate B.** Open [the judgment principles](models/judgment/RUGBY_JUDGMENT.md). No software setup is required to read or use the document. For a controlled comparison, follow the [independent B guide](tools/workbench/docs/B_STANDALONE.md): the same observations with no principles, an earlier document and a proposed document. It can record manual reviews or responses obtained separately; it does not call an AI service.
+## Use the judgment principles
 
-## Develop and test ideas
+Read [the principles](models/judgment/RUGBY_JUDGMENT.md) and [the player role guide](models/judgment/PLAYER_GUIDE.md). For an independent evaluation, compare the same observations with **no principles**, **an earlier document** and **a proposed document** using the [judgment evaluation guide](tools/workbench/docs/JUDGMENT_EVALUATION.md). Record principle conformance and rugby plausibility separately. The tool does not call an AI service.
 
-The local research workbench lets you view synthetic scenes from a player's perspective, turn the head, capture observations and propose changes. A **candidate** is a saved proposed change. A **preview** compares it with its captured baseline before adoption. A and B are adopted and undone separately.
+## Research through scenes and coaching
 
-Follow the [complete first-run tutorial](tools/workbench/docs/FIRST_RUN.md) ([日本語](tools/workbench/docs/FIRST_RUN.ja.md)) to create a new synthetic session, use the browser or command line, compare research modes, save a proposal and reproduce it in another session. No particular AI product, API key, paid service or private asset is required. The tutorial includes startup, shutdown and restart commands.
+Use the [first-run tutorial](tools/workbench/docs/FIRST_RUN.md) with a new synthetic session. View a scene from the player's perspective, record what the player actually observed, and connect coaching to that snapshot. Turn the interpretation into a hypothesis, prepare a condition that could distinguish it from an alternative, compare outcomes, and retain counterexamples. See the [facilitation loop](tools/workbench/docs/RESEARCH_LOOP.md).
 
-See [Contributing](CONTRIBUTING.md) for changes to models, principles or experiments. Shared proposals contain explicitly permitted synthetic inputs and fixed references. Import leaves them unapproved; reproduction creates a new local run before any independent A/B decision.
+A candidate is a saved proposal; a preview does not adopt it. The player model and judgment principles have separate versions, adoption decisions and undo operations. Shared proposals import as unapproved data and require local reproduction and review.
 
-## What is implemented
+Coaching stays in your conversation. [Presentation commands](tools/workbench/docs/PRESENTATION.md) connect the conversation to a browser capture without UI automation. No particular AI product, API key, paid service or private asset is required. This workflow uses generated scenes and does not include real-match video analysis.
 
-The player model separates world state, sensed observations and uncertain beliefs. The viewer displays generated players, a pitch and a ball; rendering does not add physical skills. Passing is currently an intention with unsupported execution. Other actors follow scripted stimuli rather than a complete rugby simulation.
+## Current capabilities
 
-The default model preserves the legacy behavior. The optional [H-WM-1 hypothesis](models/player/spec/H-WM-1.md) limits the evidence used to compare and choose a receiver. Risk, orienting and existing freshness checks still use retained evidence. It is not a complete model of human working memory. Compare finite capacity with the same policy at unlimited capacity; compare the legacy policy separately.
+The model separates world state, observations and uncertain beliefs. It distinguishes observed body orientation from movement and supports attack, defense and possession uncertainty through versioned contracts. Opt-in scene v3 adds bounded movement, abstract passing/catching/contact and independently observing actors. Legacy scenes keep their original behavior, including intention-only passing where execution is unsupported.
 
-Useful references:
+The optional [receiver deliberation hypothesis](models/player/spec/H-WM-1.md) restricts evidence used to compare receivers; it is not a complete human working-memory model. Compare finite and unlimited capacity under the same policy, and evaluate the legacy policy separately. [Orientation](models/player/spec/ORIENTATION_PHASE.md), [closed-loop behavior](models/player/spec/CLOSED_LOOP.md), the [model card](models/player/MODEL_CARD.md) and [limitations](docs/LIMITATIONS.md) describe what is implemented and what remains unvalidated.
 
-- [Architecture and information boundaries](docs/ARCHITECTURE.md), [model card](models/player/MODEL_CARD.md), [limitations](docs/LIMITATIONS.md)
-- [Evaluation protocol](evaluation/PROTOCOL.md), [scene format](tools/workbench/docs/DYNAMIC_SCENES.md), [reproduction manifest](reproducibility.json)
-- [Standalone A](models/player/README.md), [standalone B](models/judgment/README.md), [local command-line bridge](tools/workbench/docs/LOCAL_BRIDGE.md)
+Run `npm run check` for documentation, manifest, types, core tests, build and dependency boundaries; `npm run test:browser` for browser integration; and `npm run test:first-run` for the synthetic first-run walkthrough. Browser tests require Playwright Chromium or `RPM_CHROMIUM`. Automated results are separate from human interface acceptance and scientific validation.
 
-Run `npm run check` for the core, type, build and boundary checks; `npm run test:browser` for browser integration; and `npm run test:first-run` for the empty-environment walkthrough. Browser tests need a Playwright browser or an explicit `RPM_CHROMIUM` executable. Automated headless tests are separate from a person using the interface and from scientific validation.
+## Existing Mac setup
 
-## Already configured on the owner's Mac
-
-Use the [Mac start guide](tools/workbench/docs/MAC_START.md) and [current storage and recovery guide](tools/workbench/docs/LOCAL_STORAGE.md). The shared launchers follow their configured source directory and private session. Running a copied launcher does not select a different checkout. Use the first-run tutorial's explicit synthetic session when testing another checkout.
+On the configured research Mac, use the [Mac start guide](tools/workbench/docs/MAC_START.md) and [storage guide](tools/workbench/docs/LOCAL_STORAGE.md). Shared launchers use the configured source and private session even when copied elsewhere. Test another checkout with an explicit synthetic session.
 
 ## License and source material
 
-MIT applies to the authored scope listed in [LICENSE-SCOPE.md](LICENSE-SCOPE.md). Dependency licenses and notices remain in force. The procedural rendering sources and frozen principle documents retain their original bytes and historical notices; [provenance](docs/provenance/PROVENANCE.md) records their origin. Private sessions, real match data and external assets are outside the public scope.
+MIT applies to the authored scope in [LICENSE-SCOPE.md](LICENSE-SCOPE.md). Retain dependency licenses and attribution. [Archived research sources](models/judgment/archive/README.md) and procedural rendering sources retain their original bytes and historical notices. Private sessions, real match/player data and unrelated external assets are outside the public scope.
+
+English and Japanese documents link to each other. [Naming and compatibility](docs/NAMING.md) explains descriptive names and legacy identifiers retained only for existing data and reproducibility.

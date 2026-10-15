@@ -7,6 +7,14 @@ import type { World } from '../../simulation/src/contracts';
 import { think } from '../../../models/player/reference/src/cognition';
 import { validate, validateEvidence, canonicalJson } from './validation';
 export const HISTORY_LIMIT=256;
+export const HISTORY_ARCHIVE_AT=224;
+/** Preserve every acquired event. The saved prefix and continuation share their boundary event. */
+export function continueObservationHistory(history:ObservationHistory,source:Snapshot):ObservationHistory {
+  const prefix=source.observationHistory;
+  if(!prefix?.events.length||canonicalJson(history.events.slice(0,prefix.events.length))!==canonicalJson(prefix.events))throw new Error('Observation history no longer matches the saved prefix');
+  return {...structuredClone(history),initialMemory:structuredClone(source.memoryBefore),
+    events:history.events.slice(prefix.events.length-1).map((e,sequence)=>({...structuredClone(e),sequence,...(sequence===0?{trigger:'initial' as const}:{})}))};
+}
 export const newHistory=(initialMemory:Memory,world?:World):ObservationHistory=>({version:world?.dynamic?2:1,mode:world?.dynamic?'fixed-step-study':'static-study',...(world?.dynamic?{sceneRef:sceneRef(world.dynamic.scene)}:{}),initialMemory:structuredClone(initialMemory),events:[]});
 export function appendObservation(history:ObservationHistory,bundle:Bundle,profile:Profile,rulesA:RulesA,trigger:ObservationEvent['trigger'],executionMode?:ExecutionMode){
   if(history.events.length>=HISTORY_LIMIT)throw new Error('観測履歴は256件まで。snapshotを保存してresetしてください。履歴は切り捨てません。');

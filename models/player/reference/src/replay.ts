@@ -12,6 +12,7 @@ export function replayObservationSequence(history:ObservationSequence,override?:
     if(previous){
       const expected=e.trigger==='step'?Math.round((previous.bundle.time+.2)*1000)/1000:previous.bundle.time;
       if(e.bundle.time!==expected)throw new Error('Observation event clock mismatch: only step advances simulation time by 0.2s');
+      if(e.bundle.contractVersion!==previous.bundle.contractVersion||e.bundle.context?.ownAttackDirection!==previous.bundle.context?.ownAttackDirection)throw new Error('Observation contract/context changed; start a new scene history');
       if(e.bundle.playerId!==previous.bundle.playerId)throw new Error('Observation player changed');
     }
     validateEvidence(e.bundle,memory);memoryBeforeLast=structuredClone(memory);

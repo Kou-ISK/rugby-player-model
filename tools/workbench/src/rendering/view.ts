@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { World } from '../../../simulation/src/contracts';
-import { HORIZONTAL_FOV, visible } from '../../../simulation/src/index';
-import { ballModel, pitchModel, playerModel, disposeObjectResources } from './models';
+import { HORIZONTAL_FOV, horizontalFov, visible } from '../../../simulation/src/index';
+import { ballModel, pitchModel, playerModel, addBodyFacingGuide, disposeObjectResources } from './models';
 export class View {
   readonly renderer = new THREE.WebGLRenderer({ antialias: true });
   private scene = new THREE.Scene();
@@ -15,6 +15,7 @@ export class View {
   private self = playerModel('self', 0x4bc5ee);
   private resizeObserver: ResizeObserver;
   private disposed = false;
+  private fieldOfView = HORIZONTAL_FOV;
   spectator = false;
   constructor(private container: HTMLElement) {
     this.renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); container.append(this.renderer.domElement);
@@ -31,23 +32,27 @@ export class View {
   resize() {
     if(this.disposed)return;
     const w=this.container.clientWidth,h=this.container.clientHeight;this.renderer.setSize(w,h);
-    this.camera.aspect=w/h;this.camera.fov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(HORIZONTAL_FOV/2)/(w/h)));this.camera.updateProjectionMatrix();
+    this.camera.aspect=w/h;this.camera.fov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(this.fieldOfView/2)/(w/h)));this.camera.updateProjectionMatrix();
     this.spectatorCamera.aspect=w/h;this.spectatorCamera.updateProjectionMatrix();
     this.renderScene();
   }
   draw(world: World) {
     if(this.disposed)return;
+    this.fieldOfView=horizontalFov(world);
+    this.camera.fov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(this.fieldOfView/2)/this.camera.aspect));
+    this.camera.updateProjectionMatrix();
+    this.renderer.domElement.dataset.horizontalFov=String(this.fieldOfView*180/Math.PI);
     this.controls.enabled=this.spectator;
+    const team=world.dynamic?.scene.definition.actors.find(a=>a.id===world.dynamic!.scene.definition.controlledPlayerId)?.team??'blue';
     const ids = new Set(world.entities.map(e=>e.id));
     for(const [id,obj] of this.actors) if(!ids.has(id)) { this.scene.remove(obj);disposeObjectResources(obj);this.actors.delete(id);this.appearances.delete(id); }
     for(const e of world.entities) {
       const appearanceId=world.dynamic?`actor-${world.dynamic.scene.definition.actors.findIndex(a=>a.id===e.id)}`:e.id;
-      const appearanceKey=`${e.kind}:${e.team}:${appearanceId}`;
+      const appearanceKey=`${e.kind}:${e.team}:${appearanceId}:${team}`;
       if(this.actors.has(e.id)&&this.appearances.get(e.id)!==appearanceKey){const old=this.actors.get(e.id)!;this.scene.remove(old);disposeObjectResources(old);this.actors.delete(e.id);}
-      if(!this.actors.has(e.id)){const obj=e.kind==='ball'?ballModel():playerModel(appearanceId,e.team==='blue'?0x4bc5ee:0xf17b68).group;this.actors.set(e.id,obj);this.appearances.set(e.id,appearanceKey);this.scene.add(obj);}
+      if(!this.actors.has(e.id)){const obj=e.kind==='ball'?ballModel():playerModel(appearanceId,e.team==='blue'?0x4bc5ee:0xf17b68).group;if(e.kind==='player')addBodyFacingGuide(obj);this.actors.set(e.id,obj);this.appearances.set(e.id,appearanceKey);this.scene.add(obj);}
       const obj=this.actors.get(e.id)!;obj.position.set(e.position.x,e.kind==='ball'?.22:0,e.position.z);obj.rotation.y=e.yaw??0;obj.visible=this.spectator||visible(world,e);
     }
-    const team=world.dynamic?.scene.definition.actors.find(a=>a.id===world.dynamic!.scene.definition.controlledPlayerId)?.team??'blue';
     if(team!==this.selfTeam){this.scene.remove(this.self.group);disposeObjectResources(this.self.group);this.self=playerModel('self',team==='blue'?0x4bc5ee:0xf17b68);this.selfTeam=team;this.scene.add(this.self.group);}
     const b=world.body;this.self.group.position.set(b.position.x,0,b.position.z);this.self.group.rotation.y=b.yaw;
     // The original skinned body merges its head. Hide the whole self in first
@@ -62,7 +67,9 @@ export class View {
     this.renderer.domElement.dataset.rendered=String(this.renderer.info.render.calls);
   }
   private renderScene() {
-    if(!this.disposed)this.renderer.render(this.scene,this.spectator?this.spectatorCamera:this.camera);
+    if(this.disposed)return;
+    this.renderer.domElement.dataset.projection='perspective';
+    this.renderer.render(this.scene,this.spectator?this.spectatorCamera:this.camera);
   }
   dispose() {
     if(this.disposed)return;this.disposed=true;

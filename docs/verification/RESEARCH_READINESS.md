@@ -1,5 +1,7 @@
 # 研究開始条件の点検と追加実装
 
+現在の要件は [認知研究契約](../COGNITIVE_RESEARCH.md) を参照してください。以下は過去の配線監査の記録です。この監査時点では連続した走路・パス判断、他選手の向きを使う認知、相互応答するチームは未実装でした。後続のv3実装は末尾の契約を参照してください。旧試験の合格を新機構の証拠にはしません。現在のMIT適用範囲は [LICENSE-SCOPE](../../LICENSE-SCOPE.md) が正本です。以下のUNLICENSED・未選定の記述は当時の状態を示します。
+
 See [dynamic scene contracts, CLI and acceptance scope](../../tools/workbench/docs/DYNAMIC_SCENES.md) for the new fixed-step workflow: one A-controlled player and scripted stimuli.
 29単体／5ブラウザの旧合格はソフトウェア配線の証拠であり、研究プロセス全体の完了判定ではない。以下はaf31359での監査と今回の対応。条件付き原則・差戻し来歴・複数step実験の固定保存・B評価packetと回答紐付けを追加し、合成UI/CLI loopと実server再起動2回を通した。
 
@@ -41,3 +43,11 @@ See [dynamic scene contracts, CLI and acceptance scope](../../tools/workbench/do
 | 公開とライセンス | 独立review通過、指定したP2P描画・最小姿勢型の公開承認済み | [公開範囲](../provenance/PUBLICATION_SCOPE.md)を保持。新しいOSSライセンスは未選定 |
 
 試験内容と証拠は [Mac追加実証](./MAC_RESEARCH_CYCLE.md)、実際の操作は [共同研究loop](../../tools/workbench/docs/RESEARCH_LOOP.md)。A/Bの候補保存は自然言語自動学習ではなく、合成試験の採用操作は本人による研究原則の採用ではない。
+
+## 閉ループの追加契約
+
+任意選択のscene v3は、身体方向を含む観測から運動を推定し、小目標の維持・切替と攻守の抽象動作、独立した少人数の相互応答を扱う。仕様・工学的仮定・機構除去比較・限界は [Closed loop](../../models/player/spec/CLOSED_LOOP.md) を参照。旧scene v1/v2と保存記録は従来の意味を保持する。ソフトウェア試験は人間の認知的妥当性やA/Bの採用ではない。
+
+## 手動の視点操作とモデルの評価
+
+FPS形式の首振り・身体旋回も、研究者が観測条件を変える介入である。停止した時間内で取得した観測を記録・再生するため、自律的な探索や反応速度の訓練成果として扱わない。現在は機構の仮説形成・比較のための基盤であり、人間認知としての妥当性が確立した訓練装置ではない。操作と評価の境界、条件を変える手順は [選手視点での見回し](../../tools/workbench/docs/PLAYER_VIEW.md) に記載する。

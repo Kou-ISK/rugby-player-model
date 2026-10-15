@@ -116,10 +116,10 @@ test('uncertain memory changes risk and scores without enabling a stale pass or 
   assert.ok(nearby.assessment.uncertainThreat>far.assessment.uncertainThreat);
   assert.ok(nearby.evaluation.find(e=>e.action==='carry')!.score<far.evaluation.find(e=>e.action==='carry')!.score);
 });
-test('revising the standalone B draft does not silently replace the local B baseline',()=>{
+test('revising the judgment reading edition does not replace the frozen session baseline',()=>{
   const dir=mkdtempSync(join(tmpdir(),'rpm-b-baseline-'));const store=new Store(dir);
   try{
-    assert.ok(readFileSync('models/judgment/RUGBY_JUDGMENT.md','utf8').includes('B0.1-draft'));
+    assert.ok(readFileSync('models/judgment/RUGBY_JUDGMENT.md','utf8').includes('| TRAJECTORY / 27 |'));
     const exported=store.exportB();assert.ok(exported.startsWith('# Rugby judgment principles — B0\n'));
     assert.ok(!exported.includes('| TRAJECTORY / 27 |'));assert.equal(store.active().B.version,'B0');
   }finally{rmSync(dir,{recursive:true,force:true});}

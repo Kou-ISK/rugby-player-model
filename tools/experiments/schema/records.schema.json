@@ -102,6 +102,18 @@
         "observationHistory": {
           "$ref": "#/$defs/ObservationHistory"
         },
+        "observationPredecessor": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["snapshotId", "sha256"],
+          "properties": {
+            "snapshotId": { "type": "string", "minLength": 1, "maxLength": 128 },
+            "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+          }
+        },
+        "observationAnchor": {
+          "$ref": "https://rugby-player-model.local/schema/simulation-v1#/$defs/World"
+        },
         "executionMode": {
           "$ref": "#/$defs/ExecutionMode"
         }

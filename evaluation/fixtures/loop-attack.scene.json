@@ -1,0 +1,92 @@
+{
+  "sceneSchemaVersion": 3,
+  "ownAttackDirection": 1,
+  "tickSeconds": 0.2,
+  "durationTicks": 40,
+  "controlledPlayerId": "self",
+  "actors": [
+    {
+      "id": "self",
+      "team": "blue",
+      "initial": {
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "yaw": 0
+      },
+      "motion": {
+        "kind": "controlled"
+      }
+    },
+    {
+      "id": "support",
+      "team": "blue",
+      "initial": {
+        "position": {
+          "x": -3,
+          "z": -2
+        },
+        "yaw": 0
+      },
+      "motion": {
+        "kind": "autonomous",
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        }
+      }
+    },
+    {
+      "id": "defender",
+      "team": "red",
+      "initial": {
+        "position": {
+          "x": 1,
+          "z": 5
+        },
+        "yaw": 3.141592653589793
+      },
+      "motion": {
+        "kind": "autonomous",
+        "profile": {
+          "ability": {
+            "maxSpeed": 5,
+            "passRange": 15
+          },
+          "selfEstimate": {
+            "passReliability": 0.7
+          },
+          "preference": {
+            "carry": 0.5,
+            "pass": 0.5,
+            "support": 0.7
+          },
+          "tactics": {
+            "preferredAction": "pass",
+            "adherence": 0.3
+          }
+        }
+      }
+    }
+  ],
+  "ball": {
+    "kind": "attached",
+    "carrierId": "self"
+  },
+  "calls": []
+}

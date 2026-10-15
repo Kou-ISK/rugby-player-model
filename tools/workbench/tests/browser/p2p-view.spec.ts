@@ -3,6 +3,37 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 const moduleRoot='/@fs/'+fileURLToPath(new URL('../../../../',import.meta.url));
 
+test('ground does not hide a nearby player’s lower legs at ordinary or wider viewing angles',async({page,request})=>{
+  test.setTimeout(90000);
+  const definition=JSON.parse(readFileSync(new URL('../../../../evaluation/fixtures/orientation-attack.scene.json',import.meta.url),'utf8'));
+  const scenes=[];
+  for(const horizontalFovDegrees of [90,110]){
+    const response=await request.post('/api/scene-create',{headers:{'X-RPM-Local':'1'},data:{definition:{...definition,horizontalFovDegrees}}});
+    expect(response.ok()).toBe(true);scenes.push(await response.json());
+  }
+  await page.goto('/');await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
+  const samples=await page.evaluate(async({scenes,moduleRoot})=>{
+    const viewPath='/src/rendering/view.ts';
+    const {View}=await import(viewPath),{sceneWorld}=await import(moduleRoot+'tools/simulation/src/scene.ts');
+    const container=document.createElement('div');container.style.cssText='width:800px;height:500px;position:absolute;left:-900px';document.body.append(container);
+    const view=new View(container),samples=[];view.renderer.setPixelRatio(1);view.resize();
+    for(const scene of scenes){
+      const world=sceneWorld(scene);view.draw(world);
+      const canvas=view.renderer.domElement,gl=view.renderer.getContext(),pitch=view.scene.getObjectByName('rugby-pitch');
+      const corners=[[-4.35,.05,6],[-3.65,.45,6]].map(([x,y,z])=>view.camera.position.clone().set(x,y,z).project(view.camera));
+      const xs=corners.map(p=>(p.x+1)*canvas.width/2),ys=corners.map(p=>(p.y+1)*canvas.height/2);
+      const x=Math.floor(Math.min(...xs)),y=Math.floor(Math.min(...ys)),width=Math.ceil(Math.max(...xs))-x,height=Math.ceil(Math.max(...ys))-y;
+      const bluePixels=()=>{const pixels=new Uint8Array(width*height*4);gl.readPixels(x,y,width,height,gl.RGBA,gl.UNSIGNED_BYTE,pixels);let count=0;for(let i=0;i<pixels.length;i+=4)if(pixels[i+2]>pixels[i]*1.25&&pixels[i+1]>pixels[i]*1.1&&pixels[i+2]>pixels[i+1]*.9)count++;return count;};
+      const withGround=bluePixels();pitch.visible=false;view.draw(world);const withoutGround=bluePixels();
+      samples.push({withGround,withoutGround});pitch.visible=true;
+    }
+    view.dispose();container.remove();return samples;
+  },{scenes,moduleRoot});
+  // Antialiased boundary pixels mix with green ground versus blue sky; compare
+  // the bulk of the sock area. The regression hides the lower legs entirely.
+  for(const sample of samples){expect(sample.withoutGround).toBeGreaterThan(10);expect(sample.withGround).toBeGreaterThanOrEqual(sample.withoutGround*.9);}
+});
+
 test('P2P view lifecycle is bounded and hidden truth cannot change first-person pixels', async ({ page }) => {
   test.setTimeout(90_000); // Software WebGL on a Mac running another research job.
   await page.goto('/');await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
@@ -17,6 +48,7 @@ test('P2P view lifecycle is bounded and hidden truth cannot change first-person 
       view.draw(world);
       await new Promise(resolve => setTimeout(resolve, 50));
       const first = { ...view.renderer.info.memory };
+      if(view.scene.getObjectByName('relation-label'))throw Error('Overhead labels must not be rendered');
       for (let cycle = 0; cycle < 2; cycle++) {
         view.draw({ ...world, entities: [] });view.draw(world);
       }

@@ -7,7 +7,7 @@ export const LEGACY_EXPERIMENT_FORMAT = 1 as const;
 export type ObservationCase = { group:'recorded'|CaseGroup;caseId:string;scene:SceneId;seed:number|null;
   bundle:Bundle;memoryBefore:Memory;profile:Profile;initialMemory?:Memory;observations?:Bundle[] };
 export type SceneDiagnostics = {overlaps:string[][];contactResolution:string;ballPhysics:string;otherActors:string}|null;
-export type ReplayFrame = {time:number;body:Body;diagnostics:SceneDiagnostics;trace:Trace};
+export type ReplayFrame = {runtime?:import('../../simulation/src/contracts').MotorRuntime;time:number;body:Body;diagnostics:SceneDiagnostics;trace:Trace};
 export type ReplayResult = {frames:ReplayFrame[];termination:'scene-end'|'coaching-window-end'|'step-budget';
   finalTime:number;finalTick:number|null;finalSelf:Body;emittedCalls:{at:number;playerId:string;cue:string}[]};
 export type ObservationReplay = {mode:'static-study'|'fixed-step-study';
