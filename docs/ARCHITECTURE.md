@@ -64,6 +64,8 @@ In `cognition-0.2`, a stale opponent's uncertainty disk can overlap a 4m near re
 
 ## Research transaction
 
+This is the storage/proposal lifecycle, not a per-response research schedule. Begin with the framework and discovery gates in [RESEARCH_LOOP](../tools/workbench/docs/RESEARCH_LOOP.md); use [RESEARCH_START](../tools/workbench/docs/RESEARCH_START.md) in a new environment. General guidance without a matching observed scene stays in private notes rather than receiving an unrelated snapshot. Editing and evaluation below apply at the later proposal stage.
+
 1. Capture immutable scene/seed/time/player/body/observation/memory/profile and player model and judgment principles versions.
 2. Store feedback as a candidate with empty player model patch and unfinished judgment principle fields. This does not change rules.
 3. Human and Codex edit the player model numeric/observation-conditional patch and independent judgment principles structured principle, with rationale, predicted effect and counterexample. Editing never approves. Once either target is reviewed the candidate is immutable; reasoned `revise` creates a linked pending child with the same observations and current approved bases.

@@ -6,6 +6,8 @@ This tutorial starts with public examples and a new private session. The **playe
 
 You need Node.js 24 and this repository's public files. No AI product, API key, paid service or owner-specific configuration is required. Judgment principles can also be evaluated [without any player model experiment](JUDGMENT_EVALUATION.md).
 
+For actual collaborative research, start with [RESEARCH_START](RESEARCH_START.md). It creates a private checkpoint and begins with the broad research framework. Do not use this tutorial's synthetic approvals or immediate edit/preview cycle as the default after coaching.
+
 ## 1. Create a session
 
 Run these commands from the repository root:

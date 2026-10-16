@@ -4,7 +4,7 @@
 
 指導と解釈はCodexなどの会話で行い、ブラウザは3Dの表示と観測の取得を担う。AI APIやComputer Useは必要ない。ブラウザの自由文欄は手動記録用であり、入力をAIへ送信・解釈する機能ではない。
 
-設定済みMacでは `./start-rpm.command` と `./bridge-rpm.command` を使う。他の環境は [FIRST_RUN](FIRST_RUN.ja.md) に沿って専用sessionを用意し、下記のbridgeを `npm run --silent bridge --` に置き換える。生成scene/context/編集案の保存先は私的session内の絶対パスにする。
+設定済みMacでは `./start-rpm.command` と `./bridge-rpm.command` を使う。他の環境は [RESEARCH_START](RESEARCH_START.ja.md) に沿って専用sessionを用意し、下記のbridgeを `npm run --silent bridge --` に置き換える。生成scene/context/編集案の保存先は私的session内の絶対パスにする。
 
 ## 表示を固定して指導を受ける
 

@@ -224,6 +224,18 @@
       "titleJa": "会話とブラウザ表示を結ぶローカル接続"
     },
     {
+      "en": "tools/workbench/docs/RESEARCH_START.md",
+      "ja": "tools/workbench/docs/RESEARCH_START.ja.md",
+      "titleEn": "Start research with a conversational collaborator",
+      "titleJa": "対話する協力者と研究を始める"
+    },
+    {
+      "en": "tools/workbench/docs/RESEARCH_CHECKPOINT.md",
+      "ja": "tools/workbench/docs/RESEARCH_CHECKPOINT.ja.md",
+      "titleEn": "Private research checkpoint template",
+      "titleJa": "私的な研究checkpointのテンプレート"
+    },
+    {
       "en": "tools/workbench/docs/RESEARCH_LOOP.md",
       "ja": "tools/workbench/docs/RESEARCH_LOOP.ja.md",
       "titleEn": "Conduct a conversational research experiment",

@@ -73,6 +73,8 @@ Distinguish player memory (the player's acquired observations), research-session
 
 ## Human–tool research loop
 
+Start with the broad framework and coverage map in [RESEARCH_LOOP](../tools/workbench/docs/RESEARCH_LOOP.md), using [RESEARCH_START](../tools/workbench/docs/RESEARCH_START.md) for a new session. The operations below apply when a useful comparison has been identified; they do not require a new scene or model change after every answer. Framework review, synthesis and parking an uninformative branch are valid next actions. Keep verbal-only guidance separate from observed scene evidence.
+
 1. Choose one decision/mechanism, player, situation and required skills.
 2. Present a generated scene in player view; the coach confirms meaning and gives conversational coaching.
 3. Preserve text and interval; formulate what is observed, inferred and capable of changing the decision.

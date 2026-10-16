@@ -2,7 +2,7 @@
 
 [English](FIRST_RUN.md) | [日本語](FIRST_RUN.ja.md)
 
-[English — current general guide](FIRST_RUN.ja.md)。この日本語版も同じ公開CLIと合成sessionを使います。
+実際の共同研究は [RESEARCH_START](RESEARCH_START.ja.md) から始めます。私的checkpointを作り、大枠を整理する入口です。この文書の合成採否や即時の編集・previewを、指導後の既定の研究手順にはしません。
 
 Node 24とGitを用意し、repositoryのrootで実行します。Codex・本人Mac用launcher・dot・API鍵・有料AIは不要です。選手モデルのソフトウェア検証、判断原則の手動評価、本人による研究原則の採用は別です。以下の採否は新しい合成チュートリアルsessionにだけ行います。
 

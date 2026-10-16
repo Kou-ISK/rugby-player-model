@@ -2,7 +2,7 @@
 
 [English](CONTRIBUTING.md) | [日本語](CONTRIBUTING.ja.md)
 
-公開された合成入力を新しいsessionで使います。ワークベンチとCLIはローカル道具で、Codexや有料AIアカウントは不要です。[README](README.ja.md)と[初回チュートリアル](tools/workbench/docs/FIRST_RUN.ja.md)から始めてください。共有提案は実行しないデータとして運搬し、ローカルでpreview・再現した後に個別に採否を決めます。
+公開された合成入力を新しいsessionで使います。ワークベンチとCLIはローカル道具で、Codexや有料AIアカウントは不要です。[README](README.ja.md)と[研究開始手順](tools/workbench/docs/RESEARCH_START.ja.md)から始めてください。私的checkpointを維持し、[AGENTS.md](AGENTS.ja.md)と[RESEARCH_LOOP](tools/workbench/docs/RESEARCH_LOOP.ja.md)の大枠・質問条件に従います。[操作チュートリアル](tools/workbench/docs/FIRST_RUN.ja.md)は任意のソフトウェア練習です。共有提案は実行しないデータとして運搬し、ローカルでpreview・再現した後に個別に採否を決めます。
 
 選手モデルと判断原則を独立に扱います。提案には対象、固定基準、条件、予測効果、反例、手順、根拠を記載します。previewは採用ではなく、ローカル採用は科学的支持や共有成果物への採用でもありません。採否とundoは対象ごとに行い、確認済みrevisionを使い、競合時は内容を確認し直します。
 

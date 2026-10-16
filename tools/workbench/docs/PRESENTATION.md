@@ -4,7 +4,7 @@
 
 Coaching and interpretation happen in a conversation such as Codex; the browser presents 3D scenes and acquires observations. Neither an AI API nor Computer Use is required. Browser free-text fields are for manual records, not AI submission or interpretation.
 
-On the configured Mac use `./start-rpm.command` and `./bridge-rpm.command`. Elsewhere follow [FIRST_RUN](FIRST_RUN.md), use a dedicated session and substitute `npm run --silent bridge --` below. Save generated scenes, contexts and edits at absolute paths inside the private session.
+On the configured Mac use `./start-rpm.command` and `./bridge-rpm.command`. Elsewhere follow [RESEARCH_START](RESEARCH_START.md), use a dedicated session and substitute `npm run --silent bridge --` below. Save generated scenes, contexts and edits at absolute paths inside the private session.
 
 ## Freeze the displayed state for coaching
 

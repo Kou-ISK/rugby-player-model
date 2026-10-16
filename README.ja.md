@@ -15,7 +15,8 @@
 | --- | --- |
 | 観測を入力して選手モデルを動かす | [選手モデル](models/player/README.ja.md) |
 | 判断原則を使う・LLMに選手の役割を渡す | [判断原則](models/judgment/README.ja.md) |
-| ローカルで研究を始める | [初回チュートリアル](tools/workbench/docs/FIRST_RUN.ja.md) |
+| Codexなどの協力者と研究を始める | [研究開始手順](tools/workbench/docs/RESEARCH_START.ja.md) |
+| 合成データでソフトウェア操作を練習する | [任意のチュートリアル](tools/workbench/docs/FIRST_RUN.ja.md) |
 | 研究手法を理解する | [認知研究の要件](docs/COGNITIVE_RESEARCH.ja.md) |
 | 改善へ参加する・実験を再現する | [貢献ガイド](CONTRIBUTING.ja.md)、[再現手順](docs/REPRODUCTION.ja.md) |
 | 仕様や操作手順を探す | [文書一覧](docs/README.ja.md) |
@@ -38,7 +39,9 @@ node models/player/dist/reference/cli.js --input models/player/examples/observat
 
 ## 場面と指導を通じて研究する
 
-[初回チュートリアル](tools/workbench/docs/FIRST_RUN.ja.md)で新しい合成sessionを用意します。選手視点で場面を見て、実際に取得した観測を保存し、そのsnapshotに指導を結び付けます。指導の解釈を仮説にし、別の説明との違いを識別できる条件を用意して結果を比較し、反例も残します。[会話による研究の進め方](tools/workbench/docs/RESEARCH_LOOP.ja.md)を参照してください。
+[研究開始手順](tools/workbench/docs/RESEARCH_START.ja.md)に従って私的sessionを用意します。過去の会話や個人Macの設定は不要です。まず攻撃・サポート・守備の目的、維持する関係、崩れ方、修復を整理し、既存の根拠を使ってから不足を確認します。ケースは不足を明らかにするか、競合する説明を区別するために選びます。取得した観測と指導、反例を保存し、反復や無関係な枝は保留します。再開用の[checkpoint](tools/workbench/docs/RESEARCH_CHECKPOINT.ja.md)を維持します。
+
+[AGENTS.md](AGENTS.ja.md)でこの順序を必須とし、[研究手順](tools/workbench/docs/RESEARCH_LOOP.ja.md)で段階の移行条件を定めます。証拠は毎回答保存し、意味のある区切りで統合して、後の段階で機構を提案します。ケースごとのモデル調整は行いません。指導への適合、相互反応による連携、実際の人の行動による支持は別の品質段階であり、隊形の台本再生だけで自己組織化とは認定しません。これは研究手順であり、協力者の遵守を実行時に自動保証する機能ではありません。
 
 候補は保存された提案であり、previewでは採用されません。選手モデルと判断原則は、版・採否・undoを独立して管理します。共有提案も未承認データとして取り込み、ローカルで再現・レビューします。
 
