@@ -69,6 +69,8 @@
 | Macで生成3Dと会話から研究を始める | [English](../tools/workbench/docs/MAC_START.md) | [日本語](../tools/workbench/docs/MAC_START.ja.md) |
 | 選手視点での見回し | [English](../tools/workbench/docs/PLAYER_VIEW.md) | [日本語](../tools/workbench/docs/PLAYER_VIEW.ja.md) |
 | 会話とブラウザ表示を結ぶローカル接続 | [English](../tools/workbench/docs/PRESENTATION.md) | [日本語](../tools/workbench/docs/PRESENTATION.ja.md) |
+| 対話する協力者と研究を始める | [English](../tools/workbench/docs/RESEARCH_START.md) | [日本語](../tools/workbench/docs/RESEARCH_START.ja.md) |
+| 私的な研究checkpointのテンプレート | [English](../tools/workbench/docs/RESEARCH_CHECKPOINT.md) | [日本語](../tools/workbench/docs/RESEARCH_CHECKPOINT.ja.md) |
 | 本人とCodexの最初の研究実験 | [English](../tools/workbench/docs/RESEARCH_LOOP.md) | [日本語](../tools/workbench/docs/RESEARCH_LOOP.ja.md) |
 
 ## 保存した原資料

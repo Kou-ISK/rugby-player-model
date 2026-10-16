@@ -4,6 +4,8 @@
 
 See [player-view controls](PLAYER_VIEW.md) for pointer-lock, drag and arrow-key looking, and [presentation transport](PRESENTATION.md) for conversational coaching tied to a displayed snapshot. Browser text entry below is the manual-recording alternative.
 
+Before choosing a scene, read or create private `work/research-checkpoint.md` using [the template](RESEARCH_CHECKPOINT.md). Apply the framework and question gates in [RESEARCH_LOOP](RESEARCH_LOOP.md); the numbered steps below explain scene operations, not a requirement to start with another case.
+
 1. Open `~/Documents/workSpace/rugby-player-model` in Codex. Ask to start with this guide, construct scenes together and leave adoption decisions to you.
 2. Run `./start-rpm.command` and open the displayed `http://127.0.0.1:5173`. The launcher uses the dedicated Node 24 runtime and configured private session. Stop with Control-C in its terminal. A busy port fails startup; do not stop unrelated jobs.
 3. Describe the desired arrangement/movement. Codex uses the [synthetic fixture](../../../evaluation/fixtures/dynamic-support.scene.json) and [scene contract](DYNAMIC_SCENES.md), writes JSON at an absolute session `work/` path and runs `./bridge-rpm.command scene-create --file ABSOLUTE_SCENE_JSON`. Creating scenes adopts neither deliverable. To start with the supplied example:
@@ -14,7 +16,7 @@ See [player-view controls](PLAYER_VIEW.md) for pointer-lock, drag and arrow-key 
 
 4. In the research tools, select the saved dynamic revision and reset explicitly. Observe in first person with step, play/pause and looking. In this scripted example the model controls one player and other actors follow paths. Starting playback alone does not save a record.
 5. Pause and give short coaching, for example “check around once here.” For manual entry choose “この場面で候補を保存,” confirm interval start/end tick, player and scene revision, then give the candidate ID to Codex. A reason is optional at this stage.
-6. Read observation context together and save conditions, exceptions, predictions and counterexamples. Unsupported cognitive mechanisms require a separate code proposal. The authoring conversation knows possible futures, so its review is not blind evaluation.
+6. Continue broad discovery under the [research loop](RESEARCH_LOOP.md), periodically organizing shared conditions, exceptions and competing explanations from indexed observations. Do not turn each small group into an implementation cycle. The editing commands below and step 7 apply later, when the research reaches proposal implementation and evaluation. Unsupported cognitive mechanisms require a separate code proposal. The authoring conversation knows possible futures, so its review is not blind evaluation.
 
 ```sh
 ./bridge-rpm.command context CANDIDATE_ID > "$HOME/Research/rugby-player-model/sessions/owner-primary/work/context.json"

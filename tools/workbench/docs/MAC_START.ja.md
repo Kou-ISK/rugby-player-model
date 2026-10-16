@@ -6,6 +6,8 @@
 
 会話中心で進める場合は [表示接続](PRESENTATION.ja.md) を使います。指導は会話に入力し、CLIが表示済みsnapshotと結び付けます。以下のブラウザ入力は手動記録の代替手順です。
 
+場面を選ぶ前に、私的な `work/research-checkpoint.md` を読むか、[テンプレート](RESEARCH_CHECKPOINT.ja.md)から作ります。[RESEARCH_LOOP](RESEARCH_LOOP.ja.md)の大枠・質問条件を適用します。以下の番号付き手順は場面操作の説明であり、毎回新しいケースから始める指示ではありません。
+
 1. Codexで `~/Documents/workSpace/rugby-player-model` をフォルダとして開きます。最初に「`tools/workbench/docs/MAC_START.md` に沿って研究を始めたい。試したい場面を会話で一緒に作り、採用は私が判断する」と伝えます。
 2. repo直下の `start-rpm.command` を実行し、表示された `http://127.0.0.1:5173` をブラウザで開きます。専用Node 24と同じ保存先を使います。停止は起動ターミナルで **Control-C** です。既存serverがportを使用中なら起動は失敗します。他のjobを停止しないでください。
 3. 試したい配置や動きを短く伝えます。Codexは `evaluation/fixtures/dynamic-support.scene.json` と [動的場面契約](DYNAMIC_SCENES.ja.md) を参照し、場面JSONをsessionの `work/` に保存して `./bridge-rpm.command scene-create --file ABSOLUTE_SCENE_JSON` を実行します。場面生成は選手モデル／判断原則採用ではありません。まず合成例を見たい場合は次だけでも開始できます。
@@ -16,7 +18,7 @@
 
 4. 画面の「場面」で保存した動的r1を選び、「再現 / reset」。一人称のまま1 step、再生・停止、首振りで観察します。対象1人を選手モデルが動かし、他の選手は指定した経路を動きます。再生開始だけでは記録は保存されません。
 5. 止めて「ここでは一度周囲を確認してほしい」など短い指導を入れ、「この場面で候補を保存」。理由は任意です。区間の開始tickを選び、終了tick・対象・場面版を確認します。表示された候補IDをCodexへ伝えます。
-6. Codexと観測contextを読み、適用条件・例外・予測・反例を候補として編集・保存します。選手モデルの対応外の機構は別のコード案にします。会話で場面を作ったCodexは未来を知り得るため、これを盲検評価とは呼びません。
+6. [研究手順](RESEARCH_LOOP.ja.md)に従って広く探索し、索引から観測を参照して共通条件・例外・競合する説明を定期的に整理します。少数の場面をまとめるたびに実装へ移りません。以下の編集コマンドと手順7は、後に研究が変更案の実装・評価段階へ進んだときに使います。選手モデルの対応外の機構は別のコード案にします。会話で場面を作ったCodexは未来を知り得るため、これを盲検評価とは呼びません。
 
 ```sh
 ./bridge-rpm.command context CANDIDATE_ID > "$HOME/Research/rugby-player-model/sessions/owner-primary/work/context.json"

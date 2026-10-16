@@ -4,7 +4,7 @@
 
 Use public synthetic inputs in a new session. The workbench and CLI are local tools;
 neither Codex nor a paid AI account is required. Begin with the README and the
-[manual tutorial](./tools/workbench/docs/FIRST_RUN.md). Its versioned proposal transport is inert data, with explicit local preview/reproduction and independent player model and judgment principles decisions.
+[research start guide](./tools/workbench/docs/RESEARCH_START.md). Maintain its private checkpoint and follow the mandatory framework/question gates in [AGENTS.md](AGENTS.md) and [RESEARCH_LOOP](tools/workbench/docs/RESEARCH_LOOP.md). The [manual tutorial](tools/workbench/docs/FIRST_RUN.md) is an optional software exercise. Its versioned proposal transport is inert data, with explicit local preview/reproduction and independent player model and judgment principles decisions.
 
 Keep the player model (executable cognition) and judgment principles (independent documents) separate. A proposal
 states its target, fixed base, conditions, predicted effect, counterexample,

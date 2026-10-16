@@ -69,6 +69,8 @@ Choose a language for each current guide. Code identifiers and JSON contracts ar
 | Start research on Mac with generated 3D scenes and conversation | [English](../tools/workbench/docs/MAC_START.md) | [日本語](../tools/workbench/docs/MAC_START.ja.md) |
 | Looking around in player view | [English](../tools/workbench/docs/PLAYER_VIEW.md) | [日本語](../tools/workbench/docs/PLAYER_VIEW.ja.md) |
 | Local connection between conversation and browser display | [English](../tools/workbench/docs/PRESENTATION.md) | [日本語](../tools/workbench/docs/PRESENTATION.ja.md) |
+| Start research with a conversational collaborator | [English](../tools/workbench/docs/RESEARCH_START.md) | [日本語](../tools/workbench/docs/RESEARCH_START.ja.md) |
+| Private research checkpoint template | [English](../tools/workbench/docs/RESEARCH_CHECKPOINT.md) | [日本語](../tools/workbench/docs/RESEARCH_CHECKPOINT.ja.md) |
 | Conduct a conversational research experiment | [English](../tools/workbench/docs/RESEARCH_LOOP.md) | [日本語](../tools/workbench/docs/RESEARCH_LOOP.ja.md) |
 
 ## Preserved originals

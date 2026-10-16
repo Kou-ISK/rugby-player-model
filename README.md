@@ -15,7 +15,8 @@ The workbench supports the research: it presents synthetic scenes, records obser
 | --- | --- |
 | Run the player model on observations | [Player model](models/player/README.md) |
 | Use the principles or give an LLM a player role | [Judgment principles](models/judgment/README.md) |
-| Run a local research session | [First-run tutorial](tools/workbench/docs/FIRST_RUN.md) |
+| Start research with Codex or another collaborator | [Research start](tools/workbench/docs/RESEARCH_START.md) |
+| Practice software operations with synthetic data | [Optional tutorial](tools/workbench/docs/FIRST_RUN.md) |
 | Understand the research method | [Cognitive research](docs/COGNITIVE_RESEARCH.md) |
 | Contribute or reproduce an experiment | [Contributing](CONTRIBUTING.md), [reproduction](docs/REPRODUCTION.md) |
 | Browse specifications and operating guides | [Documentation](docs/README.md) |
@@ -38,7 +39,9 @@ Read [the principles](models/judgment/RUGBY_JUDGMENT.md) and [the player role gu
 
 ## Research through scenes and coaching
 
-Use the [first-run tutorial](tools/workbench/docs/FIRST_RUN.md) with a new synthetic session. View a scene from the player's perspective, record what the player actually observed, and connect coaching to that snapshot. Turn the interpretation into a hypothesis, prepare a condition that could distinguish it from an alternative, compare outcomes, and retain counterexamples. See the [facilitation loop](tools/workbench/docs/RESEARCH_LOOP.md).
+Follow [research start](tools/workbench/docs/RESEARCH_START.md) in a private session. No previous conversation or personal Mac setup is needed. Begin with goals, relationships, breakdowns and repair across attack/support and defense; reuse existing evidence before asking for details. Select cases only when they reveal a gap or distinguish competing explanations. Record acquired observations and coaching, retain counterexamples, and park repetitive or unrelated branches. Keep a resumable [checkpoint](tools/workbench/docs/RESEARCH_CHECKPOINT.md).
+
+[AGENTS.md](AGENTS.md) requires this sequence and the [research loop](tools/workbench/docs/RESEARCH_LOOP.md) defines stage gates. Preserve evidence after every answer; synthesize at meaningful checkpoints and propose mechanisms later. Do not tune the model after each case. Coaching fit, mutually responsive coordination and support from actual human behavior are separate quality levels; scripted formations alone do not establish self-organization. These are research procedures, not an automatic runtime guarantee of collaborator compliance.
 
 A candidate is a saved proposal; a preview does not adopt it. The player model and judgment principles have separate versions, adoption decisions and undo operations. Shared proposals import as unapproved data and require local reproduction and review.
 

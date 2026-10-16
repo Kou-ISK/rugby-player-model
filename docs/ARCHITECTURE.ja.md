@@ -63,6 +63,8 @@ cognition-0.2では古い相手の不確実円と4m近傍の重なりを減衰�
 
 ## 研究トランザクション
 
+これは保存・提案のライフサイクルであり、毎回答の研究順序ではありません。[RESEARCH_LOOP](../tools/workbench/docs/RESEARCH_LOOP.ja.md)の大枠・探索の条件から始め、新規環境では[RESEARCH_START](../tools/workbench/docs/RESEARCH_START.ja.md)を使います。対応する観測場面がない一般的な指導は私的ノートへ保存し、無関係なsnapshotを割り当てません。以下の編集・評価は後の提案段階で行います。
+
 1. scene/seed/time/player/body/観測/記憶/profileと成果物別版を固定します。
 2. 原文指導を空の実行patchと未完成の文書欄を持つ候補へ保存します。ルールは変わりません。
 3. 人とCodexが数値・観測条件patchと独立原則、理由・予測・反例を編集します。採用にはならず、一方でもreview後は不変です。理由付きreviseは同じ観測と現在baseを持つ子候補です。

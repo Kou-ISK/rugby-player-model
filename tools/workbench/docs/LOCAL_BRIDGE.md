@@ -8,6 +8,8 @@ Use [player-view controls](PLAYER_VIEW.md) for looking and [presentation transpo
 
 [Freeze evaluation conditions](../../../evaluation/PROTOCOL.md) before coaching when testing unused conditions. The fixed eight cases preserve the candidate profile and are regressions, not unseen validation. Manual looking history is stored/replayed as observation research.
 
+Use the [discovery-first research protocol](RESEARCH_LOOP.md) for ongoing dialogue: save each response immediately, collect varied evidence and periodically summarize provisional principles. Synthesis does not trigger model editing; implementation and model evaluation belong to a later research stage. The commands below describe individual operations, not a requirement to execute the whole sequence after each response or small group of cases.
+
 ## Start from the UI
 
 1. Run `npm run dev`; look, play and pause in first person.
