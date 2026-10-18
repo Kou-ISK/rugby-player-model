@@ -12,12 +12,12 @@ test('genuine ecc5c298 synthetic session reads without rewrites and preserves ol
  assert.equal(createHash('sha256').update(bytes).digest('hex'),meta.stateSha256);assert.equal(meta.synthetic,true);assert.equal(original.format,1);
  const dir=mkdtempSync(join(tmpdir(),'rpm-legacy-fixture-')),file=join(dir,'state.json');writeFileSync(file,bytes,{mode:0o600});
  try{
-  const store=new Store(dir),loaded=store.read();assert.equal(loaded.format,1);assert.equal(store.active().A.version,'A2');assert.equal(store.active().B.version,'B2');assert.deepEqual(store.exportBData(),meta.bExport);
+  const store=new Store(dir),loaded=store.read();assert.equal(loaded.format,2);assert.equal(store.active().A.version,'A2');assert.equal(store.active().B.version,'B2');assert.equal(store.exportBData().outputFormat,2);assert.deepEqual(store.exportBData().structuredAmendments,meta.bExport.structuredAmendments);
   for(const key of ['snapshots','candidates','experiments','versionsA','versionsB','events'] as const)assert.deepEqual(loaded[key],original[key]);
   for(const e of Object.values(loaded.experiments)){assert.equal(e.engineFingerprint,meta.engineFingerprint);assert.equal(e.engineFingerprintFormat,undefined);assert.equal(e.candidate.context.executionMode,undefined);assert.equal(e.provenance.resultSha256,createHash('sha256').update(JSON.stringify(e.results)).digest('hex'));}
   assert.equal(readFileSync(file,'utf8'),bytes,'reads/export do not migrate historical bytes');
   assert.throws(()=>store.review(meta.pendingCandidateId,'A','approve','owner',2),ConflictError);assert.equal(readFileSync(file,'utf8'),bytes);
-  store.undo('A','owner','A2');assert.equal(store.active().A.version,'A1');assert.deepEqual(store.exportBData(),meta.bExport);assert.equal(store.read().format,2);
+  store.undo('A','owner','A2');assert.equal(store.active().A.version,'A1');assert.equal(store.exportBData().outputFormat,2);assert.deepEqual(store.exportBData().structuredAmendments,meta.bExport.structuredAmendments);assert.equal(store.read().format,2);
   assert.deepEqual(store.read().experiments,original.experiments);assert.deepEqual(store.read().candidates,original.candidates);assert.deepEqual(store.read().versionsB,original.versionsB);
   store.undo('B','owner','B2');const restarted=new Store(dir);assert.equal(restarted.active().B.version,'B1');assert.deepEqual(restarted.active().B.principles,original.versionsB.B1.principles);assert.deepEqual(restarted.read().events.slice(0,original.events.length),original.events);
   assert.deepEqual(restarted.read().experiments,original.experiments);assert.equal(restarted.read().candidates[meta.pendingCandidateId].revision,1);

@@ -1,5 +1,5 @@
 {
-  "sceneSchemaVersion": 2,
+  "sceneSchemaVersion": 3,
   "ownAttackDirection": 1,
   "tickSeconds": 0.2,
   "durationTicks": 10,
@@ -88,5 +88,8 @@
     "kind": "attached",
     "carrierId": "opponent"
   },
-  "calls": []
+  "calls": [],
+  "simulationMode": "kinematic",
+  "observationMode": "oriented",
+  "attachedBallFrame": "body"
 }

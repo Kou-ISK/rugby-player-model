@@ -30,3 +30,5 @@ On the configured owner Mac, first read `tools/workbench/docs/MAC_START.md` and 
 - Run `npm run check` for core changes and also `npm run test:browser` for UI/bridge integration changes; use `RPM_CHROMIUM` for an installed browser. Cloud results are not Mac acceptance or human validation.
 - Do not deploy publicly, add paid APIs, import P2P compiler/Auth/Blob/GLB infrastructure or change repository permissions for this local foundation.
 - Update English and Japanese documentation together. Follow `docs/NAMING.md` and run `npm run check:docs`; preserve historical wire identifiers and frozen archives.
+
+- Keep one current format per record type within 0.4.0; follow [ADR-003](docs/decisions/ADR-003-current-format.md). Model hypotheses are settings, not legacy/new format branches. Convert historical copies only at import boundaries; preserve source evidence, hashes and engine identity.

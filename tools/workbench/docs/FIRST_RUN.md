@@ -46,7 +46,7 @@ npm run bridge -- mode-study CANDIDATE_ID --revision 3 --k 1
 
 The example includes a proposed player model rule, an independent judgment principle, a reason, an expected effect and a counterexample. Editing and previewing do not adopt either output.
 
-The saved comparison has three arms: legacy, the receiver-selection policy with unlimited capacity, and that same policy with finite capacity. Finite versus unlimited tests capacity; legacy versus unlimited tests the policy change. Encoding, retrieved evidence and retained memory stay fixed within the capacity pair. Risk and orienting still use retained evidence. This is an unvalidated receiver-selection hypothesis, not a completed human memory model.
+The saved comparison has three arms: baseline, the receiver-selection policy with unlimited capacity, and that same policy with finite capacity. Finite versus unlimited tests capacity; baseline versus unlimited tests the policy change. Encoding, retrieved evidence and retained memory stay fixed within the capacity pair. Risk and orienting still use retained evidence. This is an unvalidated receiver-selection hypothesis, not a completed human memory model.
 
 ## 4. Adopt and undo each output separately
 

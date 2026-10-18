@@ -153,12 +153,12 @@ model用入力は指定した一群の判断原則文書／構造化追加原則
 
 ## 過去の0.3.0導入時の互換性と移行
 
-これは当時の変更記録です。現行保存形式はLOCAL_STORAGE、API 11の継続保存はLOCAL_BRIDGEを参照してください。研究上のundoとコードdowngradeは別です。
+これは当時の変更記録です。現在は[ADR-003](../../../docs/decisions/ADR-003-current-format.ja.md)の共通形式を使います。現行保存形式はLOCAL_STORAGE、API 11の継続保存はLOCAL_BRIDGEを参照してください。研究上のundoとコードdowngradeは別です。
 
 | 対象 | 互換性／操作 |
 |---|---|
 | package | 0.1.0／0.2.0→0.3.0。依存version／解決先は不変、lockのpackage版だけ更新 |
-| 観測／snapshot | contractVersion 1を維持。旧3fixtureをそのまま読み、通常の数値ルールは同じ判定を返す |
+| 観測／snapshot | 当時はcontractVersion 1を維持。旧3fixtureをそのまま読み、通常の数値ルールは同じ判定を返した |
 | 選手モデル trace | 新規実行はcognition-0.3／appliedRules付き。JSON Schemaは旧cognition-0.2 traceも読む |
 | 私的session | format 1の旧候補・版・履歴を保持。experiments／bReviews／evaluationSetsが無ければ空として読む。原則を自動採用しない |
 | bridge | API 2／3→4。旧serverを止めて新しいコードで再起動。旧serverへの新UIの書き込みは拒否 |

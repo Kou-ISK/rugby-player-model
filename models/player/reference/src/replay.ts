@@ -1,8 +1,11 @@
-import { legacyMode, type ExecutionMode } from './execution-mode.js';
+import { importBundle, importMemory } from './import.js';
+import { importExecutionMode } from './execution-mode.js';
+import { baselineMode, type ExecutionMode } from './execution-mode.js';
 import type { ObservationSequence, Profile, RulesA } from './contracts.js';
 import { thinkWithMode } from './cognition.js';
 import { validate, validateEvidence } from './validation.js';
 export function replayObservationSequence(history:ObservationSequence,override?:{profile:Profile;rulesA:RulesA;executionMode?:ExecutionMode}){
+  history={...structuredClone(history),initialMemory:importMemory(history.initialMemory),events:history.events.map(e=>({...structuredClone(e),bundle:importBundle(e.bundle),executionMode:importExecutionMode(e.executionMode??baselineMode())}))};
   validate('ObservationSequence',history);
   let memory=structuredClone(history.initialMemory),memoryBeforeLast=memory;
   const frames=history.events.map((e,i)=>{
@@ -16,7 +19,7 @@ export function replayObservationSequence(history:ObservationSequence,override?:
       if(e.bundle.playerId!==previous.bundle.playerId)throw new Error('Observation player changed');
     }
     validateEvidence(e.bundle,memory);memoryBeforeLast=structuredClone(memory);
-    const trace=thinkWithMode(e.bundle,memory,override?.profile??e.profile,override?.rulesA??e.rulesA,override?.executionMode??e.executionMode??legacyMode());memory=trace.longTermMemory;
+    const trace=thinkWithMode(e.bundle,memory,override?.profile??e.profile,override?.rulesA??e.rulesA,override?.executionMode??e.executionMode??baselineMode());memory=trace.longTermMemory;
     return {sequence:e.sequence,trigger:e.trigger,time:e.bundle.time,trace};
   });
   return {frames,memoryBeforeLast,finalTrace:frames.at(-1)!.trace,

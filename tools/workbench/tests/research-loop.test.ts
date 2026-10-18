@@ -22,7 +22,7 @@ test('full loop: propose/edit/independent approval/compare/undo/restart persists
     assert.equal(store.comparison(candidate.id).recorded.after.intention.action,'scan');
     assert.throws(()=>store.edit(candidate.id,{},principle,2),/immutable/);
     store.review(candidate.id,'B','approve','owner',2);assert.equal(store.active().B.version,'B1');
-    assert.ok(store.exportB().includes('Local owner-approved amendments (B1)'));
+    assert.ok(store.exportB().includes('## Amendments'));
     const restart=new Store(dir);assert.equal(restart.active().A.version,'A1');assert.equal(restart.active().B.version,'B1');
     restart.undo('A','owner','A1');assert.equal(restart.active().A.version,'A0');assert.equal(restart.active().B.version,'B1');
     assert.equal(restart.comparison(candidate.id).recorded.after.intention.action,'carry');

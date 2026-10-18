@@ -35,6 +35,7 @@ test('built-in static setup assigns opponent facing before rendering, with no te
 
 test('authored field of view changes acquired evidence while legacy scenes retain 90 degrees',async()=>{
  const {randomUUID}=await import('node:crypto');
+ const {contentDigest}=await import('../src/content');
  const {sceneWorld,sceneContent}=await import('../src/scene');
  const {sense,visible}=await import('../src/sensing');
  const {horizontalFov}=await import('../src/world');
@@ -42,9 +43,9 @@ test('authored field of view changes acquired evidence while legacy scenes retai
  const {defaultRulesA}=await import('../../../models/player/reference/src/defaults');
  const {assertSnapshotHistory}=await import('../../experiments/src/history');
  const definition=JSON.parse(readFileSync('evaluation/fixtures/orientation-attack.scene.json','utf8')) as SceneDefinition;
- const scene={sceneId:randomUUID(),revision:1,contentHash:'a'.repeat(64),definition,generationSeed:null,trackingIds:definition.actors.map(()=>`track-${randomUUID()}`),createdAt:new Date().toISOString()};
+ const scene={sceneId:randomUUID(),revision:1,contentHash:contentDigest(sceneContent(definition)),definition,generationSeed:null,trackingIds:definition.actors.map(()=>`track-${randomUUID()}`),createdAt:new Date().toISOString()};
  const baseline=sceneWorld(scene),old=sense(baseline),originalContent=JSON.stringify(sceneContent(definition));
- const wide=structuredClone(scene);wide.definition.horizontalFovDegrees=110;validateSceneDefinition(wide.definition);
+ const wide=structuredClone(scene);wide.definition.horizontalFovDegrees=110;wide.contentHash=contentDigest(sceneContent(wide.definition));validateSceneDefinition(wide.definition);
  assert.notEqual(JSON.stringify(sceneContent(wide.definition)),originalContent);
  const world=sceneWorld(wide),p={id:'edge',kind:'player' as const,team:'red' as const,position:{x:10*Math.sin(50*Math.PI/180),z:10*Math.cos(50*Math.PI/180)},radius:.45,yaw:0};
  // Isolate angular gating from occlusion in this sensor unit test.

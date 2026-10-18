@@ -1,3 +1,4 @@
+import { contentDigest as digest } from './content';
 import { initialiseRuntime, renderRuntime, assertRuntime } from './skills';
 import { validate } from '../../../models/player/reference/src/validation.js';
 import type { Vec } from '../../../models/player/reference/src/contracts.js';
@@ -12,10 +13,12 @@ function number(v:any,min:number,max:number,integer=false){if(typeof v!=='number
 function id(v:any){if(typeof v!=='string'||!v.trim()||v.startsWith('@')||v.length>80)throw new Error('Invalid actor id');}
 function pose(v:any){object(v,['position','yaw']);object(v.position,['x','z']);number(v.position.x,-32,32);number(v.position.z,-48,48);number(v.yaw,-Math.PI,Math.PI);}
 export function validateSceneDefinition(value:unknown):asserts value is SceneDefinition {
-  const s=value as any;object(s,['sceneSchemaVersion','tickSeconds','durationTicks','controlledPlayerId','actors','ball','calls',...(s?.sceneSchemaVersion>=2?['ownAttackDirection']:[]),...(Object.hasOwn(s??{},'horizontalFovDegrees')?['horizontalFovDegrees']:[])]);
-  if(![1,2,3].includes(s.sceneSchemaVersion)||s.tickSeconds!==.2)throw new Error('Unsupported scene contract/clock');
-  if(s.sceneSchemaVersion>=2&&![1,-1].includes(s.ownAttackDirection))throw new Error('Known own attack direction required');
+  const s=value as any;object(s,['sceneSchemaVersion','simulationMode','observationMode','attachedBallFrame','tickSeconds','durationTicks','controlledPlayerId','actors','ball','calls',...(Object.hasOwn(s??{},'ownAttackDirection')?['ownAttackDirection']:[]),...(Object.hasOwn(s??{},'horizontalFovDegrees')?['horizontalFovDegrees']:[])]);
+  if(s.sceneSchemaVersion!==3||s.tickSeconds!==.2)throw new Error('Unsupported scene contract/clock');
+  if((s.observationMode==='oriented'||s.simulationMode==='motor')&&![1,-1].includes(s.ownAttackDirection))throw new Error('Known own attack direction required');
   if(Object.hasOwn(s,'horizontalFovDegrees'))number(s.horizontalFovDegrees,60,120);
+  if(!['kinematic','motor'].includes(s.simulationMode)||!['positions','oriented'].includes(s.observationMode)||!['world','body'].includes(s.attachedBallFrame))throw new Error('Invalid scene settings');
+  if(s.simulationMode==='motor'&&(s.observationMode!=='oriented'||s.attachedBallFrame!=='body'))throw new Error('Motor simulation requires oriented sensing and a body-relative ball');
   number(s.durationTicks,1,200,true);id(s.controlledPlayerId);
   if(!Array.isArray(s.actors)||s.actors.length<1||s.actors.length>32)throw new Error('Use 1–32 actors');
   const ids=new Set<string>();let controlled=0;
@@ -32,13 +35,13 @@ export function validateSceneDefinition(value:unknown):asserts value is SceneDef
       object(a.motion,['kind','keyframes']);frames(a.motion.keyframes);
       const first=a.motion.keyframes[0];if(first.position.x!==a.initial.position.x||first.position.z!==a.initial.position.z||first.yaw!==a.initial.yaw)throw new Error('Initial pose must match the first keyframe');
       if(a.id===s.controlledPlayerId)throw new Error('A output and scripted motion cannot control the same actor');
-    }else if(a.motion?.kind==='autonomous'&&s.sceneSchemaVersion===3&&a.id!==s.controlledPlayerId){object(a.motion,['kind','profile']);validate('Profile',a.motion.profile);}
+    }else if(a.motion?.kind==='autonomous'&&s.simulationMode==='motor'&&a.id!==s.controlledPlayerId){object(a.motion,['kind','profile']);validate('Profile',a.motion.profile);}
     else throw new Error('Unknown motion kind');
   }
   if(controlled!==1||!ids.has(s.controlledPlayerId))throw new Error('Exactly one controlled actor is required');
   if(s.ball?.kind==='attached'){object(s.ball,['kind','carrierId']);if(!ids.has(s.ball.carrierId))throw new Error('Unknown ball carrier');}
   else if(s.ball?.kind==='scripted'){object(s.ball,['kind','keyframes']);frames(s.ball.keyframes);}else throw new Error('Unknown ball mode');
-  if(s.sceneSchemaVersion===3&&s.ball.kind!=='attached')throw new Error('Motor scenes start with an attached ball');
+  if(s.simulationMode==='motor'&&s.ball.kind!=='attached')throw new Error('Motor scenes start with an attached ball');
   if(!Array.isArray(s.calls)||s.calls.length>128)throw new Error('Too many calls');
   for(const c of s.calls){object(c,['startTick','endTick','sourceActorId','cue']);number(c.startTick,0,s.durationTicks,true);number(c.endTick,0,s.durationTicks,true);
     if(c.endTick<c.startTick||!ids.has(c.sourceActorId)||!['support-call','warning-call'].includes(c.cue))throw new Error('Invalid call event');
@@ -60,19 +63,20 @@ export function sampleMotion(frames:Keyframe[],tick:number){
 }
 export function trackingMap(s:SceneRevision){return Object.fromEntries(s.definition.actors.map((a,i)=>[a.id,s.trackingIds[i]]));}
 export function updateSceneFrame(world:World):World {
-  if(world.dynamic?.scene.definition.sceneSchemaVersion===3){if(!world.runtime)initialiseRuntime(world);return renderRuntime(world);}
+  if(world.dynamic?.scene.definition.simulationMode==='motor'){if(!world.runtime)initialiseRuntime(world);return renderRuntime(world);}
   const d=world.dynamic!;const s=d.scene.definition;const positions=new Map<string,{position:Vec;yaw:number}>();
   for(const a of s.actors)positions.set(a.id,a.motion.kind==='scripted'?sampleMotion(a.motion.keyframes,d.tick):world.body);
   world.entities=s.actors.filter(a=>a.id!==s.controlledPlayerId).map(a=>({id:a.id,kind:'player',team:a.team,position:{...positions.get(a.id)!.position},yaw:positions.get(a.id)!.yaw,radius:.45}));
   const ball=s.ball.kind==='attached'?positions.get(s.ball.carrierId)!.position:sampleMotion(s.ball.keyframes,d.tick).position;
   const heldPose=s.ball.kind==='attached'?positions.get(s.ball.carrierId):undefined;
-  const ballPosition=s.sceneSchemaVersion>=2&&heldPose?{x:ball.x+Math.sin(heldPose.yaw)*.65,z:ball.z+Math.cos(heldPose.yaw)*.65}:{x:ball.x,z:ball.z+(s.ball.kind==='attached'?.4:0)};
+  const ballPosition=s.attachedBallFrame==='body'&&heldPose?{x:ball.x+Math.sin(heldPose.yaw)*.65,z:ball.z+Math.cos(heldPose.yaw)*.65}:{x:ball.x,z:ball.z+(s.ball.kind==='attached'?.4:0)};
   world.entities.push({id:'@ball',kind:'ball',team:'none',position:ballPosition,radius:.18});
   world.body.hasBall=s.ball.kind==='attached'&&s.ball.carrierId===s.controlledPlayerId;
   world.calls=s.calls.flatMap((c,i)=>d.tick>=c.startTick&&d.tick<=c.endTick?[{id:`@sound-${i}`,position:{...positions.get(c.sourceActorId)!.position},cue:c.cue}]:[]);
   return world;
 }
 export function sceneWorld(scene:SceneRevision):World {
+  scene=importSceneRevision(scene);
   validateSceneDefinition(scene.definition);
   if(scene.trackingIds.length!==scene.definition.actors.length||new Set(scene.trackingIds).size!==scene.trackingIds.length||scene.trackingIds.some(id=>!/^track-[0-9a-f-]{36}$/.test(id)))throw new Error('Invalid observation tracking identifiers');
   const a=scene.definition.actors.find(a=>a.id===scene.definition.controlledPlayerId)!;
@@ -89,10 +93,10 @@ function sameFrame(a:any,b:any):boolean {
   return a===b;
 }
 export function assertDynamicWorld(world:World){
-  const d=world.dynamic;if(world.runtime&&d?.scene.definition.sceneSchemaVersion!==3)throw new Error('Motor runtime requires scene v3');if(!d)return;
+  const d=world.dynamic;if(world.runtime&&d?.scene.definition.simulationMode!=='motor')throw new Error('Motor runtime requires motor settings');if(!d)return;
   sceneWorld(d.scene);number(d.tick,0,d.scene.definition.durationTicks,true);
   if(world.scene!=='dynamic'||world.playerId!=='observer-0'||world.time!==Math.round(d.tick*.2*1000)/1000||world.seed!==d.scene.generationSeed)throw new Error('Dynamic frame clock/observer mismatch');
-  if(d.scene.definition.sceneSchemaVersion===3){if(!world.runtime||world.runtime.version!==1||world.runtime.actors.length!==d.scene.definition.actors.length)throw new Error('Missing motor runtime');assertRuntime(world);}
+  if(d.scene.definition.simulationMode==='motor'){if(!world.runtime||world.runtime.version!==1||world.runtime.actors.length!==d.scene.definition.actors.length)throw new Error('Missing motor runtime');assertRuntime(world);}
   const expected=updateSceneFrame(structuredClone(world));
   if(!sameFrame(expected.entities,world.entities)||!sameFrame(expected.calls,world.calls)||expected.body.hasBall!==world.body.hasBall)throw new Error('Dynamic frame does not match the frozen scene');
 }
@@ -104,4 +108,24 @@ export function sceneDiagnostics(world:World){
   const overlaps:string[][]=[];
   players.forEach((a,i)=>players.slice(i+1).forEach(b=>{if(Math.hypot(a.position.x-b.position.x,a.position.z-b.position.z)<a.radius+b.radius)overlaps.push([a.id,b.id]);}));
   return {overlaps,contactResolution:world.runtime?'abstract-stopping-only':'unsupported',ballPhysics:world.runtime?'2d-release-flight-catch':'unsupported',otherActors:world.runtime?'independent-agents-and-scripted-stimuli':'scripted-stimuli'};
+}
+
+/** Import copies only; archived source identity and input bytes are not rewritten. */
+export function importSceneDefinition(value:unknown):SceneDefinition {
+ const s=structuredClone(value) as any,version=s?.sceneSchemaVersion;
+ if(![1,2,3].includes(version))throw new Error('Unsupported scene format');
+ if(version<3&&['simulationMode','observationMode','attachedBallFrame'].some(k=>Object.hasOwn(s,k)))throw new Error('Mixed scene formats');
+ if(version===1&&Object.hasOwn(s,'ownAttackDirection'))throw new Error('Unexpected context in archived scene');
+ const settings=['simulationMode','observationMode','attachedBallFrame'].filter(k=>Object.hasOwn(s,k));
+ if(settings.length!==0&&settings.length!==3)throw new Error('Incomplete scene settings');
+ s.sceneSchemaVersion=3;
+ s.simulationMode??=version===3?'motor':'kinematic';
+ s.observationMode??=version>=2?'oriented':'positions';
+ s.attachedBallFrame??=version>=2?'body':'world';
+ validateSceneDefinition(s);return s;
+}
+export function importSceneRevision(value:SceneRevision):SceneRevision {
+ if(digest(sceneContent(value.definition))!==value.contentHash)throw new Error('Scene content hash mismatch');
+ const definition=importSceneDefinition(value.definition),contentHash=digest(sceneContent(definition));
+ return {...structuredClone(value),...(contentHash!==value.contentHash?{sourceContentHash:value.sourceContentHash??value.contentHash}:{}),definition,contentHash};
 }

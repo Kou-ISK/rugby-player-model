@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { execute, think, defaultProfile, defaultRulesA, emptyMemory, finiteMode, unlimitedMode, legacyMode, rankRetrieved, type Bundle, type Percept, type Memory, type ExecutionMode } from '../reference/src/index.js';
-const player=(id:string,observedAt=.9,confidence=.9):Percept=>({id,entityId:id,kind:'player',relation:'teammate',modality:'vision',observedAt,confidence,position:{x:1,z:-3}});
-const call=(id:string,confidence=1):Percept=>({id,entityId:id,kind:'call',relation:'neutral',modality:'audio',observedAt:1,confidence,bearing:1,observerYaw:.5,cue:'support-call'});
-const ball:Percept={id:'ball-observation',entityId:'ball',kind:'ball',relation:'neutral',modality:'vision',observedAt:1,confidence:1,position:{x:0,z:0}};
-const bundle=(percepts:Percept[]=[],time=1):Bundle=>({contractVersion:1,playerId:'observer-0',time,self:{position:{x:0,z:0},yaw:0,headYaw:0,eyeHeight:1.7,hasBall:true},vision:{horizontalFov:Math.PI/2,range:35},percepts});
+import { execute, think, defaultProfile, defaultRulesA, emptyMemory, finiteMode, unlimitedMode, baselineMode, rankRetrieved, type Bundle, type Percept, type Memory, type ExecutionMode } from '../reference/src/index.js';
+const player=(id:string,observedAt=.9,confidence=.9):Percept=>({id,entityId:id,kind:'player',relation:'teammate',modality:'vision',evidenceVersion:2,observedAt,confidence,position:{x:1,z:-3}});
+const call=(id:string,confidence=1):Percept=>({id,entityId:id,kind:'call',relation:'neutral',modality:'audio',evidenceVersion:2,observedAt:1,confidence,bearing:1,observerYaw:.5,cue:'support-call'});
+const ball:Percept={id:'ball-observation',entityId:'ball',kind:'ball',relation:'neutral',modality:'vision',evidenceVersion:2,observedAt:1,confidence:1,position:{x:0,z:0}};
+const bundle=(percepts:Percept[]=[],time=1):Bundle=>({contractVersion:3,playerId:'observer-0',time,self:{position:{x:0,z:0},yaw:0,headYaw:0,eyeHeight:1.7,hasBall:true},vision:{horizontalFov:Math.PI/2,range:35},percepts});
 const profile={...defaultProfile(),tactics:{preferredAction:'pass' as const,adherence:0}};
 const rules={...defaultRulesA(),passBias:2}; // Predeclared: an eligible pass wins; execution is unsupported.
 const run=(b:Bundle,m:Memory,mode:ExecutionMode)=>execute({executionContractVersion:2,executionMode:mode,bundle:b,memory:m,profile,rules});
@@ -68,7 +68,7 @@ test('W10 observation-only execution rejects world/future/render fields; externa
  const exterior={world:{hiddenReceiver:1},future:{ball:3},render:'spectator'};exterior.world.hiddenReceiver=9;exterior.future.ball=40;exterior.render='player';assert.deepEqual(execute(input),first);
  for(const key of ['world','future','render'])assert.throws(()=>execute({...input,[key]:exterior[key as keyof typeof exterior]}));
 });
-test('Execution v2 rejects absent/unknown modes, policies, capacities; explicit legacy is byte-equivalent',()=>{
- const b=bundle([ball]),m=emptyMemory();assert.deepEqual(run(b,m,legacyMode()).trace,think(b,m,profile,rules));assert.equal(run(b,m,legacyMode()).traceVersion,1);
+test('Execution v2 rejects absent/unknown modes, policies, capacities; explicit baseline uses the same trace',()=>{
+ const b=bundle([ball]),m=emptyMemory();assert.deepEqual(run(b,m,baselineMode()).trace,think(b,m,profile,rules));assert.equal(run(b,m,baselineMode()).traceVersion,4);
  for(const mode of [{},{mode:'legacy',policyVersion:'legacy-ecc5c298-v1',capacity:{kind:'unlimited'}},{mode:'h-wm-1',policyVersion:'unknown',capacity:{kind:'unlimited'}},...[0,129,1.5].map(k=>({...finiteMode(1),capacity:{kind:'finite',k}})),{...unlimitedMode(),capacity:{kind:'unlimited',k:4}}])assert.throws(()=>run(b,m,mode as ExecutionMode));
 });

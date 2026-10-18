@@ -30,3 +30,5 @@
 - core変更では `npm run check`、UI/bridge統合変更ではさらに `npm run test:browser` を実行します。既存ブラウザには `RPM_CHROMIUM` を指定できます。Cloud結果はMac受入や人間による妥当性確認ではありません。
 - このローカル基盤の作業で公開デプロイ、有料API、P2P compiler/Auth/Blob/GLB基盤の導入、リポジトリ権限変更を行いません。
 - 日英文書を同時更新します。`docs/NAMING.ja.md` に従い `npm run check:docs` を実行し、過去の保存識別子と凍結原本を維持します。
+
+- 0.4.0内は記録種別ごとに一つの現行形式を使い、[ADR-003](docs/decisions/ADR-003-current-format.ja.md)に従う。研究仮説の差は設定とし、旧版/新版の形式分岐にしない。過去記録の変換は読取境界のコピーだけで行い、元の根拠・hash・実行engineを保全する。

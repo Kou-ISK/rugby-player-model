@@ -88,5 +88,8 @@
     "kind": "attached",
     "carrierId": "self"
   },
-  "calls": []
+  "calls": [],
+  "simulationMode": "motor",
+  "observationMode": "oriented",
+  "attachedBallFrame": "body"
 }

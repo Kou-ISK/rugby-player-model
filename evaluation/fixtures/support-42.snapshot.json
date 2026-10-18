@@ -1,5 +1,5 @@
 {
-  "contractVersion": 1,
+  "contractVersion": 2,
   "scene": "support",
   "seed": 42,
   "world": {
@@ -52,7 +52,7 @@
     "calls": []
   },
   "bundle": {
-    "contractVersion": 1,
+    "contractVersion": 3,
     "playerId": "self",
     "time": 0,
     "self": {
@@ -81,7 +81,8 @@
         "position": {
           "x": 2.5046903495676816,
           "z": 9.176250090822577
-        }
+        },
+        "evidenceVersion": 2
       },
       {
         "id": "ball@0.000:vision",
@@ -94,7 +95,8 @@
         "position": {
           "x": 0,
           "z": 0.4
-        }
+        },
+        "evidenceVersion": 2
       }
     ]
   },

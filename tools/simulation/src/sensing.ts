@@ -28,7 +28,7 @@ export function sense(world: World): Bundle {
   const aliases=world.dynamic?trackingMap(world.dynamic.scene):null;
   const entityId=(id:string)=>aliases?(id==='@ball'?'object-ball':aliases[id]??id.replace('@sound-','sound-')):id;
   const team=world.dynamic?.scene.definition.actors.find(a=>a.id===world.dynamic!.scene.definition.controlledPlayerId)?.team??'blue';
-  const scene=world.dynamic?.scene.definition,v2=(scene?.sceneSchemaVersion??1)>=2;
+  const scene=world.dynamic?.scene.definition,oriented=scene?.observationMode==='oriented';
   const seen=world.entities.filter(e=>visible(world,e));
   const visibleBalls=seen.filter(e=>e.kind==='ball');
   // Visible geometry only: never reveal the author's true attachment/carrier binding.
@@ -37,16 +37,16 @@ export function sense(world: World): Bundle {
     id: `${entityId(e.id)}@${world.time.toFixed(3)}:vision`, entityId: entityId(e.id), kind: e.kind,
     relation: e.team === 'none' ? 'neutral' : e.team === team ? 'teammate' : 'opponent',
     modality: 'vision', observedAt: world.time, confidence: .9, position: { ...e.position },
-    ...(v2?{evidenceVersion:2 as const}:{}),
-    ...(v2&&e.kind==='player'&&e.yaw!==undefined?{bodyOrientation:{yaw:observedYaw(e.yaw),halfWidth:Math.PI/24,confidence:.8}}:{}),
-    ...(v2&&e.kind==='player'&&holdingCue(e)?{ballControl:{holding:true as const,confidence:.85}}:{}),
+    evidenceVersion:2 as const,
+    ...(oriented&&e.kind==='player'&&e.yaw!==undefined?{bodyOrientation:{yaw:observedYaw(e.yaw),halfWidth:Math.PI/24,confidence:.8}}:{}),
+    ...(oriented&&e.kind==='player'&&holdingCue(e)?{ballControl:{holding:true as const,confidence:.85}}:{}),
   }));
   for (const c of world.calls) if (distance(world.body.position, c.position) <= 20) percepts.push({
     id: `${entityId(c.id)}@${world.time.toFixed(3)}:audio`, entityId: entityId(c.id), kind: 'call', relation: 'neutral',
     modality: 'audio', observedAt: world.time, confidence: .55,
     bearing: Math.round(angle(bearing(world.body.position, c.position) - world.body.yaw) / .3) * .3, cue: c.cue,
-    observerYaw: world.body.yaw,...(v2?{evidenceVersion:2 as const}:{}),
+    observerYaw: world.body.yaw,evidenceVersion:2 as const,
   });
-  return { contractVersion: scene?.sceneSchemaVersion===3?3:v2?2:1,...(v2?{context:{ownAttackDirection:scene!.ownAttackDirection!}}:{}), playerId: world.playerId, time: world.time, self: structuredClone(world.body),
+  return { contractVersion:3,...(oriented?{context:{ownAttackDirection:scene!.ownAttackDirection!}}:{}), playerId: world.playerId, time: world.time, self: structuredClone(world.body),
     vision: { horizontalFov: horizontalFov(world), range: 35 }, percepts };
 }

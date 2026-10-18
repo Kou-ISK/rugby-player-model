@@ -85,9 +85,9 @@ test('research mode saves three arms, remains preview-only, adopts A separately 
  await page.locator('#mode-study').click();await expect(page.locator('#mode-study-result')).toContainText('"name": "unlimited"');
  await expect(page.locator('#versions')).toHaveText(`${baseA} / ${baseB}`);
  await page.locator('#preview').click();await expect(page.locator('#comparison')).toContainText('preview');
- await page.locator('#owner').check();await page.locator('#approve-a').click();await expect(page.locator('#trace')).toContainText('cognition-h-wm-1-v1');
+ await page.locator('#owner').check();await page.locator('#approve-a').click();await expect(page.locator('#trace')).toContainText('receiver-deliberation-v1');
  const adopted=await (await request.get('/api/state')).json();expect(adopted.active.B.version).toBe(baseB);expect(adopted.active.executionMode.capacity).toEqual({kind:'finite',k:1});
- await page.reload();await openResearchTools(page);await expect(page.locator('#trace')).toContainText('cognition-h-wm-1-v1');await expect(page.locator('#mode-study-result')).toContainText('"name": "unlimited"');await expect(page.locator('#execution-mode')).toHaveValue('finite');
+ await page.reload();await openResearchTools(page);await expect(page.locator('#trace')).toContainText('receiver-deliberation-v1');await expect(page.locator('#mode-study-result')).toContainText('"name": "unlimited"');await expect(page.locator('#execution-mode')).toHaveValue('finite');
  await page.locator('#owner').check();await page.locator('#undo-a').click();await expect(page.locator('#versions')).toHaveText(`${baseA} / ${baseB}`);
  expect((await (await request.get('/api/state')).json()).active.executionMode).toEqual(initial.active.executionMode);
 });

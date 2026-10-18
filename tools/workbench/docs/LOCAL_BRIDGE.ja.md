@@ -83,9 +83,9 @@ snapshotの選手モデル／判断原則基準版が変わった候補は採用
 
 受け手の比較・選択に対する容量制約です。全判断をK件に制限する、人間作業記憶の完成モデルではありません。保持観測による危険／定位、fresh/no-fresh条件は全保持証拠を使います。既定は従来のままです。
 
-`mode-edit CANDIDATE --revision N --mode finite --k 4`、`--mode unlimited`、`--mode legacy`で候補に保存します。UIの研究モード欄も同じ編集を使います。変更だけではactiveは変わりません。`mode-study CANDIDATE --revision N --k 4`は同一観測で従来・新policy無制限・新policy有限を別armとして保存します。`mode-studies`で再起動後も取得できます。有限対無制限が容量対照、従来対無制限はpolicy差です。選手モデル専用採用後に実行へ適用し、選手モデル undoで以前のmodeへ戻ります。判断原則は変わりません。
+`mode-edit CANDIDATE --revision N --mode finite --k 4`、`--mode unlimited`、`--mode baseline`で候補に保存します。UIの研究モード欄も同じ編集を使います。変更だけではactiveは変わりません。`mode-study CANDIDATE --revision N --k 4`は同一観測で従来・受け手policy無制限・受け手policy有限を別armとして保存します。`mode-studies`で再起動後も取得できます。有限対無制限が容量対照、従来対無制限はpolicy差です。選手モデル専用採用後に実行へ適用し、選手モデル undoで以前のmodeへ戻ります。判断原則は変わりません。
 
-旧記録でmodeがない場合は記録当時のlegacyを意味します。readerは旧記録へ新fieldやhashを書き足しません。新しい観測履歴には各eventのmodeを保存します。新規sessionと新しい書込みは外側のstate format 2を使い、旧バイナリはこれを拒否します。rollback時もformat 2対応readerを使い、新版sessionを保全してください。非legacy activeをundoするだけでは旧reader互換には戻りません。新版の記録を削除して旧版互換にしないでください。
+旧記録でmodeがない場合は記録当時のbaselineを意味します。readerは旧記録へ新fieldやhashを書き足しません。新しい観測履歴には各eventのmodeを保存します。新規sessionと新しい書込みは外側のstate format 2を使い、旧バイナリはこれを拒否します。rollback時もformat 2対応readerを使い、新版sessionを保全してください。変更したactiveをundoするだけでは旧reader互換には戻りません。新版の記録を削除して旧版互換にしないでください。
 
 ## 観測の継続保存（bridge API 11）
 

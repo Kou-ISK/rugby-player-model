@@ -9,7 +9,7 @@ export type Principle = {
 };
 export type RulesB = { version: string; principles: Principle[]; baseline?:Baseline; outputFormat?:2 };
 export type Snapshot = {
-  contractVersion: 1 | 2; scene: SceneId; seed: number | null; world: World;
+  contractVersion: 2; scene: SceneId; seed: number | null; world: World;
   bundle: Bundle; memoryBefore: Memory; profile: Profile; rulesA: RulesA; rulesBVersion: string;
   observationHistory?: ObservationHistory; executionMode?:ExecutionMode;
   /** Local provenance only; not a cognition input. The boundary observation overlaps once. */
@@ -17,7 +17,7 @@ export type Snapshot = {
   /** Evaluator-only start world for replaying this saved continuation; never a cognition input. */
   observationAnchor?: World;
 };
-export type ObservationHistory = { version:1|2; mode:'static-study'|'fixed-step-study'; sceneRef?:SceneRef; initialMemory:Memory; events:ObservationEvent[] };
+export type ObservationHistory = { version:2; mode:'static-study'|'fixed-step-study'; sceneRef?:SceneRef; initialMemory:Memory; events:ObservationEvent[] };
 export type Candidate = {
   id: string; revision: number; createdAt: string; feedback: string; context: Snapshot;
   principle: Principle; patchA: Partial<Omit<RulesA, 'version'>>;

@@ -1,3 +1,4 @@
+import { importSceneRevision } from './scene';
 import type { Body } from '../../../models/player/reference/src/contracts.js';
 import type { World } from './contracts';
 import { updateSceneFrame } from './scene';
@@ -5,7 +6,7 @@ import { updateSceneFrame } from './scene';
 // Read-only presentation of a saved experiment. Never advances A or mutates a session.
 export function recordedWorld(source:{world:World},frame:{time:number;body?:Body;runtime?:import('./contracts').MotorRuntime},calls:World['emittedCalls']=[]):World {
   if(!frame.body)throw new Error('This legacy experiment has no recorded body frames; record a new comparison');
-  const world=structuredClone(source.world);world.time=frame.time;world.body=structuredClone(frame.body);
+  const world=structuredClone(source.world);if(world.dynamic)world.dynamic.scene=importSceneRevision(world.dynamic.scene);world.time=frame.time;world.body=structuredClone(frame.body);
   if(world.runtime){if(!frame.runtime)throw new Error('Motor comparison requires the recorded runtime frame');world.runtime=structuredClone(frame.runtime);world.runtime.actors.find(a=>a.id===world.dynamic!.scene.definition.controlledPlayerId)!.body=structuredClone(frame.body);}
   world.emittedCalls=structuredClone((calls??[]).filter(c=>c.at<frame.time));
   if(world.dynamic){

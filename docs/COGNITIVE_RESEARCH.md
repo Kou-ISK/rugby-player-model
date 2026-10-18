@@ -42,7 +42,7 @@ Cases are stimuli for investigating mechanisms, not entries in a scene-to-answer
 | Experiment | Fixed-observation or closed-loop comparison, code/document/input hashes, seed, actions and execution support, belief changes, terminal reason and intervention |
 | Judgment and provenance | Software checks, researcher assessment, separate adoption decisions, scope, withdrawal reasons and later counterexamples; never overwrite history |
 
-Not every item has a dedicated field. Use existing snapshots, candidates, notes, experiments and the evidence graph. Completed display receipts persist; `research-log` links snapshots, coaching and experiments. Version 3 traces retain plans, motion estimates and decision transitions. Record human-confirmed interpretations and research scoring of prediction errors separately.
+Not every item has a dedicated field. Use existing snapshots, candidates, notes, experiments and the evidence graph. Completed display receipts persist; `research-log` links snapshots, coaching and experiments. Motor traces retain plans, motion estimates and decision transitions in the current trace format. Record human-confirmed interpretations and research scoring of prediction errors separately.
 
 Conversational coaching is a **researcher intervention**, not something the player heard at that instant. Separate prior tactics, perceived calls, coaching and forced actions. Original text is necessary for interpretation provenance; saving it alone is not understanding, implementation or validation.
 
@@ -59,7 +59,7 @@ Thresholds, weights and capacities are not human constants. Freeze measurements,
 
 ## Implemented and unresolved scope
 
-[Observation v2](../models/player/spec/ORIENTATION_PHASE.md) adds orientation and phase inference while retaining v1. Optional [closed-loop v3](../models/player/spec/CLOSED_LOOP.md) adds observation-derived motion, subgoal persistence/switching, acceleration/turning, release/flight/catch/abstract contact, independent small-team reactions and ablations with identical motor conditions.
+[Oriented observation](../models/player/spec/ORIENTATION_PHASE.md) provides body orientation and phase inference. The optional [motor setting](../models/player/spec/CLOSED_LOOP.md) provides observation-derived motion, subgoal persistence/switching, acceleration/turning, release/flight/catch/abstract contact, independent small-team reactions and ablations with identical motor conditions. These settings share the current record formats in [ADR-003](decisions/ADR-003-current-format.md); historical evidence is converted only on import.
 
 These are engineering hypotheses about implementability, not established rugby improvement or human equivalence. Arrival-probability calibration, long-term planning, biomechanics, complete laws, arbitrary team tactics, learning, unseen transfer and scientific validation of self-organization remain unresolved. Synthetic tests cannot replace owner scene interpretation, coaching interpretation or adoption.
 
@@ -67,7 +67,7 @@ These are engineering hypotheses about implementability, not established rugby i
 
 Scope includes ball-carrier and supporting attack, defense, loss/gain of possession and unknown possession. Use common attention, memory, inference and intention regulation, with phase-specific goals and skills. Do not bind colors to AT/DF or infer defense merely from not holding the ball.
 
-Legacy v1/v2 execution is unchanged. Version 3 supports defensive positioning, contact requests and possession changes through catching within the same information boundary; coverage allocation and post-tackle rugby procedure are not validated. See the closed-loop skill/phase contract.
+Kinematic and motor settings share one current format. Motor execution supports defensive positioning, contact requests and possession changes through catching within the same information boundary; coverage allocation and post-tackle rugby procedure are not validated. See the closed-loop skill/phase contract.
 
 Distinguish player memory (the player's acquired observations), research-session history (coaching, candidates, comparisons and reviews), and model/principle improvement (human-reviewed version changes). Coaching does not automatically train the model.
 

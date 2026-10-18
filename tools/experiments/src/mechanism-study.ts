@@ -6,7 +6,7 @@ import {validateSnapshot} from './validation';
 import {wireHash} from './proposal';
 export function mechanismStudy(snapshot:Snapshot,steps=40){
  validateSnapshot(snapshot);
- if(!snapshot.world.runtime)throw new Error('Mechanism study requires scene v3');
+ if(!snapshot.world.runtime)throw new Error('Mechanism study requires a motor scene');
  const full=defaultMechanisms(),arms=[['full',full],...Object.keys(full).map(key=>['without-'+key,{...full,[key]:false}]),['without-local-and-tactics',{...full,local:false,tactics:false}] ] as const;
  const runs=arms.map(([name,mechanisms])=>{const rules={...snapshot.rulesA,mechanisms:mechanisms as typeof full},run=replay(snapshot,rules,steps);const last=run.frames.at(-1)!,r=last.runtime!;
  const own=snapshot.world.dynamic!.scene.definition.actors.find(a=>a.id===snapshot.world.dynamic!.scene.definition.controlledPlayerId)!;

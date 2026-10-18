@@ -4,7 +4,7 @@
 
 ## Reproducible behavior
 
-The four legacy generators (`support`, `occluded`, `audio`, `heldout`) use uint32 seeds and 0.2-second steps. Reset reproduces initial geometry with current profile/rules. A snapshot retains world, exact observations, prior memory, profile and versions. Fixed-input comparisons change only selected rules. CLI/browser share cognition and sensing. Restore preserves recorded body/head/memory while using current approved rules.
+The four static generators (`support`, `occluded`, `audio`, `heldout`) use uint32 seeds and 0.2-second steps. Reset reproduces initial geometry with current profile/rules. A snapshot retains world, exact observations, prior memory, profile and versions. Fixed-input comparisons change only selected rules. CLI/browser share cognition and sensing. Restore preserves recorded body/head/memory while using current approved rules.
 
 The eight published regressions explicitly cover carrier/open (900), carrier/pressure (901), carrier/fresh receiver (1230), noncarrier/open (1231), missing vision (65536), stale threat memory (65537), and noncarrier left/right calls (104728/104729). Possession is explicit, not seed parity. They preserve candidate profile and are known regression/parameter probes, not general rugby competence. Prospective conditions freeze profile, inputs and criteria before coaching and record first-use/reuse; prior knowledge outside records cannot be detected. Actual judgment-document execution/scoring remains independent and manual.
 
@@ -20,27 +20,27 @@ It emits JSON without changing private sessions. Later observations come from se
 
 | Area | Limit |
 |---|---|
-| Legacy scenes and dynamic v1/v2 | Others are static/scripted; movement is capped kinematic translation, pass is unsupported intent, no release/catch/contact resolution |
-| [Orientation/phase](../models/player/spec/ORIENTATION_PHASE.md) | v2 adds visible direction/holding cues and uncertain possession; defense/unknown can only scan/hold. Orientation affects recorded relations, not route scoring. No scripted holder transfer |
-| [Closed loop](../models/player/spec/CLOSED_LOOP.md) | Optional v3 adds bounded acceleration/turning, 2D release/catch/contact, observed velocity, persistent subgoals and independent small-team actors; scripted stimuli still do not react |
+| Static and kinematic scenes | Others are static/scripted; movement is capped kinematic translation, pass is unsupported intent, no release/catch/contact resolution |
+| [Orientation/phase](../models/player/spec/ORIENTATION_PHASE.md) | Oriented sensing adds visible direction/holding cues and uncertain possession; defense/unknown can only scan/hold. Orientation affects recorded relations, not route scoring. No scripted holder transfer |
+| [Closed loop](../models/player/spec/CLOSED_LOOP.md) | Motor settings add bounded acceleration/turning, 2D release/catch/contact, observed velocity, persistent subgoals and independent small-team actors; scripted stimuli still do not react |
 | All versions | No full rugby law/score engine, biomechanics, realistic tackle consequences, kicking, fatigue, complete set pieces, independent eye gaze, speech generation or validated learned behavior |
 
-Contact in v3 is an abstract motor event, not proof of a legal/safe tackle, injury, ruck or turnover. New physical skills and new cognitive policies are separate interventions. Published ablations are development data, not proof of self-organization, human equivalence, unseen transfer or owner acceptance.
+Contact in motor scenes is an abstract motor event, not proof of a legal/safe tackle, injury, ruck or turnover. New physical skills and new cognitive policies are separate interventions. Published ablations are development data, not proof of self-organization, human equivalence, unseen transfer or owner acceptance.
 
 ## Perception and cognition assumptions
 
 - Flat pitch, horizontal FOV, circular 2D occlusion and whole-model visibility masks; no partial-body/vertical attention, peripheral-acuity or detailed acoustic model. Self position/possession are synthetic accurate proprioception assumptions.
-- Four-percept attention, bounded 128-episode/30-second memory, decay, uncertainty growth and score weights are engineering hypotheses, not measured human constants or biological long-term memory. Legacy working-memory display is not a capacity bottleneck; H-WM-1 limits receiver deliberation only.
-- Legacy prediction retains last position with growing uncertainty; v3 velocity uses multiple acquired observations with bounded extrapolation. Neither receives true velocity or future ball state.
+- Four-percept attention, bounded 128-episode/30-second memory, decay, uncertainty growth and score weights are engineering hypotheses, not measured human constants or biological long-term memory. The working-memory display is not a capacity bottleneck; H-WM-1 limits receiver deliberation only.
+- Kinematic prediction retains last position with growing uncertainty; motor velocity uses multiple acquired observations with bounded extrapolation. Neither receives true velocity or future ball state.
 - Old uncertainty can penalize approach and guide reobservation; call meaning/bearing can guide looking. These do not prove hidden opponents exist or refresh stale receivers. Failure to re-detect an actor does not independently establish absence.
-- Audio retains original observer yaw and coarse uncertain bearing. Without range, translation cannot yield an exact new bearing; legacy audio lacking a yaw frame cannot steer remembered looking. No source coordinates/identity are invented.
-- Meaningful legacy calls are bounded semantic events with cooldown, not acoustic voice or teammate reactions. The v3 policy's separate limitations are in its contract.
+- Audio retains original observer yaw and coarse uncertain bearing. Without range, translation cannot yield an exact new bearing; historical audio lacking a yaw frame cannot steer remembered looking. No source coordinates/identity are invented.
+- Kinematic calls are bounded semantic events with cooldown, not acoustic voice or teammate reactions. The motor policy's separate limitations are in its contract.
 
 ## Research and storage limits
 
-Quick comparison is one decision. Ordinary recorded experiments are 1–20 steps; optional v3 mechanism studies allow their specified larger horizon. Actions can change later observations. These are not paired full matches, and conditional score rules neither prove improvement nor learn from prose. Constant-action controls reject a trivial all-scan result only for the supplied hypothesis.
+Quick comparison is one decision. Ordinary recorded experiments are 1–20 steps; motor mechanism studies allow their specified larger horizon. Actions can change later observations. These are not paired full matches, and conditional score rules neither prove improvement nor learn from prose. Constant-action controls reject a trivial all-scan result only for the supplied hypothesis.
 
-Manual looking while paused acquires extra observations at the same simulation time. It does not measure real-time cognition, physical turning or reaction speed. Each history segment is bounded at 256 events; API 11 normally preserves/continues at 224 with immutable predecessor evidence. Current-segment replay is distinct from earlier saved segments. Unsaved text/history and unrecorded legacy trajectories cannot be recovered. The browser needs an explicit saved-state restore after restart.
+Manual looking while paused acquires extra observations at the same simulation time. It does not measure real-time cognition, physical turning or reaction speed. Each history segment is bounded at 256 events; API 11 normally preserves/continues at 224 with immutable predecessor evidence. Current-segment replay is distinct from earlier saved segments. Unsaved text/history and unrecorded trajectories cannot be recovered. The browser needs an explicit saved-state restore after restart.
 
 Both deliverables remain research drafts with independent versions/reviews. Owner approval is local self-attestation. Confirmed revision/active-version checks reject concurrent edits or stale undo; no automatic adoption retry occurs. Historical approved labels remain after undo. Old approvals are not retroactively assigned new confirmation evidence.
 

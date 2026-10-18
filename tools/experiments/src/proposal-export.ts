@@ -1,7 +1,10 @@
+import { importWorld } from './import';
+import { importBundle, importMemory } from '../../../models/player/reference/src/import.js';
+import { importExecutionMode } from '../../../models/player/reference/src/execution-mode.js';
 import mechanisms from '../../../models/player/spec/mechanisms.json';
 import principles from '../../../models/judgment/principles.json';
 import type {Candidate,Principle,RulesB,Snapshot} from './contracts';
-import {legacyMode,validate as validateA} from '../../../models/player/reference/src/index.js';
+import {baselineMode,validate as validateA} from '../../../models/player/reference/src/index.js';
 import {judgmentMarkdown,textHash} from './judgment';
 import {canonicalWire} from './strict-json';
 import {freshId,payloadDigest,validateProposal,reproduceProposal,type ContentRef,type EngineDescriptor,type Entry,type ProposalManifest,type ProposalPackage,type AArtifact,type BArtifact,type BOutput} from './proposal';
@@ -20,7 +23,9 @@ export function buildProposal(candidate:ProposalCandidate,beforeB:RulesB,legacyB
   return {kind:kind as ContentRef['kind'],id,version,sha256,hashFormat:isText?'sha256-bytes':'rpm-canonical-json-v1',path};
  }
  if(mechanisms[0].id!==HWM_MECHANISM_ID)throw new Error('Mechanism sidecar identity mismatch');
- const mode=candidate.context.executionMode??legacyMode(),nextMode=candidate.executionMode??mode;
+ const context=candidate.context;candidate={...candidate,context:{...context,bundle:importBundle(context.bundle),memoryBefore:importMemory(context.memoryBefore),...(context.world?{world:importWorld(context.world)}:{})}};
+ if(!candidate.notes)throw new Error('Missing notes');
+ const mode=importExecutionMode(candidate.context.executionMode??baselineMode()),nextMode=importExecutionMode(candidate.executionMode??mode);
  const protocolId=freshId(),protocol=add('protocol','protocol/fixed-observation.json',{id:protocolId,version:1,kind:'fixed-observation-v1',description:'Fixed permitted observation and initial memory; receiver capacity versus policy are separate hypotheses. Body execution and human validity are not tested.',counterfactual:'same-permitted-inputs'},protocolId);
  const caseId=freshId(),input={executionContractVersion:2,executionMode:mode,bundle:candidate.context.bundle,memory:candidate.context.memoryBefore,profile:candidate.context.profile,rules:candidate.context.rulesA};
  const worldPath=candidate.context.world?'evaluation/synthetic-world.json':null;if(worldPath)add('evaluator-world',worldPath,candidate.context.world);
@@ -38,7 +43,7 @@ export function buildProposal(candidate:ProposalCandidate,beforeB:RulesB,legacyB
   if(!pending&&Object.values(candidate.principle).some(v=>typeof v==='string'&&v.includes('TODO:')))throw new Error('Complete B before sharing that target');
   const baseline=add('baseline','b/base.md',beforeB.baseline?.text??legacyBaseline,beforeB.baseline?.id??LEGACY_BASELINE_ID,beforeB.baseline?.version??1);
   const amendments=beforeB.principles.map((p,i)=>add('amendment',`b/base-amendment-${i}.json`,p));
-  const old:BOutput={format:'rpm-b-output',version:1,localVersion:beforeB.version,outputFormat:beforeB.outputFormat??1,proposed:false,markdown:judgmentMarkdown(beforeB,legacyBaseline)};
+  const old:BOutput={format:'rpm-b-output',version:1,localVersion:beforeB.version,outputFormat:2,proposed:false,markdown:judgmentMarkdown(beforeB,legacyBaseline)};
   const base={baseline,amendments,output:add('output','b/base-output.json',old)};
   const afterPrinciples=pending?.principles??[...beforeB.principles.filter(p=>p.id!==candidate.principle.id),candidate.principle];
   const nextBase=pending?add('baseline','b/proposed.md',pending.baseline.text,pending.baseline.id,pending.baseline.version):baseline;
@@ -49,7 +54,7 @@ export function buildProposal(candidate:ProposalCandidate,beforeB:RulesB,legacyB
  }
  const counterId=freshId(),counter=add('counterexample','claims/counterexample.json',{id:counterId,version:1,kind:'counterexample',statement:candidate.notes.counterexample,status:'unvalidated',scope:'Candidate-defined counterexample; this recorded scene is not claimed to instantiate it.',limits:'No empirical support is inferred from a statement.',refs:[caseRef,protocol]},counterId);
  const hypothesisId=freshId(),hypothesis=add('hypothesis','claims/hypothesis.json',{id:hypothesisId,version:1,kind:'hypothesis',statement:candidate.notes.expectedEffect,status:'unvalidated',scope:candidate.notes.rationale,limits:'Engineering hypothesis; no scientific or owner adoption.',refs:[counter,caseRef,protocol]},hypothesisId);
- const mechanismId=nextMode.mode==='h-wm-1'?HWM_MECHANISM_ID:freshId(),mechanism=add('mechanism','claims/mechanism.json',{id:mechanismId,version:1,kind:'mechanism',statement:nextMode.mode==='h-wm-1'?'H-WM-1: receiver deliberation capacity':'Legacy observation-only judgment',status:'unvalidated',scope:'Receiver comparison and selection; retained-evidence risk/orienting and existing predicates are outside the capacity constraint.',limits:'Not complete human working memory; no pass body implementation.',refs:[]},mechanismId);
+ const mechanismId=nextMode.mode==='h-wm-1'?HWM_MECHANISM_ID:freshId(),mechanism=add('mechanism','claims/mechanism.json',{id:mechanismId,version:1,kind:'mechanism',statement:nextMode.mode==='h-wm-1'?'H-WM-1: receiver deliberation capacity':'Baseline observation-only judgment',status:'unvalidated',scope:'Receiver comparison and selection; retained-evidence risk/orienting and existing predicates are outside the capacity constraint.',limits:'Not complete human working memory; no pass body implementation.',refs:[]},mechanismId);
  // The hypothesis references the immutable mechanism through a separate edge in its content.
  const hypFile=files.find(f=>f.path===hypothesis.path)!;const hyp=JSON.parse(hypFile.utf8);const principleRef=scope.targets.includes('B')?add('principle','claims/b-principle-system.json',principles[0].content,principles[0].id):undefined;hyp.refs.push(mechanism);if(principleRef)hyp.refs.push(principleRef);hypFile.utf8=canonicalWire(hyp);hypothesis.sha256=textHash(hypFile.utf8);const hypEntry=entries.find(e=>e.path===hypothesis.path)!;hypEntry.sha256=hypothesis.sha256;hypEntry.bytes=Buffer.byteLength(hypFile.utf8);
  const manifest:ProposalManifest={format:'rpm.proposal',formatVersion:1,proposalId:freshId(),revision:1,supersedes:null,title:Array.from(candidate.feedback).slice(0,200).join(''),claimRefs:[mechanism,hypothesis,...(principleRef?[principleRef]:[])],targets,scope:{included:['Captured synthetic observation and initial memory'],excluded:['Owner research session, real match data, external AI inference'],assumptions:['Sensor/retention/ranking are engineering assumptions'],limits:['Fixed-observation software comparison; no human validity or complete rugby simulation']},expected:{description:candidate.notes.expectedEffect,criteria:['Compare declared A/B changes under frozen permitted inputs; retain negative results.']},counterexamples:[{caseRef:counter,criterion:candidate.notes.counterexample}],protocolRefs:[protocol],caseRefs:[caseRef],runRefs:[],runAbsenceReason:'Reference preview is performed in the next explicit export step.',provenance:{author:scope.author,source:'Explicit synthetic candidate selected for sharing',method:'Local fixed-observation reference execution; no external API',seed:candidate.context.seed,synthetic:true,licenseScope:scope.rightsBasis},publicScope:{declaration:scope.confirmation,entries:[]},entries,payloadDigest:{format:'rpm-canonical-json-v1',sha256:'0'.repeat(64)}};

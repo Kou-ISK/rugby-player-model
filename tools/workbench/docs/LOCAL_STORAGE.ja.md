@@ -43,6 +43,8 @@ review対象の正確な版を検証してから、次の順で導入します�
 
 現行readerはformat 1/2を読みます。format 1の読取は旧記録/digestを変えず、新sessionや成功書込は過去記録/hashを保持して外側format 2を使います。旧stableはformat 1だけを受け付けるため2を拒否します。
 
-active modeをlegacyへ戻しても旧binary互換には戻りません。新版で書込済みならsession全体を残し、入口を戻す場合もformat 2対応readerを使います。新記録を旧backupで上書き・削除して互換にしません。診断用の旧snapshotは別コピーで扱います。
+active modeをbaselineへ戻しても旧binary互換には戻りません。新版で書込済みならsession全体を残し、入口を戻す場合もformat 2対応readerを使います。新記録を旧backupで上書き・削除して互換にしません。診断用の旧snapshotは別コピーで扱います。
 
 crash後の古いlockは、全writer停止とsession保全を確認してからその `.lock` だけを除きます。live lock削除や破損時の黙った初期化は禁止です。[旧合成fixture](../../../evaluation/baselines/LEGACY_SESSION.ja.md)が検査範囲を示します。Mac headless確認は本人の画面使用や研究原則採用の証拠ではありません。
+
+通常の読取・実行・新規保存は[現行形式](../../../docs/decisions/ADR-003-current-format.ja.md)に統一します。過去のsessionは入口でコピーを変換し、元の観測・結果・hash・採否を保持します。

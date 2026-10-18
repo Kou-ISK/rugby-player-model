@@ -24,13 +24,11 @@ export function validateSnapshot(value: unknown): asserts value is Snapshot {
   validate<Snapshot>('Snapshot', value);
   validateEvidence(value.bundle, value.memoryBefore);
   if(!!value.observationPredecessor!==!!value.observationAnchor)throw new Error('Observation continuation requires both provenance and a replay anchor');
-  if((value.contractVersion===2)!==!!value.world.dynamic || (value.scene==='dynamic')!==!!value.world.dynamic)throw new Error('Snapshot scene/contract mismatch');
+  if((value.scene==='dynamic')!==!!value.world.dynamic)throw new Error('Snapshot scene/contract mismatch');
   if(!value.world.dynamic&&value.seed===null)throw new Error('Static snapshots require a uint32 seed');
   assertDynamicWorld(value.world);
   if(value.bundle.vision.horizontalFov!==horizontalFov(value.world))throw new Error('Snapshot field of view differs from the authored optical condition');
-  const observedVersion=value.world.dynamic?.scene.definition.sceneSchemaVersion??1;
-  const v2=observedVersion>=2;
-  if(value.bundle.contractVersion!==observedVersion)throw new Error('Observation contract does not match the authored scene version');
-  if(v2&&value.bundle.context?.ownAttackDirection!==value.world.dynamic!.scene.definition.ownAttackDirection)throw new Error('Known direction differs from authored context');
+  const oriented=value.world.dynamic?.scene.definition.observationMode==='oriented';
+  if(oriented&&value.bundle.context?.ownAttackDirection!==value.world.dynamic!.scene.definition.ownAttackDirection)throw new Error('Known direction differs from authored context');
   if (value.world.time !== value.bundle.time || value.world.seed !== value.seed || value.world.scene !== value.scene || value.world.playerId !== value.bundle.playerId) throw new Error('Snapshot context mismatch');
 }

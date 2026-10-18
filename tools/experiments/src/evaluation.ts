@@ -1,3 +1,5 @@
+import { importBundle, importMemory } from '../../../models/player/reference/src/index.js';
+import { importSceneDefinition } from '../../simulation/src/scene';
 import { sceneContent } from '../../simulation/src/scene';
 import { createHash, randomUUID } from 'node:crypto';
 import type { Bundle, Memory, Profile } from '../../../models/player/reference/src/contracts.js';
@@ -11,6 +13,7 @@ export { canonical };
 export const digest=(value:unknown)=>createHash('sha256').update(canonical(value)).digest('hex');
 // Changing a label, seed, rules, or hidden world alone does not make known evidence new.
 export function conditionDigest(s:Pick<Snapshot,'bundle'|'memoryBefore'|'profile'>){
+  s={...s,bundle:importBundle(s.bundle),memoryBefore:importMemory(s.memoryBefore)};
   if(s.bundle.playerId!=='observer-0')return digest({bundle:s.bundle,memoryBefore:s.memoryBefore,profile:s.profile});
   // Session-specific tracking UUIDs are not fresh evidence. Normalize by acquired evidence order.
   const value=structuredClone({bundle:s.bundle,memoryBefore:s.memoryBefore,profile:s.profile});
@@ -22,15 +25,15 @@ export function conditionDigest(s:Pick<Snapshot,'bundle'|'memoryBefore'|'profile
   }
   return digest(value);
 }
-export const stimulusDigest=(s:Snapshot)=>s.world.dynamic?digest({scene:sceneContent(s.world.dynamic.scene.definition),fromTick:s.world.dynamic.tick,toTick:s.world.dynamic.scene.definition.durationTicks,profile:s.profile}):null;
+export const stimulusDigest=(s:Snapshot)=>s.world.dynamic?digest({scene:sceneContent(importSceneDefinition(s.world.dynamic.scene.definition)),fromTick:s.world.dynamic.tick,toTick:s.world.dynamic.scene.definition.durationTicks,profile:s.profile}):null;
 export type ExposureEvidence=Pick<Snapshot,'bundle'|'memoryBefore'|'profile'> & Partial<Pick<Snapshot,'world'|'observationHistory'>> & {observations?:Bundle[]};
 export const EXPOSURE_POLICY='dynamic-lineage-and-acquired-observations-v1' as const;
 export type ExposureReason='same-input'|'same-scene-lineage'|'same-dynamic-stimulus'|'shared-acquired-observation';
-export const stimulusFamilyDigest=(s:ExposureEvidence)=>s.world?.dynamic?digest(sceneContent(s.world.dynamic.scene.definition)):null;
+export const stimulusFamilyDigest=(s:ExposureEvidence)=>s.world?.dynamic?digest(sceneContent(importSceneDefinition(s.world.dynamic.scene.definition))):null;
 function acquiredEvidence(s:ExposureEvidence){
   // IDs and percept order are transport details, not independent evidence of novelty.
   const bundles=s.observationHistory?.events.map(e=>e.bundle)??s.observations??[s.bundle];
-  return new Set(bundles.map(({playerId,percepts,...bundle})=>digest({...bundle,percepts:percepts.map(({id,entityId,...p})=>p).sort((a,b)=>canonical(a).localeCompare(canonical(b)))})));
+  return new Set(bundles.map(importBundle).map(({playerId,percepts,...bundle})=>digest({...bundle,percepts:percepts.map(({id,entityId,...p})=>p).sort((a,b)=>canonical(a).localeCompare(canonical(b)))})));
 }
 export function exposureReasons(a:ExposureEvidence,b:ExposureEvidence):ExposureReason[]{
   const reasons:ExposureReason[]=[];

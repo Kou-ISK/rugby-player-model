@@ -23,7 +23,7 @@ export function regressionCases(before: RulesA, profile: Profile) {
   });
   add('carrier-memory', 65537, ['possession', 'stale-threat-memory'], s => {
     s.world.body.hasBall = true; s.world.time = 1;
-    s.memoryBefore = { lastTime: 0, episodes: [{ id: 'remembered-opponent@0', entityId: 'remembered-opponent', kind: 'player', relation: 'opponent', modality: 'vision', position: { x: 0, z: 3 }, confidence: .9, observedAt: 0 }] };
+    s.memoryBefore = { lastTime: 0, episodes: [{ id: 'remembered-opponent@0', entityId: 'remembered-opponent', kind: 'player', relation: 'opponent', modality: 'vision',evidenceVersion:2, position: { x: 0, z: 3 }, confidence: .9, observedAt: 0 }] };
   });
   add('noncarrier-audio-left', 104728, ['no-possession', 'audio-left'], s => {
     s.world.body.hasBall = false; s.world.calls = [{ id: 'unlocated-call', position: { x: -8, z: -4 }, cue: 'support-call' }];

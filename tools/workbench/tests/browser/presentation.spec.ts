@@ -59,12 +59,12 @@ test('CLI presents and captures the acknowledged player view without browser coa
  expect(errors).toEqual([]);await secondPage.close();
 });
 
-test('v2 attack and defense are presented, captured, replayed and restored with phase and orientation evidence',async({page},info)=>{
+test('oriented attack and defense are presented, captured, replayed and restored with phase and orientation evidence',async({page},info)=>{
  test.setTimeout(90000);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base);await openResearchTools(page);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
  for(const [role,phase,label] of [['attack','attack-carrier','攻撃・自己保持'],['defense','defense','守備'],['approach','attack-carrier','攻撃・自己保持']]){
   let path=join(repo,`evaluation/fixtures/orientation-${role}.scene.json`);
-  if(role==='approach'){const definition=JSON.parse(readFileSync(join(repo,'evaluation/fixtures/dynamic-support.scene.json'),'utf8'));definition.sceneSchemaVersion=2;definition.ownAttackDirection=1;path=join(session,'orientation-approach.json');writeFileSync(path,JSON.stringify(definition));}
+  if(role==='approach'){const definition=JSON.parse(readFileSync(join(repo,'evaluation/fixtures/dynamic-support.scene.json'),'utf8'));definition.observationMode="oriented";definition.attachedBallFrame="body";definition.ownAttackDirection=1;path=join(session,'orientation-approach.json');writeFileSync(path,JSON.stringify(definition));}
   const scene=cli('scene-create','--file',path);
   const source=cli('scene-snapshot',scene.sceneId,'--revision','1','--tick','0');
   const authored=cli('snapshot-export',source.snapshotId);
@@ -73,27 +73,53 @@ test('v2 attack and defense are presented, captured, replayed and restored with 
   await expect.poll(()=>cli('views').length).toBe(1);const view=cli('views')[0];
   const req=cli('view-request','present','--client',view.clientId,'--revision',String(view.display.revision),'--snapshot',source.snapshotId);
   await expect.poll(()=>{const r=cli('view-result',req.id);return r.status==='failed'?r.error:r.status;}).toBe('completed');
-  await expect(page.locator('#situation-phase')).toContainText(label);await expect(page.locator('#situation-phase')).toContainText('観測v2');
+  await expect(page.locator('#situation-phase')).toContainText(label);
   await expect(page.locator('#situation-orientation')).toContainText('自己の身体 0°');
   const trace=JSON.parse((await page.locator('#trace').textContent())!);expect(trace.situation.phase).toBe(phase);expect(trace.situation.orientations.length).toBeGreaterThan(0);
   if(role==='defense'){expect(trace.evaluation.find((e:any)=>e.action==='support').allowed).toBe(false);expect(['scan','hold']).toContain(trace.intention.action);}
-  const saved=cli('view-result',req.id).result.snapshotId,context=cli('snapshot-context',saved);expect(context.bundle.contractVersion).toBe(2);expect(context.bundle.percepts.some((p:any)=>p.bodyOrientation)).toBe(true);
+  const saved=cli('view-result',req.id).result.snapshotId,context=cli('snapshot-context',saved);expect(context.bundle.contractVersion).toBe(3);expect(context.bundle.percepts.some((p:any)=>p.bodyOrientation)).toBe(true);
   await page.locator('#head').fill('25');await page.locator('#head').dispatchEvent('input');await expect(page.locator('#situation-orientation')).toContainText('頭の相対角 25°');
-  await page.locator('#replay-history').click();await expect(page.locator('#history-report')).toContainText('cognition-orientation-phase-v1');
+  await page.locator('#replay-history').click();await expect(page.locator('#history-report')).toContainText('cognition-0.4.0');
   await page.screenshot({path:info.outputPath(`orientation-${role}.png`),fullPage:true});
   await page.reload();await openResearchTools(page);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');await page.locator('#restore').click();await expect(page.locator('#situation-phase')).toContainText(label);
  }
  expect(Object.keys(readState().candidates)).toHaveLength(0);expect(cli('status').active.A.version).toBe('A0');expect(errors).toEqual([]);
 });
 
-test('v3 live stepping, CLI comparison and durable presentation links survive a server restart',async({page},info)=>{
+test('oriented carrier body turns preserve acquired history through capture and next-scene presentation',async({page})=>{
+ test.setTimeout(90000);await page.goto(base);await openResearchTools(page);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
+ const scene=cli('scene-create','--file',join(repo,'evaluation/fixtures/orientation-attack.scene.json'));
+ const source=cli('scene-snapshot',scene.sceneId,'--revision','1','--tick','0');
+ const complete=async(id:string)=>{await expect.poll(()=>{const r=cli('view-result',id);return r.status==='failed'?r.error:r.status;}).toBe('completed');return cli('view-result',id);};
+ await expect.poll(()=>cli('views').length).toBe(1);let view=cli('views')[0];
+ await complete(cli('view-request','present','--client',view.clientId,'--revision',String(view.display.revision),'--snapshot',source.snapshotId).id);
+ await page.locator('#step').click();await expect(page.locator('#clock')).toContainText('tick 1/10');
+ const canvas=page.locator('canvas');await canvas.focus();await page.keyboard.press('Shift+ArrowLeft');
+ await expect(page.locator('#body')).toHaveValue('5');
+ await page.locator('#head').fill('137');await page.locator('#head').dispatchEvent('input');
+ await canvas.focus();await page.keyboard.press('ArrowLeft');
+ await expect(page.locator('#body')).toHaveValue('10');await expect(page.locator('#head')).toHaveValue('137');
+ await expect.poll(()=>cli('views')[0].display.tick).toBe(1);view=cli('views')[0];
+ const receipt=await complete(cli('view-request','capture','--client',view.clientId,'--revision',String(view.display.revision)).id);
+ const captured=readState().snapshots[receipt.result.snapshotId],events=captured.observationHistory.events;
+ expect(captured.bundle.time).toBe(.2);expect(captured.world.dynamic.tick).toBe(1);
+ expect(events.filter((e:any)=>e.trigger==='body-turn')).toHaveLength(2);
+ expect(events.at(-1).bundle).toEqual(captured.bundle);expect(captured.bundle.self.yaw).toBeCloseTo(10*Math.PI/180);
+ const active=cli('status').active,candidates=Object.keys(readState().candidates);
+ view=cli('views')[0];const next=await complete(cli('view-request','present','--client',view.clientId,'--revision',String(view.display.revision),'--snapshot',source.snapshotId).id);
+ expect(readState().snapshots[next.result.previousSnapshotId]).toEqual(captured);
+ await expect(page.locator('#clock')).toContainText('tick 0/10');
+ expect(cli('status').active).toEqual(active);expect(Object.keys(readState().candidates)).toEqual(candidates);
+});
+
+test('motor live stepping, CLI comparison and durable presentation links survive a server restart',async({page},info)=>{
  test.setTimeout(150000);await page.goto(base);await openResearchTools(page);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
  const scene=cli('scene-create','--file',join(repo,'evaluation/fixtures/loop-defense.scene.json'));
  const source=cli('scene-snapshot',scene.sceneId,'--revision','1','--tick','0');
  await expect.poll(()=>cli('views').length).toBe(1);let view=cli('views')[0];
  let request=cli('view-request','present','--client',view.clientId,'--revision',String(view.display.revision),'--snapshot',source.snapshotId);
  const complete=async(id:string)=>{await expect.poll(()=>{const r=cli('view-result',id);return r.status==='failed'?r.error:r.status;}).toBe('completed');return cli('view-result',id);};
- await complete(request.id);await expect(page.locator('#situation-phase')).toContainText('観測v3');
+ await complete(request.id);await expect(page.locator('#situation-phase')).toContainText('抽象接触');
  for(let i=0;i<5;i++)await page.locator('#step').click();
  await page.locator('#head').fill('25');await page.locator('#head').dispatchEvent('input');
  await expect.poll(()=>cli('views')[0].display.tick).toBe(5);view=cli('views')[0];

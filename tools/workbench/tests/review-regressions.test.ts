@@ -36,7 +36,7 @@ test('pending candidate preview evaluates its patch without activating it',()=>{
 });
 test('fixed current input: uncertain nearby enemy memory changes judgment without refreshing facts',()=>{
   const world=makeWorld('support',42);world.time=1;const bundle=sense(world);
-  const memory:Memory={lastTime:0,episodes:[{id:'old-threat@0',entityId:'old-threat',kind:'player',relation:'opponent',modality:'vision',observedAt:0,confidence:.9,position:{x:0,z:3}}]};
+  const memory:Memory={lastTime:0,episodes:[{id:'old-threat@0',entityId:'old-threat',kind:'player',relation:'opponent',modality:'vision',evidenceVersion:2,observedAt:0,confidence:.9,position:{x:0,z:3}}]};
   const without=think(bundle,emptyMemory(),defaultProfile(),defaultRulesA());
   const withMemory=think(bundle,memory,defaultProfile(),defaultRulesA());
   assert.notEqual(withMemory.intention.action,without.intention.action);
@@ -106,7 +106,7 @@ test('remembered audio keeps its yaw frame and decays; cue meaning influences in
 });
 test('uncertain memory changes risk and scores without enabling a stale pass or inventing exact motion',()=>{
   const world=makeWorld('support',42);world.time=1;const bundle=sense(world);
-  const memory:Memory={lastTime:0,episodes:[{id:'mate@0',entityId:'mate',kind:'player',relation:'teammate',modality:'vision',observedAt:0,confidence:.9,position:{x:-5,z:-2}}]};
+  const memory:Memory={lastTime:0,episodes:[{id:'mate@0',entityId:'mate',kind:'player',relation:'teammate',modality:'vision',evidenceVersion:2,observedAt:0,confidence:.9,position:{x:-5,z:-2}}]};
   const trace=think(bundle,memory,defaultProfile(),defaultRulesA());
   assert.equal(trace.evaluation.find(e=>e.action==='pass')!.allowed,false);
   assert.equal(trace.assessment.scanTarget!.sourceId,'mate@0');assert.equal(trace.predictions.find(p=>p.entityId==='mate')!.basisObservedAt,0);

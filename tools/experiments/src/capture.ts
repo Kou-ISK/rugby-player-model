@@ -1,4 +1,4 @@
-import { legacyMode, type ExecutionMode } from '../../../models/player/reference/src/execution-mode.js';
+import { baselineMode, type ExecutionMode } from '../../../models/player/reference/src/execution-mode.js';
 import { sceneWorld, type SceneRevision } from '../../simulation/src/scene';
 import { makeWorld } from '../../simulation/src/world';
 import { sense } from '../../simulation/src/sensing';
@@ -11,7 +11,7 @@ import type { Snapshot } from './contracts';
 import { newHistory, appendObservation } from './history';
 export function capture(scene: SceneId, seed: number, rulesA: RulesA, rulesBVersion: string,executionMode?:ExecutionMode): Snapshot {
   const world = makeWorld(scene, seed);
-  return { contractVersion: 1, scene, seed, world, bundle: sense(world), memoryBefore: emptyMemory(), profile: defaultProfile(), rulesA, rulesBVersion,...(executionMode?{executionMode:structuredClone(executionMode)}:{}) };
+  return { contractVersion: 2, scene, seed, world, bundle: sense(world), memoryBefore: emptyMemory(), profile: defaultProfile(), rulesA, rulesBVersion,...(executionMode?{executionMode:structuredClone(executionMode)}:{}) };
 }
 export function captureScene(scene:SceneRevision,rulesA:RulesA,rulesBVersion:string,executionMode?:ExecutionMode):Snapshot {
   const world=sceneWorld(scene);return {contractVersion:2,scene:'dynamic',seed:scene.generationSeed,world,bundle:sense(world),memoryBefore:emptyMemory(),profile:defaultProfile(),rulesA,rulesBVersion,...(executionMode?{executionMode:structuredClone(executionMode)}:{})};
@@ -21,7 +21,7 @@ export function captureSceneAt(scene:SceneRevision,rulesA:RulesA,rulesBVersion:s
   const snapshot=captureScene(scene,rulesA,rulesBVersion,executionMode),history=newHistory(snapshot.memoryBefore,snapshot.world);
   for(let i=0;i<=tick;i++){
     snapshot.bundle=sense(snapshot.world);appendObservation(history,snapshot.bundle,snapshot.profile,rulesA,i?'step':'initial',executionMode);
-    if(i<tick){const trace=thinkWithMode(snapshot.bundle,snapshot.memoryBefore,snapshot.profile,rulesA,executionMode??legacyMode());snapshot.memoryBefore=trace.longTermMemory;snapshot.world=advance(snapshot.world,trace);}
+    if(i<tick){const trace=thinkWithMode(snapshot.bundle,snapshot.memoryBefore,snapshot.profile,rulesA,executionMode??baselineMode());snapshot.memoryBefore=trace.longTermMemory;snapshot.world=advance(snapshot.world,trace);}
   }
   snapshot.observationHistory=history;return snapshot;
 }

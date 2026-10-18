@@ -4,7 +4,7 @@ import type { Trace } from '../../../models/player/reference/src/contracts.js';
 import type { World } from './contracts';
 export function advance(world: World, trace: Trace, dt = .2): World {
   if(world.dynamic&&(dt!==.2||world.dynamic.tick>=world.dynamic.scene.definition.durationTicks))throw new Error('Dynamic scene ended or clock is not 0.2s');
-  if(world.dynamic?.scene.definition.sceneSchemaVersion===3)return advanceSkills(world,trace,dt);
+  if(world.dynamic?.scene.definition.simulationMode==='motor')return advanceSkills(world,trace,dt);
   const next = structuredClone(world); next.time = Math.round((world.time + dt) * 1000) / 1000;
   for (const command of trace.output) {
     if (command.status !== 'supported') continue;

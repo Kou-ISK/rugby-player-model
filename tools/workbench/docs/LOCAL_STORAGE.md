@@ -19,7 +19,7 @@ From the configured stable source, run `./start-rpm.command` and open its displa
 
 The launchers follow `paths.json`, even when invoked from a different copy of the repository. To test an uninstalled checkout, follow [FIRST_RUN.md](FIRST_RUN.md) with an explicit new synthetic `RPM_SESSION_DIR`. Development `npm run dev` and `npm run bridge` otherwise default to `.rpm/` in that checkout. Tutorial data and actual owner research must remain separate.
 
-In the current CLI, `npm run bridge -- stop` also stops the server instance identified by that same session. This is a new command; the current old stable binary may not have it. Control-C remains available for both versions. Do not stop unrelated processes or clear a running writer's lock.
+In the current CLI, `npm run bridge -- stop` also stops the server instance identified by that same session. Historical binaries may not have this command. Control-C is also available. Do not stop unrelated processes or clear a running writer's lock.
 
 ## What is stored
 
@@ -41,9 +41,9 @@ After exact-head verification and independent review, the M7 installation sequen
 
 ## State compatibility and rollback
 
-The current reader accepts session formats 1 and 2. Reading format 1 does not rewrite its records or old digests. A new session or a successful write uses outer format 2 while preserving historical records and hashes. The previous stable binary accepts only format 1 and therefore refuses format 2.
+Normal processing uses the [current format](../../../docs/decisions/ADR-003-current-format.md). The import boundary accepts historical session envelopes and converts copies, without rewriting original records or digests. A new session or a successful write uses outer format 2 while preserving historical records and hashes. The previous stable binary accepts only format 1 and therefore refuses format 2.
 
-Changing an active player model mode back to legacy does not make format 2 readable by an old binary. If records have been written by the new version, preserve that entire session and use a format-2-compatible reader when reverting the source entrance. Do not overwrite newer records with an older backup or delete them to force compatibility. If an old compatible snapshot is needed for diagnosis, work on a separate copy and keep the current session intact.
+Changing an active player model mode back to baseline does not make format 2 readable by an old binary. If records have been written using the current format, preserve that entire session and use a format-2-compatible reader when reverting the source entrance. Do not overwrite newer records with an older backup or delete them to force compatibility. If an old compatible snapshot is needed for diagnosis, work on a separate copy and keep the current session intact.
 
 For a stale writer lock after a crash, first confirm all session writers are stopped and preserve the session. Then remove only that session's stale `.lock`; never remove a live lock or silently initialize a corrupt state. The [genuine synthetic legacy fixture](../../../evaluation/baselines/LEGACY_SESSION.md) documents the tested compatibility boundary.
 

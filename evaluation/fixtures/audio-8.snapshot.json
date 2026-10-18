@@ -1,5 +1,5 @@
 {
-  "contractVersion": 1,
+  "contractVersion": 2,
   "scene": "audio",
   "seed": 8,
   "world": {
@@ -61,7 +61,7 @@
     ]
   },
   "bundle": {
-    "contractVersion": 1,
+    "contractVersion": 3,
     "playerId": "self",
     "time": 0,
     "self": {
@@ -90,7 +90,8 @@
         "position": {
           "x": 2.4783367845229805,
           "z": 9.008394059725106
-        }
+        },
+        "evidenceVersion": 2
       },
       {
         "id": "ball@0.000:vision",
@@ -103,7 +104,8 @@
         "position": {
           "x": 2,
           "z": 9
-        }
+        },
+        "evidenceVersion": 2
       },
       {
         "id": "call-left@0.000:audio",
@@ -115,7 +117,8 @@
         "confidence": 0.55,
         "bearing": -2.1,
         "cue": "support-call",
-        "observerYaw": 0
+        "observerYaw": 0,
+        "evidenceVersion": 2
       }
     ]
   },
