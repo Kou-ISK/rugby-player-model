@@ -2,7 +2,7 @@
 
 [English](DYNAMIC_SCENES.md) | [日本語](DYNAMIC_SCENES.ja.md)
 
-Construct small synthetic layouts and paths in an ordinary conversation, then save them through the local bridge. Scenes v1/v2 control one player and use authored moving stimuli for others; v3 can explicitly add independent actors. Human rugby assessment and actual judgment-document AI evaluation remain separate from synthetic tests.
+Construct small synthetic layouts and paths in an ordinary conversation, then save them through the local bridge. The current scene format has explicit kinematic/motor and positions/oriented settings. Kinematic scenes control one player with scripted others; motor scenes can add independent actors. Human rugby assessment and actual judgment-document AI evaluation remain separate from synthetic tests.
 
 ## Start and author
 
@@ -21,9 +21,9 @@ Creation/revision outputs and `scene-authoring` are **author/evaluator-only**, c
 
 ## Scene contract and control
 
-- Scene v1 uses 0.2-second steps, 1–200 ticks, 1–32 actors and exactly one `controlled` actor. Other paths contain ordered keyframes including tick 0/end, piecewise-linear position and shortest yaw rotation. Bounds are x ±32 m, z ±48 m, yaw ±π: operational engineering limits, not human limits.
-- Controlled movement/head/calls come from supported model output; scripted motion/calls for that actor are rejected. Its attacking direction is +z in v1; teammate/opponent relations derive from team, not fixed color roles.
-- Version 1/2 balls follow a fixed holder or scripted path. Holder transfer, actual release/catch/contact resolution are unsupported. Overlap is an audit diagnostic, not a tackle.
+- The current scene uses 0.2-second steps, 1–200 ticks, 1–32 actors and exactly one `controlled` actor. Other paths contain ordered keyframes including tick 0/end, piecewise-linear position and shortest yaw rotation. Bounds are x ±32 m, z ±48 m, yaw ±π: operational engineering limits, not human limits.
+- Controlled movement/head/calls come from supported model output; scripted motion/calls for that actor are rejected. Its attacking direction defaults to +z when context is unknown; teammate/opponent relations derive from team, not fixed color roles.
+- Kinematic balls follow a fixed holder or scripted path. Holder transfer, actual release/catch/contact resolution are unsupported. Overlap is an audit diagnostic, not a tackle.
 - Author actor IDs become stable opaque per-slot tracking IDs in perception. Future paths/mappings never enter context or evaluation packets. Audio contains coarse direction/cue, not speaker identity, coordinates or future calls.
 - Actors, ball, audio, sensing and rendering share one frame: current observation → decision → controlled body → next stimulus tick → next observation. Paused turns share time but have separate sequence numbers. Rendering delays/wall time do not measure reaction speed.
 - Scene end stops playback. Each history record is bounded at 256 events without truncation. Current API 11 automatically preserves and continues acquired history before that bound; see [LOCAL_BRIDGE](LOCAL_BRIDGE.md). This is not arbitrary seeking or an unlimited single record.
@@ -69,8 +69,8 @@ Dynamic judgment packets contain only anonymous past observations, initial memor
 
 | Contract | Boundary |
 |---|---|
-| Bundle | Scene 1 → v1; explicit scene 2 → v2; scene 3 → v3 |
-| Snapshot/history | Legacy static records remain readable; dynamic records retain scene references and fixed-step history |
+| Bundle | Bundle 3 for every scene; capabilities come from explicit settings |
+| Snapshot/history | Historical records are imported as copies into snapshot/history 2; dynamic records retain scene references and fixed-step history |
 | Session/bridge | Current outer format 2 and API 11; earlier format 1/API 9 dynamic milestones are historical |
 | P2P | Original procedural drawing/provenance retained; no new P2P engine, camera, core types or GLB |
 
@@ -90,7 +90,7 @@ Saved before/after viewing uses frozen frames, one-frame/play/slider controls an
 
 Yaw 0 faces +z, π faces −z, π/2 faces +x; model front is +Z. Team/color does not set attacking role or orientation. The standard support scene is a controlled approach with the carrier moving +z, support/defender facing their authored straight routes, and the defender initially facing the carrier. This is not a reactive pursuit mechanism. Changing yaw alone does not change position, speed or calls.
 
-Backward/lateral movement and a defender facing away can be intentional. Set path and yaw separately, record author intent, and match initial pose/tick-0 yaw. The renderer honors explicit yaw rather than auto-flipping opponents. Preserve old snapshots by creating a new revision. In v1 orientation is presentation-only; v2 adds visible orientation evidence.
+Backward/lateral movement and a defender facing away can be intentional. Set path and yaw separately, record author intent, and match initial pose/tick-0 yaw. The renderer honors explicit yaw rather than auto-flipping opponents. Preserve old snapshots by creating a new revision. With positions-only sensing, others' orientation is presentation-only; oriented sensing acquires visible orientation evidence.
 
 ## Shared attack/defense observations and closed loop
 

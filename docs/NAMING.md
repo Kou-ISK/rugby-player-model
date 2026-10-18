@@ -31,3 +31,5 @@ Moving source files changes the current engine source manifest. It does not rela
 Current documentation uses English `NAME.md` and Japanese `NAME.ja.md`, with reciprocal language links. Change both when behavior, commands or limitations change. Code identifiers and JSON fields stay identical across languages. A translation used for an experiment is a distinct text artifact: fix its language, exact text and hash rather than claiming the English and Japanese inputs are experimentally interchangeable.
 
 The documentation index distinguishes current bilingual guides from immutable archives, dated verification evidence and third-party legal originals. Original licenses and historical evidence remain authoritative for their own scope. `npm run check:docs` checks language pairs and local links; `npm run manifest:check` checks the public inventory and preserved source hashes.
+
+Within 0.4.0, use the [current format](decisions/ADR-003-current-format.md) throughout normal processing. Name alternatives by capability or hypothesis, not legacy/new generations. Historical names are confined to import conversion and immutable archives.

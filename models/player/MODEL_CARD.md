@@ -2,7 +2,7 @@
 
 [English](MODEL_CARD.md) | [日本語](MODEL_CARD.ja.md)
 
-Status: **uncalibrated and not validated as a human-cognition or rugby-performance model**. This card covers the executable player model, independently of judgment principles. Package version is `0.4.0`; engine branches include legacy `cognition-0.3`, orientation/phase and optional closed loop. The commit containing the [reproduction manifest](../../reproducibility.json) and its source hashes identify code; a rule version such as `A0` alone does not.
+Status: **uncalibrated and not validated as a human-cognition or rugby-performance model**. This card covers the executable player model, independently of judgment principles. Package version is `0.4.0`; all new traces use `cognition-0.4.0` and Trace 4, with explicit sensing, motor and deliberation settings. The commit containing the [reproduction manifest](../../reproducibility.json) and its source hashes identify code; a rule version such as `A0` alone does not.
 
 ## Purpose
 
@@ -24,13 +24,13 @@ World-bearing snapshots are evaluator envelopes. Cognition consumes only validat
 
 ## Engineering assumptions
 
-Legacy defaults include 90° horizontal FOV, 35 m visual range, circular occlusion, coarse audio, four-percept encoding, a four-belief display excerpt (not a decision bottleneck), 128 episodes and a 30-second lifetime. Decay, uncertainty growth and weights are uncalibrated. Configurable FOV and [orientation/phase](spec/ORIENTATION_PHASE.md), [H-WM-1](spec/H-WM-1.md) and [closed-loop](spec/CLOSED_LOOP.md) extensions explicitly version their assumptions. Scores/confidence are not calibrated success probabilities.
+Baseline sensing and cognition defaults include 90° horizontal FOV, 35 m visual range, circular occlusion, coarse audio, four-percept encoding, a four-belief display excerpt (not a decision bottleneck), 128 episodes and a 30-second lifetime. Decay, uncertainty growth and weights are uncalibrated. Configurable FOV and [orientation/phase](spec/ORIENTATION_PHASE.md), [H-WM-1](spec/H-WM-1.md) and [closed-loop](spec/CLOSED_LOOP.md) settings state their assumptions within the current formats. Scores/confidence are not calibrated success probabilities.
 
 Remembered uncertainty can penalize approach and request reobservation; audio meaning/bearing can direct a turn. Neither proves a hidden actor present, refreshes stale receivers or yields exact remembered sound positions after translation. Negative observation does not independently clear a remembered actor.
 
 ## Capabilities and failure modes
 
-Shared capabilities include synthetic sensing, bounded memory, traceable decisions, observation replay, profile-preserving regressions, frozen conditions, recorded experiments, candidate revision, independent review/undo and persistence. Legacy motion is kinematic with semantic calls; passes are intention-only. Dynamic v1/v2 others are scripted. Opt-in v3 adds bounded acceleration/turning, abstract passing/catching/contact and independent actors with their own evidence. It does not implement full rugby physics or laws.
+Shared capabilities include synthetic sensing, bounded memory, traceable decisions, observation replay, profile-preserving regressions, frozen conditions, recorded experiments, candidate revision, independent review/undo and persistence. Kinematic motion uses semantic calls; passes are intention-only and other actors are scripted. Motor settings add bounded acceleration/turning, abstract passing/catching/contact and independent actors with their own evidence. It does not implement full rugby physics or laws.
 
 Unresolved: biological validity, learned tactics, joints/muscles/posture, realistic contact/flight/kicking, speech, independent eye gaze, complete phases/laws, validated group coordination and match outcomes. P2P procedural geometry is presentation-only, not evidence of skill. Limited MIT permission is in [LICENSE-SCOPE](../../LICENSE-SCOPE.md); historical UNLICENSED notices remain provenance.
 

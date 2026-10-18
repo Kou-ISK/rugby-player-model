@@ -76,9 +76,9 @@ Do not submit private sessions, feedback, plans or credentials in PRs. Sharing r
 
 This limits receiver deliberation, not all judgment to K items or a complete human working-memory model. Risk/orienting and fresh/no-fresh predicates still use all retained evidence. Legacy remains the default.
 
-Use `mode-edit CANDIDATE --revision N --mode finite --k 4`, `--mode unlimited` or `--mode legacy`. Saving a mode candidate does not activate it. `mode-study CANDIDATE --revision N --k 4` stores legacy, unlimited-policy and finite-policy arms with identical observations; `mode-studies` retrieves them after restart. Finite versus unlimited isolates capacity; legacy versus unlimited compares policy. Only player-model adoption/undo changes active mode; judgment principles remain independent.
+Use `mode-edit CANDIDATE --revision N --mode finite --k 4`, `--mode unlimited` or `--mode baseline`. Saving a mode candidate does not activate it. `mode-study CANDIDATE --revision N --k 4` stores baseline, unlimited-policy and finite-policy arms with identical observations; `mode-studies` retrieves them after restart. Finite versus unlimited isolates capacity; baseline versus unlimited compares policy. Only player-model adoption/undo changes active mode; judgment principles remain independent.
 
-Missing mode in historical records means legacy. Readers do not add fields or hashes to old records. New histories store mode per event. New sessions/writes use outer format 2, rejected by old binaries. Rollback requires a format-2-compatible reader and preservation of newer data; undoing to legacy does not restore old-reader compatibility.
+Missing mode in historical records means baseline. Readers do not add fields or hashes to old records. New histories store mode per event. New sessions/writes use outer format 2, rejected by old binaries. Rollback requires a format-2-compatible reader and preservation of newer data; undoing to baseline does not restore old-reader compatibility.
 
 ## Continuous observation storage (bridge API 11)
 

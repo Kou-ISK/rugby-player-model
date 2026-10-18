@@ -13,13 +13,12 @@ export function validate<T>(kind: keyof typeof schema.$defs, value: unknown): as
 }
 export function validateEvidence(bundle: Bundle, memory: Memory): void {
   validate('Bundle', bundle); validate('Memory', memory);
-  if(bundle.contractVersion!==3&&(memory.intent||bundle.self.motor))throw new Error('Loop state requires Bundle v3');
+  if((memory.intent||bundle.self.motor)&&(!bundle.self.motor||!bundle.context))throw new Error('Motor cognition requires motor evidence and known direction');
   if(bundle.self.motor&&bundle.self.motor.result.at>bundle.time)throw new Error('Motor result is from the future');
   if(memory.intent&&(memory.intent.startedAt>bundle.time||memory.intent.reviewAt<memory.intent.startedAt))throw new Error('Intention is from the future');
   if (memory.lastTime > bundle.time) throw new Error('Memory is from the future');
   for (const p of [...bundle.percepts, ...memory.episodes]) {
     if (p.observedAt > bundle.time) throw new Error('Future evidence');
-    if(bundle.contractVersion===1&&p.evidenceVersion===2)throw new Error('V2 evidence requires a V2 bundle; do not silently downgrade observations');
     if((p.bodyOrientation?.confidence??0)>p.confidence||(p.ballControl?.confidence??0)>p.confidence)throw new Error('Feature confidence cannot exceed its source observation');
   }
   for (const p of memory.episodes) if (p.observedAt > memory.lastTime) throw new Error('Evidence is newer than its memory record');

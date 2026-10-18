@@ -19,10 +19,10 @@ npm pack ./models/player --pack-destination /your/output/directory
 
 ## 契約と限界
 
-`think(bundle, memory, profile, rules)` は従来traceを返します。記憶の取得で元の観測時刻・確信度を更新しません。従来の注意処理は最大4入力、保存領域は最大128観測・シミュレーション時刻で30秒です。従来の `workingMemory` は表示用の抜粋で、判断容量の制限ではありません。
+`think(bundle, memory, profile, rules)` はTrace 4、`modelRevision: cognition-0.4.0` を返します。入力はBundle 3・Percept 2に統一します。検索で元の観測時刻・確信度を更新せず、注意は最大4入力、記憶は30秒内の最大128観測です。`workingMemory` は表示抜粋であり判断容量の上限ではありません。
 
-実行契約v2は `execute({executionContractVersion:2, executionMode, bundle, memory, profile, rules})` です。`legacyMode()`、`finiteMode(4)`、`unlimitedMode()` を選びます。`node models/player/dist/reference/cli.js --input models/player/examples/observations-v2.json` で付属例を実行できます。[受け手比較の仮説](spec/H-WM-1.ja.md)が制限するのは受け手の比較だけで、人間の作業記憶全体ではありません。
+実行契約v2は `execute({executionContractVersion:2, executionMode, bundle, memory, profile, rules})` です。`baselineMode()`、`finiteMode(4)`、`unlimitedMode()` を選びます。`node models/player/dist/reference/cli.js --input models/player/examples/receiver-deliberation.json` で付属例を実行できます。[受け手比較の仮説](spec/H-WM-1.ja.md)が制限するのは受け手の比較だけで、人間の作業記憶全体ではありません。
 
-[観測v2](spec/ORIENTATION_PHASE.ja.md)は身体方向と不確実な攻守局面を追加し、旧v1の意味を保ちます。[scene v3・閉ループ](spec/CLOSED_LOOP.ja.md)では、観測からの運動推定、意図の維持、別のsimulation adapterによる抽象的身体要求を追加します。v1/v2のパスは意図だけです。
+[身体方向](spec/ORIENTATION_PHASE.ja.md)と[閉ループ](spec/CLOSED_LOOP.ja.md)は同じ契約を使い、実際にある文脈・運動観測で能力を有効にします。運動学的場面のパスは意図のみ、motor場面では抽象的なパス・捕球・接触を実行します。CLIの返却は常に実行envelopeです。過去の記録は未観測情報を補わずコピーを変換します。[現行形式への統一](../../docs/decisions/ADR-003-current-format.ja.md)を参照してください。
 
 純粋なcoreはfilesystem・network・世界状態のadapterを持ちません。CLIは明示した入力・出力ファイルだけを扱い、世界全体を含むSnapshotを選手入力として拒否します。試験が示すのはソフトウェアの性質であり、人間の認知、最適なラグビー判断、競技力向上ではありません。[モデルカード](MODEL_CARD.ja.md)を参照してください。

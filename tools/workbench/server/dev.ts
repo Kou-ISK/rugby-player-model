@@ -27,7 +27,7 @@ server.on('request', async (req, res) => {
   try {
     if (req.headers.origin && !hosts.map(h => `http://${h}`).includes(req.headers.origin)) throw new Error('Invalid Origin');
     if (req.method === 'GET') {
-      if (req.url === '/api/state') { const state = store.read(); res.end(JSON.stringify({ apiVersion: 11, state:{...state,evidenceGraph:{nodeCount:state.evidenceGraph.nodes.length,linkCount:state.evidenceGraph.links.length,decisionCount:state.evidenceGraph.decisions.length},publicExports:state.publicExports.map(({package:pkg,...entry})=>({...entry,proposalId:pkg.manifest.proposalId})),importedProposals:Object.fromEntries(Object.entries(state.importedProposals).map(([id,{package:pkg,runs,...entry}])=>[id,{...entry,title:pkg.manifest.title,targets:pkg.manifest.targets.map(t=>t.kind),runs:runs.map(r=>({id:r.run.id,matches:r.matches,resultDigest:r.run.resultDigest}))}])),scenes:Object.fromEntries(Object.entries(state.scenes).map(([id,versions])=>[id,versions.map(({definition,trackingIds,...ref})=>({...ref,durationTicks:definition.durationTicks,actorCount:definition.actors.length}))])),evaluationSets:Object.fromEntries(Object.entries(state.evaluationSets).map(([id,set])=>[id,{id,at:set.at,digest:set.digest,caseCount:set.draft.cases.length}])),experiments:Object.fromEntries(Object.entries(state.experiments).map(([id,e])=>[id,experimentSummary(e)]))}, active: store.active(state) })); }
+      if (req.url === '/api/state') { const state = store.current(); res.end(JSON.stringify({ apiVersion: 11, state:{...state,evidenceGraph:{nodeCount:state.evidenceGraph.nodes.length,linkCount:state.evidenceGraph.links.length,decisionCount:state.evidenceGraph.decisions.length},publicExports:state.publicExports.map(({package:pkg,...entry})=>({...entry,proposalId:pkg.manifest.proposalId})),importedProposals:Object.fromEntries(Object.entries(state.importedProposals).map(([id,{package:pkg,runs,...entry}])=>[id,{...entry,title:pkg.manifest.title,targets:pkg.manifest.targets.map(t=>t.kind),runs:runs.map(r=>({id:r.run.id,matches:r.matches,resultDigest:r.run.resultDigest}))}])),scenes:Object.fromEntries(Object.entries(state.scenes).map(([id,versions])=>[id,versions.map(({definition,trackingIds,...ref})=>({...ref,durationTicks:definition.durationTicks,actorCount:definition.actors.length}))])),evaluationSets:Object.fromEntries(Object.entries(state.evaluationSets).map(([id,set])=>[id,{id,at:set.at,digest:set.digest,caseCount:set.draft.cases.length}])),experiments:Object.fromEntries(Object.entries(state.experiments).map(([id,e])=>[id,experimentSummary(e)]))}, active: store.active(state) })); }
       else if (req.url === '/api/export-b') res.end(JSON.stringify(store.exportBData()));
       else { res.writeHead(404).end('{}'); }
       return;
@@ -39,7 +39,7 @@ server.on('request', async (req, res) => {
     switch (req.url) {
       case '/api/display-poll': {
         const command=presentation.poll(data.clientId,data.display);
-        result={command,...(command?.kind==='present'?{snapshot:store.read().snapshots[command.snapshotId!]}:{})};break;
+        result={command,...(command?.kind==='present'?{snapshot:store.getSnapshot(command.snapshotId!)}:{})};break;
       }
       case '/api/display-complete': {
         const old=store.read().presentationReceipts?.[data.id];if(old){if(old.clientId!==data.clientId)throw new Error('Receipt client mismatch');result=old;break;}

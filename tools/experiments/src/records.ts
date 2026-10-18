@@ -2,7 +2,7 @@ import type { RulesA, Bundle, Memory, Profile, Trace, Body, ObservationEvent } f
 import type { Candidate, RulesB, Snapshot, CoachingWindow } from './contracts';
 import type { SceneId } from '../../simulation/src/contracts';
 import type { AnonymousCase, BCaseMap, FrozenEvaluation, BArm, CaseGroup, ExposureReason } from './evaluation';
-// Persistent legacy experiment contract v1. Function return types do not own stored data.
+// Immutable experiment records. Function return types do not own stored data.
 export const LEGACY_EXPERIMENT_FORMAT = 1 as const;
 export type ObservationCase = { group:'recorded'|CaseGroup;caseId:string;scene:SceneId;seed:number|null;
   bundle:Bundle;memoryBefore:Memory;profile:Profile;initialMemory?:Memory;observations?:Bundle[] };

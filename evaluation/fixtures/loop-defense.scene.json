@@ -88,5 +88,8 @@
     "kind": "attached",
     "carrierId": "defender"
   },
-  "calls": []
+  "calls": [],
+  "simulationMode": "motor",
+  "observationMode": "oriented",
+  "attachedBallFrame": "body"
 }

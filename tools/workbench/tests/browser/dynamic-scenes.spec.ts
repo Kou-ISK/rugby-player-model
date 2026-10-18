@@ -27,11 +27,11 @@ test('T01–T11: synthetic dynamic scene → coaching → preview paths → UI a
  expect(scene.generationSeed).toBeNull();expect(cli('scenes')).toHaveLength(1);
  await page.goto(base);await openResearchTools(page);await expect(page.locator('#status')).toContainText('ローカルbridgeに接続');
  const pixels=await page.evaluate(async({scene,moduleRoot})=>{
-   const viewPath='/src/rendering/view.ts',scenePath=moduleRoot+'tools/simulation/src/scene.ts';const {View}=await import(viewPath),{sceneWorld}=await import(scenePath);
+   const viewPath='/src/rendering/view.ts',scenePath=moduleRoot+'tools/simulation/src/scene.ts';const {View}=await import(viewPath),{sceneWorld,sceneContent}=await import(scenePath),{contentDigest}=await import(moduleRoot+'tools/simulation/src/content.ts');
    const container=document.createElement('div');container.style.cssText='width:400px;height:300px;position:absolute;left:-500px';document.body.append(container);
    const view=new View(container),world=sceneWorld(scene);view.draw(world);const original=view.renderer.domElement.toDataURL(),heading=view.renderer.domElement.dataset.heading;
    const renamed=structuredClone(scene);renamed.definition.actors[1].id='FUTURE_INTENTION_RENAMED';renamed.definition.calls[0].sourceActorId='FUTURE_INTENTION_RENAMED';renamed.definition.actors[1].motion.keyframes[1].position={x:20,z:20};
-   view.draw(sceneWorld(renamed));const unchanged=original===view.renderer.domElement.toDataURL(),headingUnchanged=heading===view.renderer.domElement.dataset.heading;view.dispose();container.remove();return {unchanged,headingUnchanged};
+   renamed.contentHash=contentDigest(sceneContent(renamed.definition));view.draw(sceneWorld(renamed));const unchanged=original===view.renderer.domElement.toDataURL(),headingUnchanged=heading===view.renderer.domElement.dataset.heading;view.dispose();container.remove();return {unchanged,headingUnchanged};
  },{scene,moduleRoot:'/@fs/'+repo});expect(pixels).toEqual({unchanged:true,headingUnchanged:true});
  await page.locator('#scene').selectOption(`${scene.sceneId}:1`);await page.locator('#reset').click();await expect(page.locator('#clock')).toContainText('tick 0/30');
  await expect(page.locator('canvas')).toHaveAttribute('data-mode','first-person');

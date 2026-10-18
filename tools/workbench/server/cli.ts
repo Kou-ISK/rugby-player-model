@@ -5,7 +5,7 @@ import {fixedBDocument} from '../../experiments/src/judgment-evaluation';
 import { isAbsolute,join } from 'node:path';
 import { canonicalWire,parseStrict } from '../../experiments/src/strict-json';
 import { statSync } from 'node:fs';
-import { finiteMode,legacyMode,unlimitedMode,thinkWithMode } from '../../../models/player/reference/src/index.js';
+import { finiteMode,baselineMode,unlimitedMode,thinkWithMode } from '../../../models/player/reference/src/index.js';
 import { trackingMap } from '../../simulation/src/scene';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { Store, type Target } from './store';
@@ -69,7 +69,7 @@ try {
     case 'scene-revise': result=store.reviseScene(id,Number(flag('--revision')),JSON.parse(readFileSync(flag('--file'),'utf8')));break;
     case 'scene-compare': result=store.compareScenes(id,flag('--after'),flag('--rules'),Number(flag('--steps','5')));break;
     case 'scene-comparisons': result=store.read().sceneComparisons;break;
-    case 'scenes': result=Object.values(store.read().scenes).flat().map(({definition,trackingIds,...ref})=>({...ref,actorCount:definition.actors.length,durationTicks:definition.durationTicks}));break;
+    case 'scenes': result=Object.values(store.current().scenes).flat().map(({definition,trackingIds,...ref})=>({...ref,actorCount:definition.actors.length,durationTicks:definition.durationTicks}));break;
     case 'scene-authoring': {const scene=store.getScene(id,Number(flag('--revision')));result={scene,authorToTracking:trackingMap(scene),warning:'Authoring/audit only. Includes future stimulus and author names. Never pass to A or a blinded B evaluator.'};break;}
     case 'scene-snapshot': {const active=store.active(),scene=store.getScene(id,Number(flag('--revision')));const snapshot=captureSceneAt(scene,active.A,active.B.version,Number(flag('--tick','0')),active.executionMode);result={snapshotId:store.saveSnapshot(snapshot),tick:snapshot.world.dynamic!.tick};break;}
     case 'status': result = { directory: store.dir, active: store.active(), candidates: Object.values(store.read().candidates).map(c => ({ id: c.id, revision: c.revision, feedback: c.feedback, decisions: c.decisions })) }; break;
@@ -81,21 +81,21 @@ try {
       result = { snapshotId: store.saveSnapshot(snapshot) }; break;
     }
     case 'snapshot-turn': {
-      const previous=store.read().snapshots[id];if(!previous)throw new Error('Unknown snapshot');const head=Number(flag('--head'));if(!Number.isFinite(head)||head< -2.4||head>2.4)throw new Error('--head must be radians between -2.4 and 2.4');
+      const previous=store.getSnapshot(id);if(!previous)throw new Error('Unknown snapshot');const head=Number(flag('--head'));if(!Number.isFinite(head)||head< -2.4||head>2.4)throw new Error('--head must be radians between -2.4 and 2.4');
       const next=structuredClone(previous),history=next.observationHistory??newHistory(next.memoryBefore,next.world);if(!history.events.length)appendObservation(history,next.bundle,next.profile,next.rulesA,'initial',next.executionMode);
-      next.memoryBefore=thinkWithMode(next.bundle,next.memoryBefore,next.profile,next.rulesA,next.executionMode??legacyMode()).longTermMemory;next.world.body.headYaw=head;if(next.world.runtime)next.world.runtime.actors.find(a=>a.id===next.world.dynamic!.scene.definition.controlledPlayerId)!.body=structuredClone(next.world.body);next.bundle=sense(next.world);appendObservation(history,next.bundle,next.profile,next.rulesA,'head-turn',next.executionMode);next.observationHistory=history;result={snapshotId:store.saveSnapshot(next)};break;
+      next.memoryBefore=thinkWithMode(next.bundle,next.memoryBefore,next.profile,next.rulesA,next.executionMode??baselineMode()).longTermMemory;next.world.body.headYaw=head;if(next.world.runtime)next.world.runtime.actors.find(a=>a.id===next.world.dynamic!.scene.definition.controlledPlayerId)!.body=structuredClone(next.world.body);next.bundle=sense(next.world);appendObservation(history,next.bundle,next.profile,next.rulesA,'head-turn',next.executionMode);next.observationHistory=history;result={snapshotId:store.saveSnapshot(next)};break;
     }
-    case 'history-replay': {const snapshot=store.read().snapshots[id];if(!snapshot?.observationHistory)throw new Error('No observation event history in this snapshot; legacy snapshots have no reconstructed trajectory');result=replayObservationHistory(snapshot.observationHistory);break;}
-    case 'snapshot-export': result=store.read().snapshots[id];if(!result)throw new Error('Unknown snapshot');break;
+    case 'history-replay': {const snapshot=store.getSnapshot(id);if(!snapshot?.observationHistory)throw new Error('No observation event history in this snapshot; a missing history cannot be reconstructed');result=replayObservationHistory(snapshot.observationHistory);break;}
+    case 'snapshot-export': result=store.getSnapshot(id);if(!result)throw new Error('Unknown snapshot');break;
     case 'snapshot-context': {
-      const snapshot=store.read().snapshots[id];if(!snapshot)throw new Error('Unknown snapshot');
+      const snapshot=store.getSnapshot(id);if(!snapshot)throw new Error('Unknown snapshot');
       result={snapshotId:id,...snapshotObservationContext(snapshot)};break;
     }
     case 'freeze-evaluation': result=store.freezeEvaluation(JSON.parse(readFileSync(flag('--file'),'utf8')));break;
     case 'evaluation-sets': result=Object.values(store.read().evaluationSets).map(set=>({id:set.id,at:set.at,digest:set.digest,caseCount:set.draft.cases.length}));break;
     case 'propose': result = store.propose(id, flag('--feedback'),flag('--evaluation-set')||undefined,args.includes('--from-tick')?{fromTick:Number(flag('--from-tick')),toTick:Number(flag('--to-tick')),playerId:flag('--player','observer-0')}:undefined); break;
     case 'context': {
-      const c = store.read().candidates[id]; if (!c) throw new Error('Unknown candidate');
+      const c = store.getCandidate(id); if (!c) throw new Error('Unknown candidate');
       result = observationContext(c); break;
     }
     case 'edit': { const edit = JSON.parse(readFileSync(flag('--file'), 'utf8')); result = store.edit(id, edit.patchA, edit.principle, Number(flag('--revision')),edit.notes,edit.executionMode,edit.replaceB); break; }
@@ -104,7 +104,7 @@ try {
     case 'undo': store.undo(reviewTarget(id), flag('--by'), flag('--version')); result = store.active(); break;
     case 'mode-study': result=store.modeStudy(id,Number(flag('--revision')),Number(flag('--k')));break;
     case 'mode-studies': result=store.read().modeStudies;break;
-    case 'mode-edit': {const c=store.read().candidates[id];if(!c)throw new Error('Unknown candidate');const m=flag('--mode');if(!['legacy','finite','unlimited'].includes(m))throw new Error('--mode must be legacy/finite/unlimited');result=store.edit(id,c.patchA,c.principle,Number(flag('--revision')),c.notes,m==='legacy'?legacyMode():m==='finite'?finiteMode(Number(flag('--k'))):unlimitedMode());break;}
+    case 'mode-edit': {const c=store.read().candidates[id];if(!c)throw new Error('Unknown candidate');const m=flag('--mode');if(!['baseline','finite','unlimited'].includes(m))throw new Error('--mode must be baseline/finite/unlimited');result=store.edit(id,c.patchA,c.principle,Number(flag('--revision')),c.notes,m==='baseline'?baselineMode():m==='finite'?finiteMode(Number(flag('--k'))):unlimitedMode());break;}
     case 'compare': result = store.comparison(id); break;
     case 'preview': result = store.comparison(id, { mode: 'preview', expectedRevision: Number(flag('--revision')) }); break;
     case 'run': result=store.runExperiment(id,Number(flag('--revision')),Number(flag('--steps','5')),flag('--mode','preview') as 'preview'|'active',flag('--start','coaching') as 'coaching'|'snapshot');break;

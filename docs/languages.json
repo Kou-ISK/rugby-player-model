@@ -240,6 +240,10 @@
       "ja": "tools/workbench/docs/RESEARCH_LOOP.ja.md",
       "titleEn": "Conduct a conversational research experiment",
       "titleJa": "本人とCodexの最初の研究実験"
+    },
+    {
+      "en": "docs/decisions/ADR-003-current-format.md",
+      "ja": "docs/decisions/ADR-003-current-format.ja.md"
     }
   ],
   "originals": [

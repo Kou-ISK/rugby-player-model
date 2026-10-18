@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { Store } from '../../workbench/server/store';
 import { validateSceneDefinition, sceneWorld, type SceneDefinition } from '../../simulation/src/scene';
 
-export const definition = ():SceneDefinition=>({sceneSchemaVersion:1,tickSeconds:.2,durationTicks:30,controlledPlayerId:'carrier-author-name',
+export const definition = ():SceneDefinition=>({sceneSchemaVersion:3,simulationMode:'kinematic',observationMode:'positions',attachedBallFrame:'world',tickSeconds:.2,durationTicks:30,controlledPlayerId:'carrier-author-name',
   actors:[{id:'carrier-author-name',team:'blue',initial:{position:{x:0,z:0},yaw:0},motion:{kind:'controlled'}},
     {id:'future-run-left',team:'blue',initial:{position:{x:5,z:8},yaw:0},motion:{kind:'scripted',keyframes:[{tick:0,position:{x:5,z:8},yaw:0},{tick:30,position:{x:-4,z:12},yaw:-1}]}},
     {id:'future-pressure',team:'red',initial:{position:{x:-8,z:12},yaw:0},motion:{kind:'scripted',keyframes:[{tick:0,position:{x:-8,z:12},yaw:0},{tick:30,position:{x:2,z:6},yaw:1}]}}],
@@ -77,7 +77,7 @@ test('T03/T08: author names and unseen future motion cannot influence A or its o
   for(const forbidden of ['carrier-author-name','future-run-left','future-pressure','PASS_TO_ME_IN_FUTURE','keyframes','trackingIds','"world"'])assert.ok(!text.includes(forbidden),forbidden);
   const sameNames=store.createScene(d);assert.deepEqual(sameNames.trackingIds,one.trackingIds);assert.equal(conditionDigest(captureSceneAt(sameNames,defaultRulesA(),'B0')),conditionDigest(s));
   assert.notEqual(stimulusDigest(other),stimulusDigest(s));
-  const forged=structuredClone(s);forged.world.dynamic!.scene.definition.calls=[];assert.throws(()=>store.saveSnapshot(forged),/immutable scene/);
+  const forged=structuredClone(s);forged.world.dynamic!.scene.definition.calls=[];assert.throws(()=>store.saveSnapshot(forged),/immutable scene|content hash mismatch/);
 });
 test('T04/T05: acquired moving-player memory keeps its observation time; calls arrive on schedule and contain no source identity',t=>{
   const store=fixture(t),scene=store.createScene(definition()),s=captureSceneAt(scene,defaultRulesA(),'B0',4);

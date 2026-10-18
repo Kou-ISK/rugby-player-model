@@ -1,6 +1,6 @@
 {
   "bundle": {
-    "contractVersion": 1,
+    "contractVersion": 3,
     "playerId": "self",
     "time": 0,
     "self": {
@@ -29,7 +29,8 @@
         "position": {
           "x": -5,
           "z": -2
-        }
+        },
+        "evidenceVersion": 2
       }
     ]
   },

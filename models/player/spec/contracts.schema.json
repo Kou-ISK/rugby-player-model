@@ -67,12 +67,184 @@
       ]
     },
     "Percept": {
-      "oneOf": [
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "entityId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "kind": {
+          "enum": [
+            "player",
+            "ball",
+            "call"
+          ]
+        },
+        "relation": {
+          "enum": [
+            "teammate",
+            "opponent",
+            "neutral"
+          ]
+        },
+        "modality": {
+          "enum": [
+            "vision",
+            "audio"
+          ]
+        },
+        "observedAt": {
+          "type": "number",
+          "minimum": 0
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "position": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "z": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "z"
+          ]
+        },
+        "bearing": {
+          "type": "number"
+        },
+        "cue": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "observerYaw": {
+          "type": "number"
+        },
+        "evidenceVersion": {
+          "const": 2
+        },
+        "bodyOrientation": {
+          "$ref": "#/$defs/OrientationEvidence"
+        },
+        "ballControl": {
+          "$ref": "#/$defs/BallControlEvidence"
+        }
+      },
+      "required": [
+        "id",
+        "entityId",
+        "kind",
+        "relation",
+        "modality",
+        "observedAt",
+        "confidence",
+        "evidenceVersion"
+      ],
+      "allOf": [
         {
-          "$ref": "#/$defs/PerceptV1"
+          "if": {
+            "properties": {
+              "modality": {
+                "const": "vision"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "position"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "player",
+                  "ball"
+                ]
+              }
+            },
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "bearing"
+                  ]
+                },
+                {
+                  "required": [
+                    "cue"
+                  ]
+                },
+                {
+                  "required": [
+                    "observerYaw"
+                  ]
+                }
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "bearing",
+              "cue"
+            ],
+            "properties": {
+              "kind": {
+                "const": "call"
+              }
+            },
+            "not": {
+              "required": [
+                "position"
+              ]
+            }
+          }
         },
         {
-          "$ref": "#/$defs/PerceptV2"
+          "if": {
+            "anyOf": [
+              {
+                "required": [
+                  "bodyOrientation"
+                ]
+              },
+              {
+                "required": [
+                  "ballControl"
+                ]
+              }
+            ]
+          },
+          "then": {
+            "properties": {
+              "kind": {
+                "const": "player"
+              },
+              "modality": {
+                "const": "vision"
+              },
+              "relation": {
+                "enum": [
+                  "teammate",
+                  "opponent"
+                ]
+              }
+            }
+          }
         }
       ]
     },
@@ -297,16 +469,74 @@
       ]
     },
     "Bundle": {
-      "oneOf": [
-        {
-          "$ref": "#/$defs/BundleV1"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contractVersion": {
+          "const": 3
         },
-        {
-          "$ref": "#/$defs/BundleV2"
+        "playerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
         },
-        {
-          "$ref": "#/$defs/BundleV3"
+        "time": {
+          "type": "number",
+          "minimum": 0
+        },
+        "self": {
+          "$ref": "#/$defs/Body"
+        },
+        "vision": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "horizontalFov": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 6.284
+            },
+            "range": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "horizontalFov",
+            "range"
+          ]
+        },
+        "percepts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Percept"
+          },
+          "maxItems": 128
+        },
+        "context": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "ownAttackDirection": {
+              "enum": [
+                1,
+                -1
+              ]
+            }
+          },
+          "required": [
+            "ownAttackDirection"
+          ]
         }
+      },
+      "required": [
+        "contractVersion",
+        "playerId",
+        "time",
+        "self",
+        "vision",
+        "percepts"
       ]
     },
     "BodyCommand": {
@@ -626,13 +856,9 @@
           "minLength": 1
         },
         "modelRevision": {
-          "enum": [
-            "cognition-0.2",
-            "cognition-0.3",
-            "cognition-h-wm-1-v1",
-            "cognition-orientation-phase-v1",
-            "cognition-loop-v1"
-          ]
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
         },
         "assessment": {
           "type": "object",
@@ -724,11 +950,7 @@
           }
         },
         "traceVersion": {
-          "enum": [
-            2,
-            3,
-            4
-          ]
+          "const": 4
         },
         "deliberation": {
           "type": "object",
@@ -738,13 +960,13 @@
               "$ref": "#/$defs/ExecutionMode"
             },
             "encodingPolicy": {
-              "const": "salience-top-4-legacy-v1"
+              "const": "salience-top-4-v1"
             },
             "retentionPolicy": {
-              "const": "30s-last128-legacy-v1"
+              "const": "30s-last128-v1"
             },
             "retrievalPolicy": {
-              "const": "latest-entity-modality-decay-legacy-v1"
+              "const": "latest-entity-modality-decay-v1"
             },
             "encoded": {
               "type": "array",
@@ -852,6 +1074,11 @@
         },
         "loop": {
           "$ref": "#/$defs/LoopTrace"
+        },
+        "sourceTraceVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
         }
       },
       "required": [
@@ -866,115 +1093,42 @@
         "output",
         "rulesVersion",
         "modelRevision",
-        "assessment"
+        "assessment",
+        "traceVersion",
+        "appliedRules"
       ],
       "allOf": [
         {
           "if": {
+            "required": [
+              "loop"
+            ]
+          },
+          "then": {
+            "required": [
+              "situation"
+            ]
+          }
+        },
+        {
+          "if": {
             "properties": {
-              "modelRevision": {
-                "const": "cognition-loop-v1"
+              "sensation": {
+                "properties": {
+                  "self": {
+                    "required": [
+                      "motor"
+                    ]
+                  }
+                }
               }
             }
           },
           "then": {
             "required": [
-              "traceVersion",
               "loop",
               "situation"
-            ],
-            "properties": {
-              "traceVersion": {
-                "const": 4
-              },
-              "sensation": {
-                "$ref": "#/$defs/BundleV3"
-              }
-            }
-          },
-          "else": {
-            "allOf": [
-              {
-                "if": {
-                  "properties": {
-                    "modelRevision": {
-                      "const": "cognition-orientation-phase-v1"
-                    }
-                  }
-                },
-                "then": {
-                  "required": [
-                    "traceVersion",
-                    "situation",
-                    "appliedRules"
-                  ],
-                  "properties": {
-                    "traceVersion": {
-                      "const": 3
-                    },
-                    "sensation": {
-                      "$ref": "#/$defs/BundleV2"
-                    }
-                  }
-                },
-                "else": {
-                  "properties": {
-                    "sensation": {
-                      "$ref": "#/$defs/BundleV1"
-                    }
-                  },
-                  "not": {
-                    "required": [
-                      "situation"
-                    ]
-                  },
-                  "allOf": [
-                    {
-                      "if": {
-                        "properties": {
-                          "modelRevision": {
-                            "const": "cognition-h-wm-1-v1"
-                          }
-                        }
-                      },
-                      "then": {
-                        "required": [
-                          "traceVersion",
-                          "deliberation",
-                          "appliedRules"
-                        ],
-                        "properties": {
-                          "traceVersion": {
-                            "const": 2
-                          }
-                        }
-                      },
-                      "else": {
-                        "not": {
-                          "anyOf": [
-                            {
-                              "required": [
-                                "traceVersion"
-                              ]
-                            },
-                            {
-                              "required": [
-                                "deliberation"
-                              ]
-                            }
-                          ]
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            ],
-            "not": {
-              "required": [
-                "loop"
-              ]
-            }
+            ]
           }
         }
       ]
@@ -1122,10 +1276,10 @@
           ],
           "properties": {
             "mode": {
-              "const": "legacy"
+              "const": "baseline"
             },
             "policyVersion": {
-              "const": "legacy-ecc5c298-v1"
+              "const": "baseline-v1"
             }
           }
         },
@@ -1226,456 +1380,6 @@
         "confidence"
       ]
     },
-    "PerceptV1": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 4000
-        },
-        "entityId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 4000
-        },
-        "kind": {
-          "enum": [
-            "player",
-            "ball",
-            "call"
-          ]
-        },
-        "relation": {
-          "enum": [
-            "teammate",
-            "opponent",
-            "neutral"
-          ]
-        },
-        "modality": {
-          "enum": [
-            "vision",
-            "audio"
-          ]
-        },
-        "observedAt": {
-          "type": "number",
-          "minimum": 0
-        },
-        "confidence": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1
-        },
-        "position": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "x": {
-              "type": "number"
-            },
-            "z": {
-              "type": "number"
-            }
-          },
-          "required": [
-            "x",
-            "z"
-          ]
-        },
-        "bearing": {
-          "type": "number"
-        },
-        "cue": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 4000
-        },
-        "observerYaw": {
-          "type": "number"
-        }
-      },
-      "required": [
-        "id",
-        "entityId",
-        "kind",
-        "relation",
-        "modality",
-        "observedAt",
-        "confidence"
-      ],
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "modality": {
-                "const": "vision"
-              }
-            }
-          },
-          "then": {
-            "required": [
-              "position"
-            ],
-            "properties": {
-              "kind": {
-                "enum": [
-                  "player",
-                  "ball"
-                ]
-              }
-            },
-            "not": {
-              "anyOf": [
-                {
-                  "required": [
-                    "bearing"
-                  ]
-                },
-                {
-                  "required": [
-                    "cue"
-                  ]
-                },
-                {
-                  "required": [
-                    "observerYaw"
-                  ]
-                }
-              ]
-            }
-          },
-          "else": {
-            "required": [
-              "bearing",
-              "cue"
-            ],
-            "properties": {
-              "kind": {
-                "const": "call"
-              }
-            },
-            "not": {
-              "required": [
-                "position"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    "PerceptV2": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 4000
-        },
-        "entityId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 4000
-        },
-        "kind": {
-          "enum": [
-            "player",
-            "ball",
-            "call"
-          ]
-        },
-        "relation": {
-          "enum": [
-            "teammate",
-            "opponent",
-            "neutral"
-          ]
-        },
-        "modality": {
-          "enum": [
-            "vision",
-            "audio"
-          ]
-        },
-        "observedAt": {
-          "type": "number",
-          "minimum": 0
-        },
-        "confidence": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1
-        },
-        "position": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "x": {
-              "type": "number"
-            },
-            "z": {
-              "type": "number"
-            }
-          },
-          "required": [
-            "x",
-            "z"
-          ]
-        },
-        "bearing": {
-          "type": "number"
-        },
-        "cue": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 4000
-        },
-        "observerYaw": {
-          "type": "number"
-        },
-        "evidenceVersion": {
-          "const": 2
-        },
-        "bodyOrientation": {
-          "$ref": "#/$defs/OrientationEvidence"
-        },
-        "ballControl": {
-          "$ref": "#/$defs/BallControlEvidence"
-        }
-      },
-      "required": [
-        "id",
-        "entityId",
-        "kind",
-        "relation",
-        "modality",
-        "observedAt",
-        "confidence",
-        "evidenceVersion"
-      ],
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "modality": {
-                "const": "vision"
-              }
-            }
-          },
-          "then": {
-            "required": [
-              "position"
-            ],
-            "properties": {
-              "kind": {
-                "enum": [
-                  "player",
-                  "ball"
-                ]
-              }
-            },
-            "not": {
-              "anyOf": [
-                {
-                  "required": [
-                    "bearing"
-                  ]
-                },
-                {
-                  "required": [
-                    "cue"
-                  ]
-                },
-                {
-                  "required": [
-                    "observerYaw"
-                  ]
-                }
-              ]
-            }
-          },
-          "else": {
-            "required": [
-              "bearing",
-              "cue"
-            ],
-            "properties": {
-              "kind": {
-                "const": "call"
-              }
-            },
-            "not": {
-              "required": [
-                "position"
-              ]
-            }
-          }
-        },
-        {
-          "if": {
-            "anyOf": [
-              {
-                "required": [
-                  "bodyOrientation"
-                ]
-              },
-              {
-                "required": [
-                  "ballControl"
-                ]
-              }
-            ]
-          },
-          "then": {
-            "properties": {
-              "kind": {
-                "const": "player"
-              },
-              "modality": {
-                "const": "vision"
-              },
-              "relation": {
-                "enum": [
-                  "teammate",
-                  "opponent"
-                ]
-              }
-            }
-          }
-        }
-      ]
-    },
-    "BundleV1": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "contractVersion": {
-          "const": 1
-        },
-        "playerId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 4000
-        },
-        "time": {
-          "type": "number",
-          "minimum": 0
-        },
-        "self": {
-          "$ref": "#/$defs/Body"
-        },
-        "vision": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "horizontalFov": {
-              "type": "number",
-              "exclusiveMinimum": 0,
-              "maximum": 6.284
-            },
-            "range": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 100
-            }
-          },
-          "required": [
-            "horizontalFov",
-            "range"
-          ]
-        },
-        "percepts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/PerceptV1"
-          },
-          "maxItems": 128
-        }
-      },
-      "required": [
-        "contractVersion",
-        "playerId",
-        "time",
-        "self",
-        "vision",
-        "percepts"
-      ]
-    },
-    "BundleV2": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "contractVersion": {
-          "const": 2
-        },
-        "playerId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 4000
-        },
-        "time": {
-          "type": "number",
-          "minimum": 0
-        },
-        "self": {
-          "$ref": "#/$defs/Body"
-        },
-        "vision": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "horizontalFov": {
-              "type": "number",
-              "exclusiveMinimum": 0,
-              "maximum": 6.284
-            },
-            "range": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 100
-            }
-          },
-          "required": [
-            "horizontalFov",
-            "range"
-          ]
-        },
-        "percepts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/PerceptV2"
-          },
-          "maxItems": 128
-        },
-        "context": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "ownAttackDirection": {
-              "enum": [
-                1,
-                -1
-              ]
-            }
-          },
-          "required": [
-            "ownAttackDirection"
-          ]
-        }
-      },
-      "required": [
-        "contractVersion",
-        "playerId",
-        "time",
-        "self",
-        "vision",
-        "percepts",
-        "context"
-      ]
-    },
     "Situation": {
       "type": "object",
       "additionalProperties": false,
@@ -1759,7 +1463,7 @@
         "actionScope": {
           "enum": [
             "confirmation-and-hold-only",
-            "legacy-attack-skills",
+            "kinematic-attack-skills",
             "bounded-motor-skills"
           ]
         },
@@ -2081,87 +1785,6 @@
         "reason",
         "goalConstraints",
         "ability"
-      ]
-    },
-    "BundleV3": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "contractVersion": {
-          "const": 3
-        },
-        "playerId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 4000
-        },
-        "time": {
-          "type": "number",
-          "minimum": 0
-        },
-        "self": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/Body"
-            },
-            {
-              "required": [
-                "motor"
-              ]
-            }
-          ]
-        },
-        "vision": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "horizontalFov": {
-              "type": "number",
-              "exclusiveMinimum": 0,
-              "maximum": 6.284
-            },
-            "range": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 100
-            }
-          },
-          "required": [
-            "horizontalFov",
-            "range"
-          ]
-        },
-        "percepts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/PerceptV2"
-          },
-          "maxItems": 128
-        },
-        "context": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "ownAttackDirection": {
-              "enum": [
-                1,
-                -1
-              ]
-            }
-          },
-          "required": [
-            "ownAttackDirection"
-          ]
-        }
-      },
-      "required": [
-        "contractVersion",
-        "playerId",
-        "time",
-        "self",
-        "vision",
-        "percepts",
-        "context"
       ]
     }
   }

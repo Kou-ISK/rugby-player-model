@@ -136,7 +136,7 @@ Independent owner undo retains review history, parents, experiments and response
 
 ## Historical compatibility checkpoint
 
-The 0.3.0 change retained observation contract 1 and three original fixtures, added cognition-0.3/appliedRules while reading cognition-0.2, and read missing experiments/bReviews/evaluationSets as empty in format 1. Bridge API moved from 2/3 to 4 and required server restart. Frozen baseline and approved amendments remained separate from repository draft 0.1. These are historical milestones, not today's package/API versions; current storage is described in [LOCAL_STORAGE](LOCAL_STORAGE.md), with API 11 observation continuation in [LOCAL_BRIDGE](LOCAL_BRIDGE.md). Research undo is distinct from code downgrade; preserve newer records and backups.
+The 0.3.0 change retained observation contract 1 and three original fixtures, added cognition-0.3/appliedRules while reading cognition-0.2, and read missing experiments/bReviews/evaluationSets as empty in format 1. Bridge API moved from 2/3 to 4 and required server restart. Frozen baseline and approved amendments remained separate from repository draft 0.1. These are historical milestones; current contracts follow [ADR-003](../../../docs/decisions/ADR-003-current-format.md); current storage is described in [LOCAL_STORAGE](LOCAL_STORAGE.md), with API 11 observation continuation in [LOCAL_BRIDGE](LOCAL_BRIDGE.md). Research undo is distinct from code downgrade; preserve newer records and backups.
 
 ## Try forward from the captured point
 

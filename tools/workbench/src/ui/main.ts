@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
-import { legacyMode, finiteMode, unlimitedMode, type ExecutionMode } from '../../../../models/player/reference/src/execution-mode.js';
+import { importSnapshot } from '../../../experiments/src/import';
+import { baselineMode, finiteMode, unlimitedMode, type ExecutionMode } from '../../../../models/player/reference/src/execution-mode.js';
 import './style.css';
 import { recordedWorld } from '../../../simulation/src/playback';
 import { sceneWorld, updateSceneFrame, sceneRef, sceneDiagnostics, type SceneRef } from '../../../simulation/src/scene';
@@ -51,7 +52,7 @@ app.innerHTML=`
 </section><aside><span class="eyebrow">共同研究 LOOP</span><h2>指導の記録と候補レビュー</h2><p>下の入力欄は手動保存用です。文章を保存してもモデルは変わりません。Codexとの会話で解釈・実装・比較を進め、本人が選手モデル／判断原則を別に採用します。</p>
 <label>指導前に凍結した評価条件<select id="evaluation-sets"><option value="">なし（固定回帰のみ）</option></select></label><p class="hint">未使用条件と同じprofile・評価基準をCLIで先にfreeze。自然言語の意味解釈とJSON化はCodexと手動で行います。</p><label>指導する区間の開始tick<input id="from-tick" type="number" min="0" value="0"></label><p id="coaching-window" class="hint"></p><label for="feedback">フィードバック</label><textarea id="feedback" placeholder="例：見失った支援選手の位置を断定せず、首を振って確認したい。"></textarea><button id="propose" class="primary">この場面で候補を保存</button>
 <label>保存済み候補<select id="candidates"><option value="">候補なし</option></select></label><p id="candidate-context" class="hint"></p><p id="candidate-readiness" class="capability-note" role="status"></p>
-<details open><summary>候補を編集（自動解釈なし）</summary><label>候補の選手モデル研究モード<select id="execution-mode"><option value="legacy">従来</option><option value="finite">H-WM-1：容量指定</option><option value="unlimited">H-WM-1：無制限</option></select></label><label>K<input id="execution-k" type="number" min="1" max="128" value="4"></label><p class="hint">未検証の研究モード。受け手の比較・選択に対する容量制約です。全判断をK件に制限する、人間作業記憶の完成モデルではありません。保持観測による危険／定位と既存のfresh判定は容量制約外です。選択だけでは実行中の選手モデルを変更しません。</p><button id="mode-study">同じ観測で従来・無制限・有限を保存比較</button><pre id="mode-study-result"></pre><label>選手モデル · 実行パラメータの差分 JSON<textarea id="patch" spellcheck="false">{}</textarea></label><label>判断原則変更方法<select id="b-change-kind"><option value="amend">原則を追加・更新</option><option value="replace">新baselineへ全文置換</option></select></label><label>置換する本文（旧本文は残ります）<textarea id="b-replacement-text"></textarea></label><label>置換時に明示して引き継ぐ原則配列<textarea id="b-replacement-principles">[]</textarea></label><label>判断原則 · 原則 JSON<textarea id="principle" spellcheck="false"></textarea></label><label>変更理由・予測・反例 JSON<textarea id="study-notes" placeholder='{"rationale":"理由","expectedEffect":"対象条件で予測する変化","counterexample":"変えない条件／反例"}'></textarea></label><button id="save-edit">候補の編集を保存</button><p class="hint">選手モデル: contextRules（観測条件・例外・行動／模擬call）、scanBias等。contextRulesは配列全体を置換するため既存原則を保持して編集。判断原則: TODO欄をCodexと記述。承認前は実行に影響しません。</p></details>
+<details open><summary>候補を編集（自動解釈なし）</summary><label>候補の選手モデル研究モード<select id="execution-mode"><option value="baseline">基準policy</option><option value="finite">H-WM-1：容量指定</option><option value="unlimited">H-WM-1：無制限</option></select></label><label>K<input id="execution-k" type="number" min="1" max="128" value="4"></label><p class="hint">未検証の研究モード。受け手の比較・選択に対する容量制約です。全判断をK件に制限する、人間作業記憶の完成モデルではありません。保持観測による危険／定位と既存のfresh判定は容量制約外です。選択だけでは実行中の選手モデルを変更しません。</p><button id="mode-study">同じ観測で従来・無制限・有限を保存比較</button><pre id="mode-study-result"></pre><label>選手モデル · 実行パラメータの差分 JSON<textarea id="patch" spellcheck="false">{}</textarea></label><label>判断原則変更方法<select id="b-change-kind"><option value="amend">原則を追加・更新</option><option value="replace">新baselineへ全文置換</option></select></label><label>置換する本文（旧本文は残ります）<textarea id="b-replacement-text"></textarea></label><label>置換時に明示して引き継ぐ原則配列<textarea id="b-replacement-principles">[]</textarea></label><label>判断原則 · 原則 JSON<textarea id="principle" spellcheck="false"></textarea></label><label>変更理由・予測・反例 JSON<textarea id="study-notes" placeholder='{"rationale":"理由","expectedEffect":"対象条件で予測する変化","counterexample":"変えない条件／反例"}'></textarea></label><button id="save-edit">候補の編集を保存</button><p class="hint">選手モデル: contextRules（観測条件・例外・行動／模擬call）、scanBias等。contextRulesは配列全体を置換するため既存原則を保持して編集。判断原則: TODO欄をCodexと記述。承認前は実行に影響しません。</p></details>
 <button id="codex-context">Codex用の観測contextを保存</button><button id="restore-candidate">候補の場面を復元</button><label>差戻し・再提案の理由<textarea id="review-reason"></textarea></label><button id="revise">同場面で新候補（現承認版基準）</button><label class="confirm"><input type="checkbox" id="owner">本人としてこの内容を確認しました</label>
 <div class="review"><button id="approve-a">選手モデル 採用</button><button id="reject-a">選手モデル 却下</button><button id="return-a">選手モデル 差戻し</button><button id="undo-a">選手モデル undo</button><button id="approve-b">判断原則 採用</button><button id="reject-b">判断原則 却下</button><button id="return-b">判断原則 差戻し</button><button id="undo-b">判断原則 undo</button></div>
 <p class="hint">選手モデルの変更がない比較は挙動の改善を検証しません。判断原則の文面比較・独立評価とは分けて確認してください。</p><button id="preview">保存済み候補をpreview＋固定回帰</button><button id="compare">現在の承認版と比較＋固定回帰</button><button id="export-b">判断原則文書をダウンロード</button><pre id="comparison"></pre>
@@ -74,7 +75,7 @@ async function api(path:string,data?:unknown) {
   }return value;
 }
 let state:ServerState, rules=defaultRulesA(), bVersion='B0', world=makeWorld('support',42), memory:Memory=emptyMemory(), profile:Profile=defaultProfile();
-let executionMode:ExecutionMode=legacyMode();
+let executionMode:ExecutionMode=baselineMode();
 let displayRevision=0;
 const displayClientId=crypto.randomUUID();
 let trace:Trace, playing=false, selected='', renderedRevision=-1, displayedCandidate='';
@@ -167,11 +168,11 @@ function renderSituation(display:World,t:Trace){
   $('capability-note').textContent=t.loop?'この場面では運動推定・意図の維持と変更、走行・パス・捕球・守備接触を比較できます。身体動作は簡略モデルです。成功の記録と、判断の妥当性の評価は別です。':'この場面では観測・記憶・行動選択を比較します。観測v2は身体方向と攻守推定を記録します。パス・捕球や守備接触の実行には場面v3が必要です。';
   $('actor-capability').textContent=t.loop?'場面v3：自律選手は各自の観測・記憶で判断し、同じ時刻の入力を得てから動きます。指定経路の選手も場面に含められます。再生は0.2秒刻みで、実時間の反応速度測定ではありません。':'他選手は定義済み経路の刺激です。対象選手だけを選手モデルが操作します。停止中の首・身体の回転は同時刻の取得順として記録します。';
   const labels={'attack-carrier':'攻撃・自己保持','attack-support':'攻撃・支援',defense:'守備',unknown:'保持不明'};
-  $('situation-phase').textContent=phase?`観測からの局面推定：${labels[phase.phase]} ｜ ${phase.actionScope==='bounded-motor-skills'?'現在の実行範囲：走る・かわす・支援・守備・パス・捕球・抽象接触':phase.actionScope==='confirmation-and-hold-only'?'現在の実行範囲：確認・待機（守備技能は未実装）':'現在の実行範囲：既存の攻撃行動'} ｜ 観測v${t.sensation.contractVersion}`:'観測v1：攻守の推定・他選手の身体方向入力なし';
+  $('situation-phase').textContent=phase?`観測からの局面推定：${labels[phase.phase]} ｜ ${phase.actionScope==='bounded-motor-skills'?'現在の実行範囲：走る・かわす・支援・守備・パス・捕球・抽象接触':phase.actionScope==='confirmation-and-hold-only'?'現在の実行範囲：確認・待機（守備技能は未実装）':'現在の実行範囲：既存の攻撃行動'}`:'取得情報に攻守の推定・他選手の身体方向なし';
   const degrees=(v:number)=>`${Math.round(v*180/Math.PI)}°`;
   $('situation-orientation').textContent=phase?`自己の身体 ${degrees(phase.selfOrientation.bodyYaw)} ／ 頭の相対角 ${degrees(phase.selfOrientation.headYaw)} ／ 視線 ${degrees(phase.selfOrientation.viewYaw)} ｜ 他選手の向き ${phase.orientations.length}件（現在視覚＋記憶）`:'';
 }
-function snapshot():Snapshot{return {contractVersion:world.dynamic?2:1,scene:world.scene,seed:world.seed,world:structuredClone(world),bundle:sense(world),memoryBefore:structuredClone(memory),profile:structuredClone(profile),rulesA:structuredClone(rules),rulesBVersion:bVersion,executionMode:structuredClone(executionMode),observationHistory:structuredClone(history),...(observationPredecessor?{observationPredecessor:structuredClone(observationPredecessor),observationAnchor:structuredClone(observationAnchor)}:{})};}
+function snapshot():Snapshot{return {contractVersion:2,scene:world.scene,seed:world.seed,world:structuredClone(world),bundle:sense(world),memoryBefore:structuredClone(memory),profile:structuredClone(profile),rulesA:structuredClone(rules),rulesBVersion:bVersion,executionMode:structuredClone(executionMode),observationHistory:structuredClone(history),...(observationPredecessor?{observationPredecessor:structuredClone(observationPredecessor),observationAnchor:structuredClone(observationAnchor)}:{})};}
 function renderHistoryStatus(){
   if(comparisonPlayback)return;
   $('history-status').textContent=`観測 ${history.events.length}件 · ${observationPredecessor?'前の記録を保存済み · ':''}${archivePending?'自動保存中 · ':''}位置・時間を保って記録を継続${archiveError?` · 保存失敗：${archiveError}`:''}`;
@@ -204,17 +205,22 @@ function archiveHistory(retry=false):Promise<void>{
 function observe(trigger:ObservationEvent['trigger'],update:()=>void=()=>{}){
   if(history.events.length>=HISTORY_LIMIT)throw new Error('履歴を保存中です。位置と時間は維持しています。保存後に操作を続けてください。');
   memory=history.events.length?structuredClone(trace.longTermMemory):structuredClone(history.initialMemory);
-  update();if(world.runtime){world.runtime.actors.find(a=>a.id===world.dynamic!.scene.definition.controlledPlayerId)!.body=structuredClone(world.body);updateSceneFrame(world);}appendObservation(history,sense(world),profile,rules,history.events.length?trigger:'initial',executionMode);render();
+  update();
+  if(world.runtime)world.runtime.actors.find(a=>a.id===world.dynamic!.scene.definition.controlledPlayerId)!.body=structuredClone(world.body);
+  // Manual body turns also move an attached ball in scripted v2 scenes.
+  if(world.dynamic)updateSceneFrame(world);
+  appendObservation(history,sense(world),profile,rules,history.events.length?trigger:'initial',executionMode);render();
 }
 function step(){if(world.dynamic&&world.dynamic.tick>=world.dynamic.scene.definition.durationTicks){pause();say('場面の終端です。snapshotを保存して比較、またはresetしてください。');return;}observe('step',()=>{world=advance(world,trace);});}
 async function restoreSnapshot(saved:Snapshot){
+ saved=importSnapshot(saved);
   look.stop();pause();
   let predecessor=structuredClone(saved.observationPredecessor),anchor=structuredClone(saved.observationAnchor);
   let nextHistory=saved.observationHistory?structuredClone(saved.observationHistory):newHistory(saved.memoryBefore,saved.world);
-  const changed=!!saved.observationHistory&&(JSON.stringify(saved.rulesA)!==JSON.stringify(rules)||JSON.stringify(saved.executionMode??legacyMode())!==JSON.stringify(executionMode));
+  const changed=!!saved.observationHistory&&(JSON.stringify(saved.rulesA)!==JSON.stringify(rules)||JSON.stringify(saved.executionMode??baselineMode())!==JSON.stringify(executionMode));
   if(changed&&nextHistory.events.length>=HISTORY_LIMIT){const stored=await api('snapshot',{snapshot:saved,requestId:crypto.randomUUID()});nextHistory=continueObservationHistory(nextHistory,saved);predecessor={snapshotId:stored.id,sha256:stored.sha256};anchor=structuredClone(saved.world);}
   look.stop();pause();world=structuredClone(saved.world);memory=structuredClone(saved.memoryBefore);profile=structuredClone(saved.profile);history=nextHistory;observationPredecessor=predecessor;observationAnchor=anchor;archiveError='';
-  trace=thinkWithMode(saved.bundle,saved.memoryBefore,saved.profile,saved.rulesA,saved.executionMode??legacyMode());
+  trace=thinkWithMode(saved.bundle,saved.memoryBefore,saved.profile,saved.rulesA,saved.executionMode??baselineMode());
   if(world.dynamic){const value=`${world.dynamic.scene.sceneId}:${world.dynamic.scene.revision}`;if(!Array.from(select('scene').options).some(o=>o.value===value))select('scene').append(new Option(`動的 ${world.dynamic.scene.sceneId.slice(0,8)} / r${world.dynamic.scene.revision}`,value));}
   select('scene').value=world.dynamic?`${world.dynamic.scene.sceneId}:${world.dynamic.scene.revision}`:world.scene;input('seed').value=String(world.seed??0);input('from-tick').value=String(Math.round((history.events[0]?.bundle.time??world.time)/.2));syncProfile();
   if(changed)observe('restore');else render();
@@ -226,10 +232,10 @@ function loadCandidate(){
   area('patch').value=JSON.stringify(c.patchA,null,2);area('principle').value=JSON.stringify(c.principle,null,2);
   $('candidate-context').textContent=`${c.id} · revision ${c.revision}\n${c.context.scene} · seed ${c.context.seed} · ${c.context.bundle.time}s · ${c.context.bundle.playerId}${c.coaching?` · r${c.coaching.revision} · tick ${c.coaching.fromTick}–${c.coaching.toTick}`:""}\n選手モデル: ${c.decisions.A} / 判断原則: ${c.decisions.B}${c.parentCandidateId?` · 親候補 ${c.parentCandidateId}`:""}`;
   const sameRules=JSON.stringify({...c.context.rulesA,...c.patchA})===JSON.stringify(c.context.rulesA);
-  const sameMode=JSON.stringify(c.executionMode??c.context.executionMode??legacyMode())===JSON.stringify(c.context.executionMode??legacyMode());
+  const sameMode=JSON.stringify(c.executionMode??c.context.executionMode??baselineMode())===JSON.stringify(c.context.executionMode??baselineMode());
   $('candidate-readiness').textContent=sameRules&&sameMode?'選手モデルの変更なし：指導の動作はまだ実装されていません。判断原則の文章候補を確認できます。':'選手モデルの変更候補あり：保存した観測と反例で効果を比較してください。実行未対応の技能は検証できません。';
   const savedStudy=Object.values(state.state.modeStudies).filter(study=>study.candidateId===c.id).at(-1);$('mode-study-result').textContent=savedStudy?JSON.stringify(savedStudy,null,2):'';
-  const mode=c.executionMode??c.context.executionMode??legacyMode();select('execution-mode').value=mode.mode==='legacy'?'legacy':mode.capacity.kind;if(mode.mode==='h-wm-1'&&mode.capacity.kind==='finite')input('execution-k').value=String(mode.capacity.k);
+  const mode=c.executionMode??c.context.executionMode??baselineMode();select('execution-mode').value=mode.mode==='baseline'?'baseline':mode.capacity.kind;if(mode.mode==='h-wm-1'&&mode.capacity.kind==='finite')input('execution-k').value=String(mode.capacity.k);
   input('owner').checked=false;
 }
 let proposalPreview:{candidateId:string;manifestSha256:string;result:any}|undefined;
@@ -336,14 +342,14 @@ for(const mode of ['preview','active'] as const)on(mode==='preview'?'preview':'c
 });
 function readNotes(){return area('study-notes').value.trim()?JSON.parse(area('study-notes').value):undefined;}
 function readReplacement(){return select('b-change-kind').value==='replace'?{text:area('b-replacement-text').value,principles:JSON.parse(area('b-replacement-principles').value)}:null;}
-function readMode():ExecutionMode {const mode=select('execution-mode').value;return mode==='legacy'?legacyMode():mode==='unlimited'?unlimitedMode():finiteMode(Number(input('execution-k').value));}
-function candidateDirty(c:Candidate){return JSON.stringify(readReplacement())!==JSON.stringify(c.replacementB?{text:c.replacementB.baseline.text,principles:c.replacementB.principles}:null)||JSON.stringify(readMode())!==JSON.stringify(c.executionMode??c.context.executionMode??legacyMode())||JSON.stringify(JSON.parse(area('patch').value))!==JSON.stringify(c.patchA)||JSON.stringify(JSON.parse(area('principle').value))!==JSON.stringify(c.principle)||JSON.stringify(readNotes())!==JSON.stringify(c.notes);}
+function readMode():ExecutionMode {const mode=select('execution-mode').value;return mode==='baseline'?baselineMode():mode==='unlimited'?unlimitedMode():finiteMode(Number(input('execution-k').value));}
+function candidateDirty(c:Candidate){return JSON.stringify(readReplacement())!==JSON.stringify(c.replacementB?{text:c.replacementB.baseline.text,principles:c.replacementB.principles}:null)||JSON.stringify(readMode())!==JSON.stringify(c.executionMode??c.context.executionMode??baselineMode())||JSON.stringify(JSON.parse(area('patch').value))!==JSON.stringify(c.patchA)||JSON.stringify(JSON.parse(area('principle').value))!==JSON.stringify(c.principle)||JSON.stringify(readNotes())!==JSON.stringify(c.notes);}
 function download(name:string,value:unknown){const url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);}
 on('codex-context',()=>{const c=state.state.candidates[selected];if(!c)throw new Error('候補を選んでください');download(`context-${c.id}.json`,observationContext(c));say('保存済み候補の観測contextです。Codexへ渡し、意味・例外・反例を共同編集してください。');});
 on('restore-candidate',async()=>{const c=state.state.candidates[selected];if(!c)throw new Error('候補を選んでください');await restoreSnapshot(c.context);say('候補の観測条件を復元。実行ルールは現在の承認版です。');});
 on('revise',async()=>{const c=state.state.candidates[selected];if(!c)throw new Error('候補を選んでください');if(candidateDirty(c))throw new Error('編集を先に保存してください');const child=await api('revise',{id:selected,reason:area('review-reason').value,expectedRevision:c.revision});selected=child.id;await refresh(true);say('観測を保ち、現承認版を基準に新候補を作成。元の履歴・承認は維持し、新候補は未採用です。');});
 function showExperiment(e:Experiment){
-  const sameA=JSON.stringify({...e.beforeA,version:''})===JSON.stringify({...e.afterA,version:''})&&JSON.stringify(e.results.recorded.before.frames[0]?.trace.deliberation?.executionMode??legacyMode())===JSON.stringify(e.results.recorded.after.frames[0]?.trace.deliberation?.executionMode??legacyMode());
+  const sameA=JSON.stringify({...e.beforeA,version:''})===JSON.stringify({...e.afterA,version:''})&&JSON.stringify(e.results.recorded.before.frames[0]?.trace.deliberation?.executionMode??baselineMode())===JSON.stringify(e.results.recorded.after.frames[0]?.trace.deliberation?.executionMode??baselineMode());
   const run=e.results.recorded.after;
   $('experiment-summary').textContent=`${sameA?'選手モデル設定は同じです。指導の実装・改善を示す比較ではありません。':'選手モデル設定の比較記録です。競技上の改善は別に判断します。'} 記録場面：${run.frames.length} frame・${run.frames[0]?.time.toFixed(1)}〜${run.frames.at(-1)?.time.toFixed(1)}秒。終了理由：${run.termination}。`;
 
@@ -397,7 +403,7 @@ async function syncDisplay(){
       if(command.kind==='return')await exitComparison();
       else if(command.kind==='present'){
         // Restoring a research view must not silently replace the captured 選手モデル／判断原則 versions.
-        if(!requested||JSON.stringify(requested.rulesA)!==JSON.stringify(rules)||requested.rulesBVersion!==bVersion||JSON.stringify(requested.executionMode??legacyMode())!==JSON.stringify(executionMode))throw new Error('Snapshot has different 選手モデル／判断原則 settings; use recorded comparison instead');
+        if(!requested||JSON.stringify(requested.rulesA)!==JSON.stringify(rules)||requested.rulesBVersion!==bVersion||JSON.stringify(requested.executionMode??baselineMode())!==JSON.stringify(executionMode))throw new Error('Snapshot has different 選手モデル／判断原則 settings; use recorded comparison instead');
         const before=snapshot(),revision=displayRevision,wasSpectator=view.spectator;
         previousSnapshotId=(await api('snapshot',{snapshot:before})).id;
         if(displayRevision!==revision||playing||comparisonPlayback||view.spectator!==wasSpectator)throw new Error('Display changed while preserving the previous view');

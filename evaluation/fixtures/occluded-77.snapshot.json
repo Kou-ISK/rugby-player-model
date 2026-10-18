@@ -1,5 +1,5 @@
 {
-  "contractVersion": 1,
+  "contractVersion": 2,
   "scene": "occluded",
   "seed": 77,
   "world": {
@@ -72,7 +72,7 @@
     "calls": []
   },
   "bundle": {
-    "contractVersion": 1,
+    "contractVersion": 3,
     "playerId": "self",
     "time": 0,
     "self": {
@@ -101,7 +101,8 @@
         "position": {
           "x": 2.5318190194666386,
           "z": 9.525513652246445
-        }
+        },
+        "evidenceVersion": 2
       },
       {
         "id": "screen@0.000:vision",
@@ -114,7 +115,8 @@
         "position": {
           "x": 0,
           "z": 5
-        }
+        },
+        "evidenceVersion": 2
       },
       {
         "id": "ball@0.000:vision",
@@ -127,7 +129,8 @@
         "position": {
           "x": 0,
           "z": 0.4
-        }
+        },
+        "evidenceVersion": 2
       }
     ]
   },

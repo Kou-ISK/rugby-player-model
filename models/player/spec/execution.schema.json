@@ -12,10 +12,10 @@
           ],
           "properties": {
             "mode": {
-              "const": "legacy"
+              "const": "baseline"
             },
             "policyVersion": {
-              "const": "legacy-ecc5c298-v1"
+              "const": "baseline-v1"
             }
           }
         },

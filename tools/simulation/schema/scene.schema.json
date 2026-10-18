@@ -202,11 +202,7 @@
       "additionalProperties": false,
       "properties": {
         "sceneSchemaVersion": {
-          "enum": [
-            1,
-            2,
-            3
-          ]
+          "const": 3
         },
         "tickSeconds": {
           "const": 0.2
@@ -505,6 +501,24 @@
           "minimum": 60,
           "maximum": 120,
           "description": "Authored horizontal camera and sensor angle; omitted means 90 degrees. Engineering condition, not a validated human peripheral-vision model."
+        },
+        "simulationMode": {
+          "enum": [
+            "kinematic",
+            "motor"
+          ]
+        },
+        "observationMode": {
+          "enum": [
+            "positions",
+            "oriented"
+          ]
+        },
+        "attachedBallFrame": {
+          "enum": [
+            "world",
+            "body"
+          ]
         }
       },
       "required": [
@@ -514,30 +528,53 @@
         "controlledPlayerId",
         "actors",
         "ball",
-        "calls"
+        "calls",
+        "simulationMode",
+        "observationMode",
+        "attachedBallFrame"
       ],
       "allOf": [
         {
           "if": {
-            "properties": {
-              "sceneSchemaVersion": {
-                "enum": [
-                  2,
-                  3
-                ]
+            "anyOf": [
+              {
+                "properties": {
+                  "observationMode": {
+                    "const": "oriented"
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "simulationMode": {
+                    "const": "motor"
+                  }
+                }
               }
-            }
+            ]
           },
           "then": {
             "required": [
               "ownAttackDirection"
             ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "simulationMode": {
+                "const": "motor"
+              }
+            }
           },
-          "else": {
-            "not": {
-              "required": [
-                "ownAttackDirection"
-              ]
+          "then": {
+            "properties": {
+              "observationMode": {
+                "const": "oriented"
+              },
+              "attachedBallFrame": {
+                "const": "body"
+              }
             }
           }
         }
@@ -604,6 +641,10 @@
         },
         "createdAt": {
           "type": "string"
+        },
+        "sourceContentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
         }
       },
       "required": [

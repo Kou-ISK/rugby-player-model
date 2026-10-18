@@ -49,7 +49,7 @@ node models/player/dist/reference/cli.js --input models/player/examples/observat
 
 ## 現在できること
 
-世界状態・観測・不確実な推定を分離します。身体の向きと移動を区別し、版付き契約で攻撃・守備・保持の不確実性を扱います。任意選択のscene v3では、制限付きの移動、抽象的なパス・捕球・接触、各自で観測する選手を扱います。旧場面の挙動は維持し、パス実行が未対応の枝では意図だけを返します。
+世界状態・観測・不確実な推定を分離します。身体の向きと移動を区別し、共通の現行契約で攻撃・守備・保持の不確実性を扱います。motor設定では、制限付きの移動、抽象的なパス・捕球・接触、各自で観測する選手を扱います。kinematic設定のパスは意図のみです。packageは0.4.0のまま、[現行形式](docs/decisions/ADR-003-current-format.ja.md)に統一します。
 
 任意選択の[受け手比較の仮説](models/player/spec/H-WM-1.ja.md)は、受け手を比較する観測の容量を制限します。人間の作業記憶全体のモデルではありません。同じpolicyの有限／無制限容量を比較し、従来policyとの差は別に調べます。[身体方向](models/player/spec/ORIENTATION_PHASE.ja.md)、[閉ループ](models/player/spec/CLOSED_LOOP.ja.md)、[モデルカード](models/player/MODEL_CARD.ja.md)、[限界](docs/LIMITATIONS.ja.md)に実装範囲と未検証事項を記載しています。
 

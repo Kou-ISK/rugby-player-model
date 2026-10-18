@@ -1,3 +1,4 @@
+import { importSnapshot, importCandidate } from '../../experiments/src/import';
 import type {Command} from './presentation';
 import {validateBSelection,makeStandaloneBPacket,fixedBDocument,validateStandaloneBPacket,validateBAssessment,standaloneInputHash} from '../../experiments/src/judgment-evaluation';
 import type {World} from '../../simulation/src/contracts';
@@ -7,9 +8,9 @@ import { validateProposal,reproduceProposal,proposalReviewMaterial,selectSemanti
 import { canonicalWire } from '../../experiments/src/strict-json';
 import type { ImportedProposal,PublicExport,ArtifactLink,StandaloneBReview } from '../../experiments/src/proposal-records';
 import { replacementB,judgmentMarkdown,textHash,type BReplacement } from '../../experiments/src/judgment';
-import { execute, finiteMode, legacyMode, unlimitedMode, validateMode, type ExecutionMode } from '../../../models/player/reference/src/index.js';
+import { execute, finiteMode, importExecutionMode, baselineMode, unlimitedMode, validateMode, type ExecutionMode } from '../../../models/player/reference/src/index.js';
 import { engineFingerprint as fingerprint, engineFingerprintFormat, readJudgmentBaseline, repositoryRoot, currentEngineDescriptor, playerArtifactFingerprint } from './artifact-resolver';
-import { validateSceneDefinition, sceneContent, sceneWorld, sceneRef, type SceneRevision } from '../../simulation/src/scene';
+import { importSceneDefinition, importSceneRevision, validateSceneDefinition, sceneContent, sceneWorld, sceneRef, type SceneRevision } from '../../simulation/src/scene';
 import { mkdirSync, readFileSync, writeFileSync, renameSync, rmSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { randomUUID, createHash } from 'node:crypto';
@@ -44,7 +45,7 @@ function checkRevision(c: Candidate, expected: number) {
 }
 export type SceneComparison = {id:string;at:string;kind:'changed-scene-fixed-rules';sameConditions:false;rulesA:RulesA;before:{snapshotId:string;snapshot:Snapshot;run:ReplayResult};after:{snapshotId:string;snapshot:Snapshot;run:ReplayResult}};
 export type ModeStudy={format?:'rpm.mode-study';version?:2;inputHashFormat?:'rpm-canonical-json-v1';inputManifest?:{protocol:'fixed-observation-three-arm-v1';modelArtifact:{id:string;version:2;sha256:string};bundleSha256:string;memorySha256:string;profileSha256:string;rulesSha256:string;modeSha256:string[];engineFingerprintFormat:string;time:number;playerId:string;scene:string;seed:number|null};id:string;at:string;candidateId:string;candidateRevision:number;engineFingerprint:string;inputSha256:string;arms:{name:string;result:ReturnType<typeof execute>}[]};
-export type State = { snapshotRequests?:Record<string,{snapshotId:string;sha256:string}>; presentationReceipts?:Record<string,Command>;snapshotLinks?:Record<string,string>; sessionDeclaration?:{purpose:'synthetic-tutorial';createdAt:string}; evidenceGraph:EvidenceGraph; importedProposals:Record<string,ImportedProposal>; publicExports:PublicExport[]; artifactLinks:ArtifactLink[]; standaloneBReviews:StandaloneBReview[]; modesA:Record<string,ExecutionMode>; modeStudies:Record<string,ModeStudy>; sceneComparisons:Record<string,SceneComparison>; scenes:Record<string,SceneRevision[]>; format: 1|2; revision: number; snapshots: Record<string, Snapshot>; candidates: Record<string, Candidate>;
+export type State = { snapshotRequests?:Record<string,{snapshotId:string;sha256:string}>; presentationReceipts?:Record<string,Command>;snapshotLinks?:Record<string,string>; sessionDeclaration?:{purpose:'synthetic-tutorial';createdAt:string}; evidenceGraph:EvidenceGraph; importedProposals:Record<string,ImportedProposal>; publicExports:PublicExport[]; artifactLinks:ArtifactLink[]; standaloneBReviews:StandaloneBReview[]; modesA:Record<string,ExecutionMode>; modeStudies:Record<string,ModeStudy>; sceneComparisons:Record<string,SceneComparison>; scenes:Record<string,SceneRevision[]>; format: 2; revision: number; snapshots: Record<string, Snapshot>; candidates: Record<string, Candidate>;
   versionsA: Record<string, RulesA>; versionsB: Record<string, RulesB>; activeA: string[]; activeB: string[]; events: Event[];
   experiments: Record<string, Experiment>; bReviews: BReview[]; evaluationSets:Record<string,FrozenEvaluation> };
 const initial = (): State => ({ evidenceGraph:emptyGraph(),importedProposals:{},publicExports:[],artifactLinks:[],standaloneBReviews:[],modesA:{},modeStudies:{},sceneComparisons:{}, scenes:{}, format: 2, revision: 0, snapshots: {}, candidates: {}, versionsA: { A0: defaultRulesA() },
@@ -56,10 +57,10 @@ export class Store {
     const file = join(this.dir, 'state.json');
     const state: State = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : initial();
     if (![1,2].includes(state.format) || !Number.isInteger(state.revision)) throw new Error('Unsupported/corrupt session format');
-    // Legacy sessions retain their data. Historical events are not retroactively attested.
+    // Archived sessions retain their data. Historical events are not retroactively attested.
     for (const c of Object.values(state.candidates)) c.revision ??= 1;
     state.evidenceGraph??=emptyGraph();state.importedProposals??={};state.publicExports??=[];state.artifactLinks??=[];state.standaloneBReviews??=[];state.modesA??={};state.modeStudies??={};state.experiments ??= {};state.bReviews ??= [];state.evaluationSets??={};state.scenes??={};state.sceneComparisons??={};
-    return state;
+    state.format=2;return state;
   }
   private transact<T>(fn: (s: State) => T): T {
     const lock = join(this.dir, '.lock');
@@ -72,12 +73,21 @@ export class Store {
     } finally { rmSync(lock, { recursive: true }); }
   }
   initializeSynthetic(){return this.transact(s=>{if(existsSync(join(this.dir,'state.json')))throw new Error('Session already exists; do not relabel or overwrite it');s.sessionDeclaration={purpose:'synthetic-tutorial',createdAt:new Date().toISOString()};return {directory:this.dir,purpose:s.sessionDeclaration.purpose};});}
-  active(s = this.read()) { return { A: s.versionsA[s.activeA.at(-1)!], executionMode:s.modesA[s.activeA.at(-1)!]??legacyMode(), B: s.versionsB[s.activeB.at(-1)!] }; }
+  /** Current runtime view. Stored evidence/results remain unchanged in read(). */
+  current(s=this.read()):State {
+    return {...s,scenes:Object.fromEntries(Object.entries(s.scenes).map(([id,versions])=>[id,versions.map(importSceneRevision)])),
+      snapshots:Object.fromEntries(Object.entries(s.snapshots).map(([id,v])=>[id,importSnapshot(v)])),
+      candidates:Object.fromEntries(Object.entries(s.candidates).map(([id,v])=>[id,importCandidate(v)])),
+      modesA:Object.fromEntries(Object.entries(s.modesA).map(([id,v])=>[id,importExecutionMode(v)]))};
+  }
+  getSnapshot(id:string,s=this.read()):Snapshot {const v=s.snapshots[id];if(!v)throw new Error('Unknown snapshot');return importSnapshot(v);}
+  getCandidate(id:string,s=this.read()):Candidate {const v=s.candidates[id];if(!v)throw new Error('Unknown candidate');return importCandidate(v);}
+  active(s = this.read()) { return { A: s.versionsA[s.activeA.at(-1)!], executionMode:importExecutionMode(s.modesA[s.activeA.at(-1)!]??baselineMode()), B: s.versionsB[s.activeB.at(-1)!] }; }
   getScene(id:string, revision:number):SceneRevision {
-    const scene=this.read().scenes[id]?.find(x=>x.revision===revision);if(!scene)throw new Error('Unknown scene revision');return structuredClone(scene);
+    const scene=this.read().scenes[id]?.find(x=>x.revision===revision);if(!scene)throw new Error('Unknown scene revision');return importSceneRevision(scene);
   }
   createScene(definition:unknown,generationSeed:number|null=null):SceneRevision {
-    validateSceneDefinition(definition);this.checkSeed(generationSeed);
+    definition=importSceneDefinition(definition);validateSceneDefinition(definition);this.checkSeed(generationSeed);
     return this.transact(s=>{
       const scene:SceneRevision={sceneId:randomUUID(),revision:1,contentHash:digest(sceneContent(definition)),definition:structuredClone(definition),generationSeed,
         trackingIds:definition.actors.map((_,i)=>trackingId(i)),createdAt:new Date().toISOString()};
@@ -85,7 +95,7 @@ export class Store {
     });
   }
   reviseScene(id:string,expectedRevision:number,definition:unknown):SceneRevision {
-    validateSceneDefinition(definition);
+    definition=importSceneDefinition(definition);validateSceneDefinition(definition);
     return this.transact(s=>{
       const versions=s.scenes[id],previous=versions?.at(-1);if(!previous)throw new Error('Unknown scene');
       if(previous.revision!==expectedRevision)throw new ConflictError('Scene revision conflict; reread the authoring scene');
@@ -98,7 +108,7 @@ export class Store {
   private assertSceneBinding(snapshot:Snapshot,s=this.read()){
     const r=snapshot.world.dynamic?.scene;if(!r)return;
     const stored=s.scenes[r.sceneId]?.find(x=>x.revision===r.revision);
-    if(!stored||canonical(stored)!==canonical(r)||r.contentHash!==digest(sceneContent(r.definition)))throw new Error('Snapshot must use an imported immutable scene revision');
+    if(!stored||canonical(importSceneRevision(stored))!==canonical(importSceneRevision(r)))throw new Error('Snapshot must use an imported immutable scene revision');
   }
   recordApplication(point:ApplicationPoint){
     validate('ApplicationPoint',point);
@@ -106,19 +116,19 @@ export class Store {
       const existing=s.events.find(e=>e.application?.receiptId===point.receiptId);
       if(existing){if(canonical(existing.application)!==canonical(point))throw new ConflictError('Application receipt conflict');return existing;}
       const scene=s.scenes[point.sceneId]?.find(r=>r.revision===point.revision);
-      if(!scene||scene.contentHash!==point.contentHash||point.tick>scene.definition.durationTicks||!s.versionsA[point.fromA]||!s.versionsA[point.toA]||!s.versionsB[point.fromB]||!s.versionsB[point.toB])throw new Error('Invalid application point');
+      if(!scene||importSceneRevision(scene).contentHash!==point.contentHash||point.tick>scene.definition.durationTicks||!s.versionsA[point.fromA]||!s.versionsA[point.toA]||!s.versionsB[point.fromB]||!s.versionsB[point.toB])throw new Error('Invalid application point');
       const event:Event={id:randomUUID(),at:new Date().toISOString(),action:'apply-at-tick',actor:'ui-self-reported',application:structuredClone(point)};
       s.events.push(event);return event;
     });
   }
   compareScenes(beforeId:string,afterId:string,rulesVersion:string,steps:number){
     return this.transact(s=>{
-      const before=s.snapshots[beforeId],after=s.snapshots[afterId],rules=s.versionsA[rulesVersion];
+      const before=this.getSnapshot(beforeId,s),after=this.getSnapshot(afterId,s),rules=s.versionsA[rulesVersion];
       if(!before?.world.dynamic||!after?.world.dynamic||!rules)throw new Error('Two dynamic snapshots and a known A version are required');
       if(canonical(before.profile)!==canonical(after.profile))throw new Error('Scene comparison must keep the same profile');
       this.assertSceneBinding(before,s);this.assertSceneBinding(after,s);
       const result:SceneComparison={id:randomUUID(),at:new Date().toISOString(),kind:'changed-scene-fixed-rules',sameConditions:false,rulesA:structuredClone(rules),
-        before:{snapshotId:beforeId,snapshot:structuredClone(before),run:replay(before,rules,steps,undefined,s.modesA[rules.version]??legacyMode())},after:{snapshotId:afterId,snapshot:structuredClone(after),run:replay(after,rules,steps,undefined,s.modesA[rules.version]??legacyMode())}};
+        before:{snapshotId:beforeId,snapshot:structuredClone(before),run:replay(before,rules,steps,undefined,s.modesA[rules.version]??baselineMode())},after:{snapshotId:afterId,snapshot:structuredClone(after),run:replay(after,rules,steps,undefined,s.modesA[rules.version]??baselineMode())}};
       s.sceneComparisons[result.id]=result;return result;
     });
   }
@@ -129,15 +139,17 @@ export class Store {
   researchLog(){const s=this.read();return {observationContinuations:Object.entries(s.snapshots).filter(([,v])=>v.observationPredecessor).map(([id,v])=>({snapshotId:id,predecessor:v.observationPredecessor,fromTime:v.observationHistory?.events[0]?.bundle.time,toTime:v.bundle.time})),presentations:s.presentationReceipts??{},candidates:Object.values(s.candidates).map(c=>({id:c.id,sourceSnapshotId:s.snapshotLinks?.[c.id]??null,parentCandidateId:c.parentCandidateId??null,revision:c.revision,coaching:c.coaching,decisions:c.decisions,experiments:Object.values(s.experiments).filter(e=>e.candidateId===c.id).map(e=>({id:e.id,candidateRevision:e.candidateRevision,mode:e.mode}))})),humanValidation:'Not inferred from UI acknowledgement or synthetic tests'};}
   private assertObservationPredecessor(snapshot:Snapshot,s:State){
     const ref=snapshot.observationPredecessor;if(!ref)return;
-    const previous=s.snapshots[ref.snapshotId],history=snapshot.observationHistory;
-    if(!previous||digest(previous)!==ref.sha256||!history?.events.length||canonical(snapshot.observationAnchor)!==canonical(previous.world))throw new Error('Unknown or changed observation predecessor');
+    const source=s.snapshots[ref.snapshotId],history=snapshot.observationHistory;
+    if(!source||digest(source)!==ref.sha256)throw new Error('Unknown or changed observation predecessor');
+    const previous=importSnapshot(source);
+    if(!history?.events.length||canonical(snapshot.observationAnchor)!==canonical(previous.world))throw new Error('Unknown or changed observation predecessor');
     const last=previous.observationHistory?.events.at(-1);
     if(!last||canonical(history.initialMemory)!==canonical(previous.memoryBefore)||canonical(history.events[0])!==canonical({...last,sequence:0,trigger:'initial'}))throw new Error('Observation continuation boundary mismatch');
   }
   saveSnapshot(snapshot: unknown,requestId?:string): string {
     validateSnapshot(snapshot);
     assertSnapshotHistory(snapshot);this.assertSceneBinding(snapshot);
-    if (JSON.stringify(sense(snapshot.world)) !== JSON.stringify(snapshot.bundle)) throw new Error('Snapshot perception does not match sensor adapter');
+    if (canonical(sense(snapshot.world)) !== canonical(snapshot.bundle)) throw new Error('Snapshot perception does not match sensor adapter');
     if(requestId!==undefined&&!/^[a-zA-Z0-9-]{1,128}$/.test(requestId))throw new Error('Invalid snapshot request ID');
     return this.transact(s => {
       this.assertObservationPredecessor(snapshot,s);
@@ -160,7 +172,7 @@ export class Store {
   propose(snapshotId: string, feedback: string, evaluationSetId?:string, window?:{fromTick:number;toTick:number;playerId:string}): Candidate {
     if (!feedback.trim() || feedback.length > 4000) throw new Error('Feedback must be 1–4000 characters');
     return this.transact(s => {
-      const context = s.snapshots[snapshotId]; if (!context) throw new Error('Unknown snapshot');
+      const context = this.getSnapshot(snapshotId,s);
       if(evaluationSetId){
         const set=s.evaluationSets[evaluationSetId];if(!set)throw new Error('Freeze evaluation conditions before proposing feedback');
         if(canonical(set.profile)!==canonical(context.profile))throw new Error('Candidate profile differs from the frozen evaluation profile');
@@ -204,10 +216,10 @@ export class Store {
       if (decision === 'approve' && target === 'A') {
         if (!Object.keys(c.patchA).length&&!c.executionMode) throw new Error('Edit explicit A patch first');
         if(c.patchA.contextRules?.length&&!c.notes)throw new Error('Conditional principles require rationale, expected effect and counterexample notes');
-        if (c.context.rulesA.version !== this.active(s).A.version || canonical(c.context.executionMode??legacyMode())!==canonical(this.active(s).executionMode)) throw new ConflictError('Stale A base: capture a new snapshot and propose again');
+        if (c.context.rulesA.version !== this.active(s).A.version || canonical(importExecutionMode(c.context.executionMode??baselineMode()))!==canonical(this.active(s).executionMode)) throw new ConflictError('Stale A base: capture a new snapshot and propose again');
         version = `A${Object.keys(s.versionsA).length}`;
         const rules = { ...this.active(s).A, ...c.patchA, version }; validate('RulesA', rules);
-        s.versionsA[version] = rules;s.modesA[version]=structuredClone(c.executionMode??c.context.executionMode??legacyMode()); s.activeA.push(version);
+        s.versionsA[version] = rules;s.modesA[version]=importExecutionMode(c.executionMode??c.context.executionMode??baselineMode()); s.activeA.push(version);
       }
       if (decision === 'approve' && target === 'B') {
         if (!c.replacementB&&Object.values(c.principle).some(v => typeof v === 'string' && v.includes('TODO:'))) throw new Error('Complete B principle fields first');
@@ -225,7 +237,7 @@ export class Store {
   revise(id: string, reason: string, expectedRevision: number): Candidate {
     if(!reason?.trim()||reason.length>4000)throw new Error('Revision reason is required (1–4000 characters)');
     return this.transact(s=>{
-      const parent=s.candidates[id];if(!parent)throw new Error('Unknown candidate');checkRevision(parent,expectedRevision);
+      const parent=this.getCandidate(id,s);checkRevision(parent,expectedRevision);
       const active=this.active(s), context=structuredClone(parent.context);
       context.rulesA=structuredClone(active.A);context.rulesBVersion=active.B.version;context.executionMode=structuredClone(active.executionMode);
       const child=candidateDraft(randomUUID(),reason,context);child.parentCandidateId=id;if(parent.coaching)child.coaching=structuredClone(parent.coaching);
@@ -248,7 +260,7 @@ export class Store {
     });
   }
   comparison(id: string, options: { mode: 'active' | 'preview'; expectedRevision?: number } = { mode: 'active' }) {
-    const s = this.read(), c = s.candidates[id]; if (!c) throw new Error('Unknown candidate');
+    const s = this.read(), c = this.getCandidate(id,s);
     const active = this.active(s);
     if (!['active', 'preview'].includes(options.mode)) throw new Error('Invalid comparison mode');
     if (options.mode === 'preview') checkRevision(c, options.expectedRevision!);
@@ -257,7 +269,7 @@ export class Store {
     const beforeB=s.versionsB[c.context.rulesBVersion];if(!beforeB)throw new Error('Missing captured B base');
     const previewB:RulesB=c.replacementB?{version:`preview:${c.id}:r${c.revision}`,...structuredClone(c.replacementB),outputFormat:2}:{...structuredClone(beforeB),version:`preview:${c.id}:r${c.revision}`,principles:[...beforeB.principles.filter(p=>p.id!==c.principle.id),c.principle]};
     return { mode: options.mode, candidateRevision: c.revision, activeVersion: active.A.version,
-      staleBase: c.context.rulesA.version !== active.A.version, executionModes:{before:c.context.executionMode??legacyMode(),after:options.mode==='preview'?c.executionMode??c.context.executionMode??legacyMode():active.executionMode},recorded: compare(c.context, after,options.mode==='preview'?c.executionMode??c.context.executionMode??legacyMode():active.executionMode), regressionKind:'published-fixed-regression', regression: regressionCompare(c.context.rulesA, after,c.context.profile,c.context.executionMode??legacyMode(),options.mode==='preview'?c.executionMode??c.context.executionMode??legacyMode():active.executionMode),
+      staleBase: c.context.rulesA.version !== active.A.version, executionModes:{before:c.context.executionMode??baselineMode(),after:options.mode==='preview'?c.executionMode??c.context.executionMode??baselineMode():active.executionMode},recorded: compare(c.context, after,options.mode==='preview'?c.executionMode??c.context.executionMode??baselineMode():active.executionMode), regressionKind:'published-fixed-regression', regression: regressionCompare(c.context.rulesA, after,c.context.profile,c.context.executionMode??baselineMode(),options.mode==='preview'?c.executionMode??c.context.executionMode??baselineMode():active.executionMode),
       B: { before: c.context.rulesBVersion, after: active.B,documents:{status:options.mode==='preview'?'proposed-not-approved':'active',before:this.bMarkdown(beforeB),after:this.bMarkdown(options.mode==='preview'?previewB:active.B,options.mode==='preview')},evaluation: 'Manual standalone-model review required; no AI service called.' } };
   }
   runExperiment(id: string, expectedRevision: number, steps: number, mode: 'preview'|'active', start: 'coaching'|'snapshot' = 'coaching') {
@@ -265,7 +277,7 @@ export class Store {
     if(!['preview','active'].includes(mode))throw new Error('Invalid experiment mode');
     if(!['coaching','snapshot'].includes(start))throw new Error('Invalid experiment start');
     return this.transact(s=>{
-      const c=s.candidates[id];if(!c)throw new Error('Unknown candidate');checkRevision(c,expectedRevision);
+      const c=this.getCandidate(id,s);checkRevision(c,expectedRevision);
       if(!c.notes)throw new Error('Save rationale, expected effect and counterexample before recording an experiment');
       const active=this.active(s), beforeA=c.context.rulesA;
       const afterA=mode==='preview'?{...beforeA,...c.patchA,version:`preview:${id}:r${c.revision}`}:active.A;
@@ -275,7 +287,7 @@ export class Store {
       if(c.evaluationSetId&&!set)throw new Error('Missing frozen evaluation set');
       if(set&&(digest(set.draft)!==set.digest||canonical(set.profile)!==canonical(c.context.profile)))throw new Error('Frozen evaluation digest/profile mismatch');
       if(set&&Object.values(s.candidates).some(candidate=>set.draft.cases.some(test=>exposureReasons(test.snapshot,candidate.context).length)))throw new Error('Frozen evaluation observations became coaching data');
-      const results=experimentRun(c.context,afterA,steps,set?.draft.cases.map((test,i)=>({id:`frozen-${i+1}`,snapshot:test.snapshot})),start==='snapshot'?undefined:c.coaching,mode==='preview'?c.executionMode??c.context.executionMode??legacyMode():active.executionMode);
+      const results=experimentRun(c.context,afterA,steps,set?.draft.cases.map((test,i)=>({id:`frozen-${i+1}`,snapshot:test.snapshot})),start==='snapshot'?undefined:c.coaching,mode==='preview'?c.executionMode??c.context.executionMode??baselineMode():active.executionMode);
       const useIndex=set?Object.values(s.experiments).filter(e=>e.evaluation?.set.id===set.id).length+1:0;
       const exposureMatches=Object.values(s.experiments).flatMap(e=>{
         const evidence=[e.candidate.context,...(e.evaluation?.set.draft.cases.map(c=>c.snapshot)??[]),...e.results.observationCases];
@@ -300,9 +312,9 @@ export class Store {
   modeStudy(id:string,expectedRevision:number,k:number){
     const finite=finiteMode(k);if(fingerprint()!==loadedFingerprint)throw new Error('Engine source changed; restart before recording');
     return this.transact(s=>{
-      const c=s.candidates[id];if(!c)throw new Error('Unknown candidate');checkRevision(c,expectedRevision);
+      const c=this.getCandidate(id,s);checkRevision(c,expectedRevision);
       const input={bundle:c.context.bundle,memory:c.context.memoryBefore,profile:c.context.profile,rules:c.context.rulesA};
-      const study:ModeStudy={format:'rpm.mode-study',version:2,inputHashFormat:'rpm-canonical-json-v1',inputManifest:{protocol:'fixed-observation-three-arm-v1',modelArtifact:{id:'urn:uuid:4a479e32-6727-487e-bae3-e9c37415da3c',version:2,sha256:playerArtifactFingerprint()},bundleSha256:wireHash(input.bundle),memorySha256:wireHash(input.memory),profileSha256:wireHash(input.profile),rulesSha256:wireHash(input.rules),modeSha256:[legacyMode(),unlimitedMode(),finite].map(wireHash),engineFingerprintFormat,time:input.bundle.time,playerId:input.bundle.playerId,scene:c.context.scene,seed:c.context.seed},id:randomUUID(),at:new Date().toISOString(),candidateId:id,candidateRevision:c.revision,engineFingerprint:loadedFingerprint,inputSha256:wireHash(input),arms:[['legacy',legacyMode()],['unlimited',unlimitedMode()],['finite',finite]].map(([name,executionMode])=>({name:name as string,result:execute({...input,executionContractVersion:2,executionMode})}))};
+      const study:ModeStudy={format:'rpm.mode-study',version:2,inputHashFormat:'rpm-canonical-json-v1',inputManifest:{protocol:'fixed-observation-three-arm-v1',modelArtifact:{id:'urn:uuid:4a479e32-6727-487e-bae3-e9c37415da3c',version:2,sha256:playerArtifactFingerprint()},bundleSha256:wireHash(input.bundle),memorySha256:wireHash(input.memory),profileSha256:wireHash(input.profile),rulesSha256:wireHash(input.rules),modeSha256:[baselineMode(),unlimitedMode(),finite].map(wireHash),engineFingerprintFormat,time:input.bundle.time,playerId:input.bundle.playerId,scene:c.context.scene,seed:c.context.seed},id:randomUUID(),at:new Date().toISOString(),candidateId:id,candidateRevision:c.revision,engineFingerprint:loadedFingerprint,inputSha256:wireHash(input),arms:[['baseline',baselineMode()],['unlimited',unlimitedMode()],['finite',finite]].map(([name,executionMode])=>({name:name as string,result:execute({...input,executionContractVersion:2,executionMode})}))};
       s.modeStudies[study.id]=study;return study;
     });
   }
@@ -334,8 +346,8 @@ export class Store {
   exportProposal(id:string,expectedRevision:number,scope:ExportScope){
     if(fingerprint()!==loadedFingerprint)throw new Error('Engine source changed; restart before exporting');
     return this.transact(s=>{
-      const c=s.candidates[id];if(!c)throw new Error('Unknown candidate');checkRevision(c,expectedRevision);
-      const scopeHash=wireHash(scope),existing=s.publicExports.find(e=>e.candidateId===id&&e.candidateRevision===expectedRevision&&e.scopeHash===scopeHash);if(existing)return existing.package;
+      const c=this.getCandidate(id,s);checkRevision(c,expectedRevision);
+      const scopeHash=wireHash({scope,engineFingerprint:loadedFingerprint}),existing=s.publicExports.find(e=>e.candidateId===id&&e.candidateRevision===expectedRevision&&e.scopeHash===scopeHash);if(existing)return existing.package;
       const beforeB=s.versionsB[c.context.rulesBVersion];if(!beforeB)throw new Error('Missing B base');
       const schemaHash=hash(readFileSync(resolve(repositoryRoot,'models/player/spec/execution.schema.json')));
       const pkg=buildProposal(c,beforeB,readJudgmentBaseline(),currentEngineDescriptor(),schemaHash,scope);
@@ -432,7 +444,7 @@ export class Store {
     return this.transact(s=>{const record:StandaloneBReview={id:freshId(),at:new Date().toISOString(),kind:'b-standalone-review',formatVersion:2,arm:captured.arm,bVersion:captured.bVersion,documentRef:captured.documentRef,inputSha256:captured.inputSha256,packetSha256:standaloneInputHash(captured),packet:captured,model,output,assessment:scores,status:'unverified-external-or-manual-response',humanValidated:false};s.standaloneBReviews.push(record);return record;});
   }
   exportBData(){return this.bMaterial(this.active().B);}
-  private bMaterial(B:RulesB,proposed=false):BMaterial{return {version:B.version,markdown:this.bMarkdown(B,proposed),structuredAmendments:structuredClone(B.principles),...(B.baseline?{baseline:structuredClone(B.baseline),outputFormat:B.outputFormat}:{})};}
+  private bMaterial(B:RulesB,proposed=false):BMaterial{return {version:B.version,markdown:this.bMarkdown(B,proposed),structuredAmendments:structuredClone(B.principles),outputFormat:2,...(B.baseline?{baseline:structuredClone(B.baseline)}:{})};}
   exportB() { return this.bMarkdown(this.active().B); }
   private bMarkdown(B:RulesB,proposed=false) {return judgmentMarkdown(B,readJudgmentBaseline(),proposed);}
 }

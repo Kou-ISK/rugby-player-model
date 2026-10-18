@@ -1,6 +1,7 @@
+import { importBundle, importMemory } from './import.js';
 import { enhanceLoop } from './loop.js';
 import { assessSituation } from './situation.js';
-import { validateMode, selectDeliberation, type ExecutionMode } from './execution-mode.js';
+import { importExecutionMode, selectDeliberation, type ExecutionMode } from './execution-mode.js';
 import type { Action, Belief, BodyCommand, Bundle, Evaluation, Memory, Profile, RulesA, Trace } from './contracts.js';
 import { validate, validateEvidence } from './validation.js';
 // No world, renderer or simulator import is permitted in this module.
@@ -11,9 +12,10 @@ export function think(bundle: Bundle, memory: Memory, profile: Profile, rules: R
   return evaluate(bundle,memory,profile,rules);
 }
 export function thinkWithMode(bundle:Bundle,memory:Memory,profile:Profile,rules:RulesA,mode:ExecutionMode):Trace {
-  validateMode(mode);return evaluate(bundle,memory,profile,rules,mode.mode==='legacy'?undefined:mode);
+  mode=importExecutionMode(mode);return evaluate(bundle,memory,profile,rules,mode.mode==='baseline'?undefined:mode);
 }
 function evaluate(bundle:Bundle,memory:Memory,profile:Profile,rules:RulesA,mode?:Extract<ExecutionMode,{mode:'h-wm-1'}>):Trace {
+  bundle=importBundle(bundle);memory=importMemory(memory);
   validateEvidence(bundle, memory); validate('Profile', profile); validate('RulesA', rules);
   if (bundle.time < memory.lastTime) throw new Error('Clock moved backwards; restore snapshot memory');
   const salience = (p: Bundle['percepts'][number]) => p.kind === 'call' ? 3 : p.kind === 'ball' ? 2 : 1;
@@ -29,7 +31,7 @@ function evaluate(bundle:Bundle,memory:Memory,profile:Profile,rules:RulesA,mode?
     if (!latest.has(key) || latest.get(key)!.observedAt < p.observedAt) latest.set(key, belief);
   }
   const beliefs = [...latest.values()].filter(b => b.currentConfidence >= rules.minimumConfidence);
-  const situation=bundle.contractVersion>=2?assessSituation(bundle,beliefs,rules):undefined;
+  const situation=bundle.context?assessSituation(bundle,beliefs,rules):undefined;
   const attackDirection=situation?.ownAttackDirection??1;
   const deliberation=mode?selectDeliberation(beliefs,attended,mode):undefined;
   const predictions: Trace['predictions'] = beliefs.map(b => ({ entityId: b.entityId, basisObservedAt: b.observedAt,
@@ -63,13 +65,13 @@ function evaluate(bundle:Bundle,memory:Memory,profile:Profile,rules:RulesA,mode?
   const assessment: Trace['assessment'] = { uncertainThreat, informationValue: selectedScan?.value ?? 0,
     ...(selectedScan ? { scanTarget: selectedScan.target } : {}) };
   const fresh = beliefs.filter(b => b.modality === 'vision' && b.age <= .5 && b.position);
-  const legacyReceiver = fresh.filter(b => b.relation === 'teammate' && (b.position!.z-bundle.self.position.z)*attackDirection < -.5 &&
+  const baselineReceiver = fresh.filter(b => b.relation === 'teammate' && (b.position!.z-bundle.self.position.z)*attackDirection < -.5 &&
     dist(b.position!, bundle.self.position) <= profile.ability.passRange).sort((a, b) => a.entityId.localeCompare(b.entityId))[0];
-  const receiver=deliberation?deliberation.selected.find(b=>b.modality==='vision'&&b.age<=.5&&b.position&&b.relation==='teammate'&&(b.position.z-bundle.self.position.z)*attackDirection<-.5&&dist(b.position,bundle.self.position)<=profile.ability.passRange):legacyReceiver;
+  const receiver=deliberation?deliberation.selected.find(b=>b.modality==='vision'&&b.age<=.5&&b.position&&b.relation==='teammate'&&(b.position.z-bundle.self.position.z)*attackDirection<-.5&&dist(b.position,bundle.self.position)<=profile.ability.passRange):baselineReceiver;
   const threat = fresh.some(b => b.relation === 'opponent' && dist(b.position!, bundle.self.position) < 4);
   const unknown = fresh.filter(b => b.kind === 'player').length === 0;
   const signals = {
-    'no-fresh-receiver': !legacyReceiver, 'fresh-receiver': !!legacyReceiver,
+    'no-fresh-receiver': !baselineReceiver, 'fresh-receiver': !!baselineReceiver,
     'stale-player': beliefs.some(b => b.kind === 'player' && b.age > .5),
     'heard-call': beliefs.some(b => b.modality === 'audio'),
     'missing-player-vision': unknown, 'observed-ball': fresh.some(b => b.kind === 'ball'),
@@ -113,8 +115,8 @@ function evaluate(bundle:Bundle,memory:Memory,profile:Profile,rules:RulesA,mode?
   if (call) output.push({ channel: 'call', status: 'supported', value: call.call!, reason: `Semantic simulated event from ${call.id}; no acoustic voice or teammate response is implemented.` });
   const result:Trace={ sensation: structuredClone(bundle), attention: attended.map(p => p.id),
     workingMemory: beliefs.slice(-4), longTermMemory: { episodes, lastTime: bundle.time }, beliefs,
-    predictions, assessment, modelRevision: situation?'cognition-orientation-phase-v1':mode?'cognition-h-wm-1-v1':'cognition-0.3', ...(deliberation?{traceVersion:2 as const,deliberation}:{}), ...(situation?{traceVersion:3 as const,situation}:{}), appliedRules: appliedRules.map(({id,action,weight,call})=>({id,action,weight,...(call?{call}:{})})), evaluation, intention, output, rulesVersion: rules.version };
-  return bundle.contractVersion===3?enhanceLoop(result,memory,profile,rules):result;
+    predictions, assessment, modelRevision:'cognition-0.4.0', traceVersion:4, ...(deliberation?{deliberation}:{}), ...(situation?{situation}:{}), appliedRules: appliedRules.map(({id,action,weight,call})=>({id,action,weight,...(call?{call}:{})})), evaluation, intention, output, rulesVersion: rules.version };
+  return bundle.self.motor?enhanceLoop(result,memory,profile,rules):result;
 }
 export const capabilities = {
   locomotion: 'supported', headYaw: 'supported', call: 'supported', gaze: 'unsupported', voice: 'unsupported',

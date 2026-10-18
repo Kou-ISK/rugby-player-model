@@ -2,7 +2,7 @@
 
 [English](ARCHITECTURE.md) | [日本語](ARCHITECTURE.ja.md)
 
-[ADR-002](decisions/ADR-002-research-boundaries.ja.md)がディレクトリ責務、依存方向、互換性、公開境界を定めます。[動的場面](../tools/workbench/docs/DYNAMIC_SCENES.ja.md)は一人の制御選手と指定刺激、任意のv3自律選手を扱います。
+[ADR-002](decisions/ADR-002-research-boundaries.ja.md)がディレクトリ責務、依存方向、互換性、公開境界を定めます。[動的場面](../tools/workbench/docs/DYNAMIC_SCENES.ja.md)は一人の制御選手と指定刺激、motor設定での任意の自律選手を扱います。
 
 独立した成果物は研究文脈を共有しますが、採否を共有しません。
 
@@ -13,11 +13,11 @@
 
 `models/player` は単独実行可能な純粋認知、`tools/simulation` は世界・知覚・身体、`tools/experiments` はsnapshot・case・比較・提案交換、`tools/workbench` はUI・描画・CLI・私的保存を所有します。rootの互換exportは残します。`check:boundaries` が公開APIと意味上のengine source依存を検査します。
 
-Scene v1の旧thinkは維持します。実行契約v2はlegacyまたは任意の [H-WM-1](../models/player/spec/H-WM-1.ja.md) を選択します。旧workingMemoryは表示抜粋で、研究機構は符号化・取得・順位・受け手候補・除外理由を別記します。全保持証拠を危険・定位・新鮮さ判定に使い、有限対無制限は容量介入、legacy対無制限はpolicy比較です。
+package 0.4.0内の通常処理は[一つの現行形式](decisions/ADR-003-current-format.ja.md)を使います。Scene 3、Bundle 3、Percept 2、Trace 4、実行envelope 2、snapshot・history・session envelope 2です。種別ごとの識別番号であり、選べる製品世代ではありません。動作は `simulationMode`、`observationMode`、実際にある入力能力で決め、形式番号では分岐しません。`baseline` と任意の [H-WM-1](../models/player/spec/H-WM-1.ja.md) は同じ契約上の研究設定です。有限対無制限は容量介入、baseline対無制限は受け手policy比較で、`workingMemory` は表示抜粋です。
 
 [初回手順](../tools/workbench/docs/FIRST_RUN.ja.md)の版付き共有提案は不活性なデータです。manifestは許諾された合成entryと完全な固定参照を列挙し、raw JSON検証は復号後に重複するkeyもparse前に拒否します。importは承認を継承せず、再現は新しいローカルrunとsemantic digestを作り、成果物別のbefore/afterを確認します。正確なengineがなければ選手モデル実行を止めても文書描画は独立します。文書baselineと順序付き追加原則はundo・再起動を越えて版管理し、evidence graphは仮説、反例、run、review、artifact参照、撤回を保持します。
 
-新sessionは外側format 2です。format 1の読取は記録/hashを変更せず、コピーまたは許諾sessionの初回成功書込で外側formatと要求変更だけを更新します。[本物の旧合成fixture](../evaluation/baselines/LEGACY_SESSION.ja.md)で検査します。旧readerはformat 2を拒否します。新engineは明示した意味上のソースと依存lockの `source-manifest-v1` を使い、旧digestの意味を維持します。以下の旧動作説明は古いbinaryが新形式を扱うという主張ではありません。
+読取境界でコピーを変換し、`Store.current`、`getSnapshot`、`getCandidate` は現行形式を返します。`Store.read` は出典確認・更新処理のため元の根拠記録を保持します。場面変換は元のhashを検証し `sourceContentHash` に保持し、紐付いた指導・履歴参照も変換します。元のsnapshot・指導・結果・採否は保全し、記録済み結果を現行engineの結果へ付け替えません。新規書込みはsession envelope 2で、過去の根拠を書き換えません。[過去の合成fixture試験](../evaluation/baselines/LEGACY_SESSION.ja.md)で元のhashを検査します。新runのsource manifestは変換処理も含め実行コードを識別します。
 
 ## 情報境界
 
@@ -37,13 +37,13 @@ flowchart LR
   Observation --> PlayerPanel[選手の証拠表示]
 ```
 
-世界から観測を構築するのは `sense` / `senseActor` だけです。`src/cognition.ts` は互換exportで、`models/player/reference/src/` はworld/simulation/rendererへの推移依存を持ちません。JSON Schemaは未知fieldを拒否します。視覚は見える位置、音は粗い身体相対方向とcueで、真の音源位置・ID・意図を渡しません。v1/v2の自己位置・身体・首・保持は正確な合成固有感覚という仮定です。
+世界から観測を構築するのは `sense` / `senseActor` だけです。`src/cognition.ts` は互換exportで、`models/player/reference/src/` はworld/simulation/rendererへの推移依存を持ちません。JSON Schemaは未知fieldを拒否します。視覚は見える位置、音は粗い身体相対方向とcueで、真の音源位置・ID・意図を渡しません。自己位置・身体・首・保持は正確な合成固有感覚という仮定です。
 
 Snapshotは再現・観客用に世界真値を含む**研究包絡**です。選手モデルへ渡すのはbundle、memoryBefore、profile、rulesAだけです。`bridge context` はworldを除外します。完全snapshotを選手役AIへ渡しません。遮蔽・背後の真値だけを変えた試験ではtrace全体の一致を要求します。
 
-## 旧認知と根拠
+## 基準となる認知と根拠
 
-| 段階 | 旧prototype | 状態 |
+| 段階 | 基準となるprototype | 状態 |
 |---|---|---|
 | 感覚 | 水平90°、35m、2D円形遮蔽、20m以内の声 | 網膜・音響ではなく工学的仮定 |
 | 注意 | call、球、選手の順に最大4件 | 人間測定ではないheuristic |
@@ -51,15 +51,15 @@ Snapshotは再現・観客用に世界真値を含む**研究包絡**です。�
 | エピソード | 128件、30秒、snapshotで再起動後も保存 | 生物学的長期記憶の主張ではない |
 | 意味知識 | 承認済みルール設定、独立した判断文書 | 文章から自動規則抽出しない |
 | 信念 | entity/modalityごとの最新、元時刻・確信度維持、派生減衰 | 半減期は実験パラメータ |
-| 予測 | 最終観測位置と拡大する不確実性、旧版は速度推定なし | 隠れた未来を使わない |
+| 予測 | 最終観測位置と拡大する不確実性、motor入力がなければ速度推定なし | 隠れた未来を使わない |
 | 評価 | 資格、危険・情報、選好・自己推定、戦術混合。音で首方向を選択 | 未較正heuristic |
-| 意図・身体 | scan/hold/carry/pass/support、移動・首、意味的call | 旧passは意図のみ。音声・筋肉・姿勢・眼球は非対応 |
+| 意図・身体 | scan/hold/carry/pass/support、移動・首、意味的call | kinematic設定のpassは意図のみ。音声・筋肉・姿勢・眼球は非対応 |
 
 [Baddeley 2012](https://www.annualreviews.org/content/journals/10.1146/annurev-psych-120710-100422)は機能分離の概念的動機で、容量・減衰・ranking・身体・競技結果・脳との同等性の根拠ではありません。
 
 `Profile.ability` は速度・距離、`selfEstimate` はパス信頼性の自己認識、`preference` は選好、`tactics.adherence` は個人得点とチーム行為の混合です。戦術で禁止パスや未対応技能を可能にしません。新出力はBodyCommandと能力報告を拡張し、rendererやP2P型へ認知を埋めません。
 
-cognition-0.2では古い相手の不確実円と4m近傍の重なりを減衰確信度で重み付け、carry/supportの得点・速度を下げ再観測価値を高めます。記憶の選手は方向付き情報要求、support/warning-callは重み付きcueと元observer yawから不確実な首方向を作ります。音源位置・IDを推定せず、パス資格には新しい受け手観測が必要です。traceは値と根拠sourceを示し、paired testは現在視覚/profileを固定して記憶・音の有無/意味/方向だけを変えます。
+kinematic設定の評価では古い相手の不確実円と4m近傍の重なりを減衰確信度で重み付け、carry/supportの得点・速度を下げ再観測価値を高めます。記憶の選手は方向付き情報要求、support/warning-callは重み付きcueと元observer yawから不確実な首方向を作ります。音源位置・IDを推定せず、パス資格には新しい受け手観測が必要です。traceは値と根拠sourceを示し、paired testは現在視覚/profileを固定して記憶・音の有無/意味/方向だけを変えます。
 
 ## 研究トランザクション
 
@@ -78,7 +78,7 @@ JSON状態は単一writerのdirectory lock下でatomicに保存し、検証失�
 
 ## 条件付き実験
 
-cognition-0.3は最大32一意IDの `contextRules` を追加します。保持・証拠・近い脅威はbundle/belief由来で、得点を戦術混合前に変えても資格を覆しません。scene/seed/隠れたIDを条件にしません。選ばれた行為の一致規則は意味的callを発し、有界履歴と同cue cooldownを持ちます。音声・他者反応・自己への新聴覚にはなりません。
+kinematicの認知は最大32一意IDの `contextRules` を使います。保持・証拠・近い脅威はbundle/belief由来で、得点を戦術混合前に変えても資格を覆しません。scene/seed/隠れたIDを条件にしません。選ばれた行為の一致規則は意味的callを発し、有界履歴と同cue cooldownを持ちます。音声・他者反応・自己への新聴覚にはなりません。
 
 `run` は同じ初期条件から記録場面と固定8層の1–20stepを保存します。行動差で後の観測は分岐し得ます。候補revision/notes、入力、両ルール、両文書/追加原則、trace、engine識別、runtime/Git/dirty、lock/snapshot/result/document hashを固定し、Git不明はnullです。新ソースでの記録前にserverを再起動します。保存結果は再計算せず、旧実行には旧ソースが必要です。
 
@@ -94,9 +94,9 @@ UIは順序付きhead/body観測と時刻/profile/設定を保存し、worldを�
 
 [認知研究契約](COGNITIVE_RESEARCH.ja.md)は機構仮説・ソフトウェア・人間検証を区別します。[表示接続](../tools/workbench/docs/PRESENTATION.ja.md)は会話を実表示captureへ結び、命令は一時的で採否を行いません。contextは観測だけです。
 
-[方向・局面](../models/player/spec/ORIENTATION_PHASE.ja.md)はScene 2→Bundle 2→Trace 3。可視の向き・保持cueをsensor whitelist、注意、不変記憶経由で推定し、既知の攻撃方向は事前文脈です。v2守備/不明はscan/hold、旧入力は維持します。hashはsituation/schema/replayを含み、共有提案も観測だけで再現できます。
+[方向・局面](../models/player/spec/ORIENTATION_PHASE.ja.md)は `observationMode: oriented` と既知の攻撃方向を使います。可視の向き・保持cueを知覚・注意・不変記憶経由で推定します。`simulationMode: kinematic` の守備/不明はscan/holdに制限し、`motor` は有界skillを有効にします。場面・観測・traceは共通形式で、過去の観測に欠ける向き・方向を補いません。提案再現は観測だけで実行します。
 
-[閉ループ](../models/player/spec/CLOSED_LOOP.ja.md)はScene 3→Bundle 3→Trace 4。純粋認知が観測運動推定・意図保持、simulationが制約運動・球・同期actor、experimentsが固定frame・6arm除去・評価専用指標、workbenchが永続receiptとsnapshot/candidate参照を所有します。新しい最上位アプリやAI APIは追加しません。
+[閉ループ](../models/player/spec/CLOSED_LOOP.ja.md)はScene 3→Bundle 3→Trace 4。純粋認知が観測運動推定・意図保持、simulationが制約運動・球・同期actor、experimentsが固定frame・6arm除去・評価専用指標、workbenchが永続receiptとsnapshot/candidate参照を所有します。新しい最上位アプリやAI APIは追加しません。kinematicとmotorは現行形式を共有し、凍結した判断原則のbytesは維持します。
 
 成功したcapture/present/returnと比較frame参照はstate.jsonへ保存し、要求は再起動後再実行しません。snapshotとreceiptは別lock transactionで、前者だけ残る中断があり得ます。receiptは人間の閲覧・承認の証明ではありません。research-logは採否を変えず来歴を表示します。
 

@@ -1,5 +1,5 @@
 {
-  "sceneSchemaVersion": 1,
+  "sceneSchemaVersion": 3,
   "tickSeconds": 0.2,
   "durationTicks": 30,
   "controlledPlayerId": "carrier-author-name",
@@ -94,5 +94,8 @@
       "sourceActorId": "future-run-left",
       "cue": "support-call"
     }
-  ]
+  ],
+  "simulationMode": "kinematic",
+  "observationMode": "positions",
+  "attachedBallFrame": "world"
 }

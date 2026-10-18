@@ -14,9 +14,9 @@ export function replacementB(input:unknown,previous?:BReplacement):BReplacement 
  const sha256=textHash(text),baseline=previous?.baseline.sha256===sha256?previous.baseline:{id:'urn:uuid:'+randomUUID(),version:1 as const,sha256,text};
  return {baseline:structuredClone(baseline),principles:structuredClone(principles)};
 }
-export function judgmentMarkdown(B:RulesB,legacyBaseline:string,proposed=false){
- const base=B.baseline?.text??legacyBaseline;
+export function judgmentMarkdown(B:RulesB,frozenBaseline:string,proposed=false){
+ const base=B.baseline?.text??frozenBaseline;
  if(B.baseline&&textHash(base)!==B.baseline.sha256)throw new Error('B baseline hash mismatch');
- const heading=B.outputFormat===2?'Amendments':`${proposed?'Proposed amendments — NOT approved':'Local owner-approved amendments'} (${B.version})`;
+ const heading=proposed?'Proposed amendments — NOT approved':'Amendments';
  return base+`\n\n## ${heading}\n`+B.principles.map(p=>`\n### ${p.id}\n- Condition: ${p.condition}\n- Criterion: ${p.criterion}\n- Priority: ${p.priority}\n- Exceptions: ${p.exceptions}\n- Unknown: ${p.unknown}\n- Evidence: ${p.evidence}\n`).join('');
 }

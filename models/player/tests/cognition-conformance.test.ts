@@ -5,12 +5,14 @@ import fixture from './fixtures/legacy-ecc5c298.json' with { type: 'json' };
 import { think, replayObservationSequence, validate } from '../reference/src/index.js';
 import type { Bundle, Memory, Profile, RulesA } from '../reference/src/contracts.js';
 
-test('W0: structural extraction preserves all 36 pinned legacy traces', () => {
+test('W0: current format preserves all 36 pinned historical decisions and evidence', () => {
   assert.equal(fixture.originCommit, 'ecc5c298b928ff860e124735decc587c0f7537af');
   for (const example of fixture.cases) {
     const { bundle, memory, profile, rules } = example.input;
     const trace = think(bundle as Bundle, memory as Memory, profile as Profile, rules as RulesA);
-    assert.equal(createHash('sha256').update(JSON.stringify(trace)).digest('hex'), example.expectedTraceSha256, example.id);
+    assert.equal(trace.traceVersion,4);assert.equal(trace.modelRevision,'cognition-0.4.0');
+    const originalShape=JSON.parse(JSON.stringify(trace,(key,value)=>key==='evidenceVersion'||key==='traceVersion'?undefined:key==='modelRevision'?'cognition-0.3':key==='contractVersion'?1:value));
+    assert.equal(createHash('sha256').update(JSON.stringify(originalShape)).digest('hex'), example.expectedTraceSha256, example.id);
   }
 });
 

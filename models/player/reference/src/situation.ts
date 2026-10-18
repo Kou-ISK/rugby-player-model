@@ -11,7 +11,7 @@ export function assessSituation(bundle:Bundle,beliefs:Belief[],rules:RulesA):Sit
  const goal:Record<Situation['phase'],Situation['goal']>={'attack-carrier':'advance-with-ball','attack-support':'support-observed-carrier',defense:'protect-own-goal',unknown:'locate-possession'};
  return {hypothesis:'orientation-phase-v1',selfOrientation:{bodyYaw:bundle.self.yaw,headYaw:bundle.self.headYaw,viewYaw:angle(bundle.self.yaw+bundle.self.headYaw)},phase,goal:goal[phase],ownAttackDirection:bundle.context!.ownAttackDirection,
   possessionSources:bundle.self.hasBall?[{sourceId:'self-proprioception',observedAt:bundle.time,confidence:1},...carriers.map(b=>({sourceId:b.id,observedAt:b.observedAt,confidence:b.ballControl!.confidence*2**(-b.age/rules.memoryHalfLife)}))]:carriers.map(b=>({sourceId:b.id,observedAt:b.observedAt,confidence:b.ballControl!.confidence*2**(-b.age/rules.memoryHalfLife)})),
-  reason,actionScope:phase==='defense'||phase==='unknown'?'confirmation-and-hold-only':'legacy-attack-skills',
+  reason,actionScope:phase==='defense'||phase==='unknown'?'confirmation-and-hold-only':'kinematic-attack-skills',
   orientations:beliefs.filter(b=>b.bodyOrientation&&b.kind==='player'&&b.modality==='vision').map(b=>{
    const o=b.bodyOrientation!,half=Math.min(Math.PI,o.halfWidth+b.age*Math.PI/2),confidence=o.confidence*2**(-b.age/rules.memoryHalfLife);
    const delta=b.position?Math.abs(angle(o.yaw-Math.atan2(bundle.self.position.x-b.position.x,bundle.self.position.z-b.position.z))):Math.PI/2;

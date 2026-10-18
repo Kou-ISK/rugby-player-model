@@ -57,10 +57,7 @@
       "additionalProperties": false,
       "properties": {
         "contractVersion": {
-          "enum": [
-            1,
-            2
-          ]
+          "const": 2
         },
         "scene": {
           "enum": [
@@ -105,10 +102,20 @@
         "observationPredecessor": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["snapshotId", "sha256"],
+          "required": [
+            "snapshotId",
+            "sha256"
+          ],
           "properties": {
-            "snapshotId": { "type": "string", "minLength": 1, "maxLength": 128 },
-            "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+            "snapshotId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
           }
         },
         "observationAnchor": {
@@ -279,10 +286,7 @@
       "additionalProperties": false,
       "properties": {
         "version": {
-          "enum": [
-            1,
-            2
-          ]
+          "const": 2
         },
         "mode": {
           "enum": [
@@ -424,10 +428,10 @@
           ],
           "properties": {
             "mode": {
-              "const": "legacy"
+              "const": "baseline"
             },
             "policyVersion": {
-              "const": "legacy-ecc5c298-v1"
+              "const": "baseline-v1"
             }
           }
         },

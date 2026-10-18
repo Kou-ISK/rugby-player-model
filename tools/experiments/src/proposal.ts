@@ -80,7 +80,7 @@ export function validateProposal(raw:string|Uint8Array,currentEngine:EngineDescr
     if(target.change.kind==='b-amendments'&&canonicalWire(target.base.baseline)!==canonicalWire(proposed.baseline))throw new Error('Amendment cannot replace baseline');
     for(const [artifact,expected] of [[target.base,target.change.beforeSha256],[proposed,target.change.afterSha256]] as const){const baseline=read<string>(artifact.baseline,'baseline'),amendments=artifact.amendments.map(r=>read<Principle>(r,'amendment')),out=read<BOutput>(artifact.output,'output');
      if(new Set(amendments.map(p=>p.id)).size!==amendments.length)throw new Error('Duplicate B amendment');
-     const rendered=judgmentMarkdown({version:out.localVersion,principles:amendments,...(out.outputFormat===2?{outputFormat:2 as const}:{})},baseline,out.proposed);
+     const rendered=judgmentMarkdown({version:out.localVersion,principles:amendments,outputFormat:2},baseline,out.proposed);
      if(rendered!==out.markdown||textHash(out.markdown)!==expected)throw new Error('B ordered output hash mismatch');
     }
    }
@@ -98,13 +98,9 @@ export function validateProposal(raw:string|Uint8Array,currentEngine:EngineDescr
     if(!a||run.semantic.cases.length!==m.caseRefs.length)throw new Error('Run case coverage mismatch');const proposed=read<AArtifact>(a.proposedArtifact);
     for(const [index,c] of run.semantic.cases.entries()){const input=read<ProposalCase>(m.caseRefs[index]);if(c.caseId!==input.id)throw new Error('Run case identity mismatch');
      for(const [arm,mode,rules] of [[c.before,input.input.executionMode,input.input.rules],[c.after,read<Config>(proposed.config).executionMode,read<RulesA>(proposed.rules)]] as const){if(canonicalWire(arm.trace.sensation)!==canonicalWire(input.input.bundle)||canonicalWire(arm.nextMemory)!==canonicalWire(arm.trace.longTermMemory)||canonicalWire(arm.executionMode)!==canonicalWire(mode)||arm.trace.rulesVersion!==rules.version)throw new Error('Run permitted input/config mismatch');
-      if(input.input.bundle.contractVersion===3){
-       if(arm.traceVersion!==4||arm.trace.traceVersion!==4||arm.trace.modelRevision!=='cognition-loop-v1'||!arm.trace.loop||canonicalWire(arm.trace.loop.ability)!==canonicalWire(input.input.profile.ability)||(mode.mode==='legacy'?arm.trace.deliberation!==undefined:canonicalWire(arm.trace.deliberation?.executionMode)!==canonicalWire(mode))||canonicalWire(arm.trace.loop.configuration)!==canonicalWire(rules))throw new Error('Run loop contract/config mismatch');
-      }else if(input.input.bundle.contractVersion===2){
-       if(arm.traceVersion!==3||arm.trace.traceVersion!==3||arm.trace.modelRevision!=='cognition-orientation-phase-v1'||!arm.trace.situation||(mode.mode==='legacy'?arm.trace.deliberation!==undefined:canonicalWire(arm.trace.deliberation?.executionMode)!==canonicalWire(mode)))throw new Error('Run trace contract/mode mismatch');
-      }else {
-      if(mode.mode==='legacy'?(arm.traceVersion!==1||arm.trace.modelRevision!=='cognition-0.3'||arm.trace.deliberation!==undefined||arm.trace.traceVersion!==undefined):(arm.traceVersion!==2||arm.trace.modelRevision!=='cognition-h-wm-1-v1'||arm.trace.traceVersion!==2||canonicalWire(arm.trace.deliberation?.executionMode)!==canonicalWire(mode)))throw new Error('Run trace contract/mode mismatch');
-      }
+      if(arm.traceVersion!==4||arm.trace.traceVersion!==4||arm.trace.modelRevision!=='cognition-0.4.0'||(mode.mode==='baseline'?arm.trace.deliberation!==undefined:canonicalWire(arm.trace.deliberation?.executionMode)!==canonicalWire(mode)))throw new Error('Run trace contract/mode mismatch');
+      if(!!input.input.bundle.context!==!!arm.trace.situation||!!input.input.bundle.self.motor!==!!arm.trace.loop)throw new Error('Run trace capabilities mismatch');
+      if(arm.trace.loop&&(canonicalWire(arm.trace.loop.ability)!==canonicalWire(input.input.profile.ability)||canonicalWire(arm.trace.loop.configuration)!==canonicalWire(rules)))throw new Error('Run loop contract/config mismatch');
      }
     }
    }else if(run.semantic.cases.length)throw new Error('Undeclared A results');
@@ -115,7 +111,7 @@ export function validateProposal(raw:string|Uint8Array,currentEngine:EngineDescr
 }
 export function proposalInputDigest(v:ValidatedProposal,targets:('A'|'B')[]=v.package.manifest.targets.map(t=>t.kind)){const m=v.package.manifest;if(targets.some(k=>!m.targets.some(t=>t.kind===k)))throw new Error('Run target not in proposal');return wireHash({targets:m.targets.filter(t=>targets.includes(t.kind)),caseRefs:m.caseRefs,protocolRefs:m.protocolRefs});}
 export function selectSemantic(semantic:SemanticResult,targets:('A'|'B')[]):SemanticResult{return {format:semantic.format,cases:targets.includes('A')?semantic.cases:[],B:targets.includes('B')?semantic.B:null};}
-export function renderBArtifact(v:ValidatedProposal,artifact:Pick<BArtifact,'baseline'|'amendments'|'output'>){const baseline=v.read<string>(artifact.baseline,'baseline'),principles=artifact.amendments.map(r=>v.read<Principle>(r,'amendment')),metadata=v.read<BOutput>(artifact.output,'output');return judgmentMarkdown({version:metadata.localVersion,principles,...(metadata.outputFormat===2?{outputFormat:2 as const}:{})},baseline,metadata.proposed);}
+export function renderBArtifact(v:ValidatedProposal,artifact:Pick<BArtifact,'baseline'|'amendments'|'output'>){const baseline=v.read<string>(artifact.baseline,'baseline'),principles=artifact.amendments.map(r=>v.read<Principle>(r,'amendment')),metadata=v.read<BOutput>(artifact.output,'output');return judgmentMarkdown({version:metadata.localVersion,principles,outputFormat:2},baseline,metadata.proposed);}
 export function proposalReviewMaterial(v:ValidatedProposal,targets:('A'|'B')[]){const a=v.package.manifest.targets.find(t=>t.kind==='A'),b=v.package.manifest.targets.find(t=>t.kind==='B');const afterA=a?v.read<AArtifact>(a.proposedArtifact):undefined,afterB=b?v.read<BArtifact>(b.proposedArtifact):undefined;return {status:'proposed-not-approved',A:targets.includes('A')&&a&&afterA?{before:{rules:v.read(a.base.rules),config:v.read(a.base.config)},after:{rules:v.read(afterA.rules),config:v.read(afterA.config)}}:null,B:targets.includes('B')&&b&&afterB?{before:renderBArtifact(v,b.base),after:renderBArtifact(v,afterB),beforeAmendmentOrder:b.base.amendments,afterAmendmentOrder:afterB.amendments}:null};}
 export function reproduceProposal(v:ValidatedProposal,targets:('A'|'B')[]=v.package.manifest.targets.map(t=>t.kind)):ProposalRun{
  if(!targets.length||new Set(targets).size!==targets.length||targets.some(k=>!v.package.manifest.targets.some(t=>t.kind===k)))throw new Error('Select proposal A/B target');

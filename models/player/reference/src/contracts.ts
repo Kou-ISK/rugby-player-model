@@ -1,5 +1,5 @@
 import type { Deliberation, ExecutionMode } from './execution-mode.js';
-// Observation-only A contracts v1/v2. Units: meters, radians, seconds.
+// Current observation-only player contracts. Units: meters, radians, seconds.
 export type Vec = { x: number; z: number };
 export type Action = 'scan' | 'hold' | 'carry' | 'pass' | 'support' | 'evade' | 'defend' | 'receive' | 'tackle';
 export type ContextRule = {
@@ -11,11 +11,11 @@ export type Body = { position: Vec; yaw: number; headYaw: number; eyeHeight: num
 export type Percept = {
   id: string; entityId: string; kind: 'player' | 'ball' | 'call';
   relation: 'teammate' | 'opponent' | 'neutral'; modality: 'vision' | 'audio';
-  evidenceVersion?: 2; bodyOrientation?: {yaw:number;halfWidth:number;confidence:number}; ballControl?: {holding:true;confidence:number};
+  evidenceVersion: 2; bodyOrientation?: {yaw:number;halfWidth:number;confidence:number}; ballControl?: {holding:true;confidence:number};
   observedAt: number; confidence: number; position?: Vec; bearing?: number; observerYaw?: number; cue?: string;
 };
 export type Bundle = {
-  contractVersion: 1 | 2 | 3; context?: {ownAttackDirection:1|-1}; playerId: string; time: number;
+  contractVersion: 3; context?: {ownAttackDirection:1|-1}; playerId: string; time: number;
   self: Body; vision: { horizontalFov: number; range: number }; percepts: Percept[];
 };
 export type Memory = { episodes: Percept[]; lastTime: number; intent?:LoopPlan };
@@ -42,9 +42,9 @@ export type Trace = {
   beliefs: Belief[]; predictions: { entityId: string; basisObservedAt: number; position?: Vec; uncertaintyRadius: number; method: 'last-observation' }[];
   evaluation: Evaluation[]; intention: Evaluation; output: BodyCommand[]; rulesVersion: string;
   assessment: { uncertainThreat: number; informationValue: number; scanTarget?: { sourceId: string; headYaw: number; observedAt: number; modality: 'vision' | 'audio' } };
-  modelRevision: 'cognition-0.3' | 'cognition-h-wm-1-v1' | 'cognition-orientation-phase-v1' | 'cognition-loop-v1';
+  modelRevision: string; sourceTraceVersion?:number;
   situation?: Situation;
-  traceVersion?:2|3|4; loop?:LoopTrace; deliberation?:Deliberation;
+  traceVersion:4; loop?:LoopTrace; deliberation?:Deliberation;
   appliedRules: { id: string; action: Action; weight: number; call?: string }[];
 };
 export type ObservationEvent = { sequence:number; trigger:'initial'|'head-turn'|'body-turn'|'step'|'configuration'|'restore';
@@ -57,7 +57,7 @@ export type Situation = {
  phase:'attack-carrier'|'attack-support'|'defense'|'unknown';
  goal:'advance-with-ball'|'support-observed-carrier'|'protect-own-goal'|'locate-possession';
  ownAttackDirection:1|-1; possessionSources:{sourceId:string;observedAt:number;confidence:number}[];
- reason:string; actionScope:'confirmation-and-hold-only'|'legacy-attack-skills'|'bounded-motor-skills';
+ reason:string; actionScope:'confirmation-and-hold-only'|'kinematic-attack-skills'|'bounded-motor-skills';
  orientations:{sourceId:string;entityId:string;relation:Percept['relation'];observedAt:number;yaw:number;
   currentConfidence:number;angularHalfWidth:number;bodyRelativeYaw:number;facingObserver:'toward'|'away'|'uncertain'}[];
 };
